@@ -718,11 +718,11 @@ int main(int argc, char *argv[])
 		strcat(buf, "|");
 		strcat(buf, "1"); //POINTER TO ROOT DIRECTORY
 		strcat(buf, "#"); // # MEAN END OF THE BUFFER
-		printf("buf =%s\n", buf);
+		// printf("buf =%s\n", buf);
 		LBAwrite(buf, 1, 0);
 		free(buf2);
 	}
-	exit(1);
+	exit(0);
 
 	char *cmdin;
 	char *cmd;
