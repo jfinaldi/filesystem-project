@@ -17,10 +17,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
-
-#include "b_io.h"
-
 #include <dirent.h>
+
 #define FT_REGFILE DT_REG
 #define FT_DIRECTORY DT_DIR
 #define FT_LINK DT_LNK
@@ -31,6 +29,9 @@ typedef u_int64_t uint64_t;
 #ifndef uint32_t
 typedef u_int32_t uint32_t;
 #endif
+
+#include "b_io.h"
+#include "dirEntry.h"
 
 #define BLOCK_SIZE 512
 
