@@ -14,10 +14,15 @@
 **************************************************************/
 #ifndef _MFS_H
 #define _MFS_H
-#include <sys/types.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <time.h>
+#include <sys/types.h>
 
 #define FT_REGFILE DT_REG
 #define FT_DIRECTORY DT_DIR
