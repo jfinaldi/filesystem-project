@@ -20,7 +20,7 @@
 
 #include "b_io.h"
 
-#include <dirent.h>
+#include <dirEntry.h> //NEW: former dirent.h
 #define FT_REGFILE DT_REG
 #define FT_DIRECTORY DT_DIR
 #define FT_LINK DT_LNK
