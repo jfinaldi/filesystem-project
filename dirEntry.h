@@ -32,5 +32,6 @@ typedef struct DirectoryEntry
 } dirEntry;
 
 int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv);
+char *inttostr(int value, char *result, int base);
 
 #endif

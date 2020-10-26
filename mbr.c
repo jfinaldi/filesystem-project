@@ -4,9 +4,9 @@
 * Student ID: N/A
 * Project: Basic File System
 *
-* File: FSinit.c
+* File: mbr.c
 *
-* Description: FSinit.c
+* Description: mbr.c
 *
 **************************************************************/
 
@@ -16,6 +16,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
 {
     char *filename;
     int MBR = 0;
+    int numberBlock = 0;
 
     char *buf2 = malloc(blockSize);
     if (buf2 == NULL)
@@ -33,13 +34,20 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
 
     if (MBR == 0) //to change to 0
     {
+        char snum[512];
         char *buf = malloc(blockSize);
+        if (buf == NULL)
+            return (1);
+        numberBlock = volumeSize / blockSize;
+        inttostr(numberBlock, snum, 10);
         memset(buf, 0, blockSize);
         strcpy(buf, "I");     //INIT OR NOT
         strcat(buf, "|");     // | USE TO SEPARATE THE VARIABLE
         strcat(buf, argv[2]); //VOLUME SIZE
         strcat(buf, "|");
         strcat(buf, "512"); // BLOCK SIZE
+        strcat(buf, "|");
+        strcat(buf, snum); // NUMBER OF BLOCK INSIDE LBA
         strcat(buf, "|");
         strcat(buf, "DreamTeamFS"); // NAME OF THE FS
         strcat(buf, "|");
@@ -48,7 +56,11 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "1"); //FIRST BLOCK OF THE VOLUME
         strcat(buf, "|");
         strcat(buf, "1"); //POINTER TO ROOT DIRECTORY
-        strcat(buf, "#"); // # MEAN END OF THE BUFFER
+        strcat(buf, "|");
+        strcat(buf, "DIR"); // MAGIC NUMBER FOR A DIR
+        strcat(buf, "|");
+        strcat(buf, "FILE"); // MAGIC NUMBER FOR A FILE
+        strcat(buf, "#");    // # MEAN END OF THE BUFFER
         // printf("buf =%s\n", buf);
         LBAwrite(buf, 1, 0);
         free(buf2);
