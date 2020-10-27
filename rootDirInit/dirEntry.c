@@ -20,6 +20,7 @@ void initEntry(dirEntry* dE) {
 	dE->rootDir = 0; // location of first root directory  
 	dE->id = 0; // id of the file
 	dE->dataLocation = 0; // location where file data starts 
+	dE->locationSelf = 0; //location of this entry in logical block
 
 	//initialize a default name
 	dE->name[0] = 'd';
@@ -43,5 +44,3 @@ void initEntry(dirEntry* dE) {
 	dE->locationMetadata = 0; //512 file per directory
 	dE->isBeingUsed = 0; //this file is currently not being used
 }
-
-

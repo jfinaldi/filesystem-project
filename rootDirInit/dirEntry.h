@@ -19,7 +19,8 @@ typedef u_int64_t uint64_t;
 
 typedef struct DirectoryEntry 
 {
-	unsigned long rootDir; // location of first root directory  
+	unsigned long rootDir; // location of first root directory 
+	unsigned long locationSelf; //location of this entry, logical block 
 	unsigned long id; // id of the file
 	unsigned long dataLocation; // location where file data starts 
 	char name[256]; // the name of the file
@@ -34,6 +35,6 @@ typedef struct DirectoryEntry
 	unsigned short isBeingUsed; //tells whether this entry is currently in use or not
 } dirEntry;
 
-extern void initEntry();
+extern void initEntry(dirEntry *);
 
 #endif
