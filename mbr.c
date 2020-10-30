@@ -60,9 +60,9 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "|");
         strcat(buf, "1"); //FIRST BLOCK OF THE VOLUME
         strcat(buf, "|");
-        strcat(buf, "1"); //POINTER TO ROOT DIRECTORY
+        strcat(buf, root_dir_block); //POINTER TO ROOT DIRECTORY
         strcat(buf, "|");
-        strcat(buf, "2"); // POINTER TO BITMAP FREESPACE
+        strcat(buf, "1"); // POINTER TO BITMAP FREESPACE
         strcat(buf, "|");
         strcat(buf, "DIR"); // MAGIC NUMBER FOR A DIR
         strcat(buf, "|");
