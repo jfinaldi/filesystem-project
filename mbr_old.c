@@ -12,12 +12,11 @@
 
 #include "mfs.h"
 
-
 int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
 {
     char *filename;
     int MBR = 0;
-    int number_of_blocks = 0;
+    int numberBlock = 0;
 
     char *buf2 = malloc(blockSize);
     if (buf2 == NULL)
@@ -39,12 +38,8 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         char *buf = malloc(blockSize);
         if (buf == NULL)
             return (1);
-        number_of_blocks = volumeSize / blockSize;
-        inttostr(number_of_blocks, snum, 10);
-
-        int root_dir_block = memory_map_init(volumeSize, blockSize, 1);
-        printf("okay%d", root_dir_block);  
-
+        numberBlock = volumeSize / blockSize;
+        inttostr(numberBlock, snum, 10);
         memset(buf, 0, blockSize);
         strcpy(buf, "I");     //INIT OR NOT
         strcat(buf, "|");     // | USE TO SEPARATE THE VARIABLE
@@ -70,7 +65,6 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "#");    // # MEAN END OF THE BUFFER
         // printf("buf =%s\n", buf);
         LBAwrite(buf, 1, 0);
-        find_free_index(2, volumeSize, blockSize); 
         free(buf2);
         free(buf);
     }

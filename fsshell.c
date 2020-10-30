@@ -31,7 +31,7 @@
 // This must be off for testing your file system
 
 #include <sys/stat.h>
-#include <dirEntry.h>
+#include <rootDirInit/dirEntry.h>
 #define fs_mkdir mkdir
 #define fs_getcwd getcwd
 #define fs_setcwd chdir

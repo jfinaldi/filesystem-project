@@ -1,50 +1,51 @@
 
-int *bitmap;
-char *buffer;
-int volume_size; 
-int bits = 8; 
+#include "mfs.h"
 
-void memory_map_init(int block_size, int block_count)
+void memory_map_init(volume_size, block_size, starting_block)
 {
-    bitmap = (int*)calloc((block_count) / sizeof(int) * bits + (block_count % sizeof(int) * bits), sizeof(int) * bits);
+    int block_count = volume_size / block_size;
+    int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
+    
+    _Bool * bitmap = (_Bool*)malloc(bitmap_size_in_bytes); 
+    int bitmap_size_in_blocks = bitmap_size_in_bytes/block_size; 
+    if (bitmap == NULL) {
+        return -1; 
+    }
+    for (int i = 0; i <  bitmap_size_in_blocks; i++){
+        bitmap[i] = 1; 
+    }
+    return LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
+    return bitmap_size_in_blocks + starting_block; 
 }
 
-bool is_free(int index)
-{
-    int map_index = index / sizeof(int) * bits;
-    int bit_position = index % sizeof(int) * bits;
-    int flag = 1 << bit_position; 
-    return !(flag & bitmap[map_index]);
-}
+int find_free_index(blocks_needed, volume_size, block_size) {
+    int block_count = volume_size / block_size;
+    int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
+    int bitmap_size_in_blocks = bitmap_size_in_bytes/block_size;
 
-void set_bit_to_filled(int index)
-{
-    int map_index = index / sizeof(int) * bits;
-    int bit_position = index % sizeof(int) * bits;
-    int flag = 1 << bit_position; 
-    bitmap[map_index] = bitmap[map_index] | flag; 
-}
-
-void set_bit_to_free(int index)
-{
-    int map_index = index / sizeof(int) * bits;
-    int bit_position = index % sizeof(int) * bits;
-    int flag = 1 << bit_position; 
-    flag = ~flag; 
-    bitmap[map_index] = bitmap[map_index] | flag; 
-}
-int find_free(int blocks_needed) {
-    int curr_free_contiguous = 0; 
-    for (int index = 0; index < volume_size; index++) {
-        if (is_free) {
-            curr_free_contiguous++; 
-            if (curr_free_contiguous == blocks_needed) {
-                return index - blocks_needed;
+    _Bool * bitmap = (_Bool*)malloc(bitmap_size_in_blocks * sizeof(_Bool)); 
+    LBAread(bitmap, bitmap_size_in_blocks, 0); 
+    int free_blocks = 0; 
+    int index = 0; 
+    int result = -1;
+    while(index < bitmap_size_in_bytes) {
+        if (bitmap[index] == 0) {
+            free_blocks++; 
+            if (free_blocks == blocks_needed) {
+                result = index - blocks_needed; 
+                for (int i = result; i < index; i++){
+                    bitmap[i] = 1; 
+                }
+                LBAwrite(bitmap, bitmap_size_in_blocks, 0); 
+                return result; 
             }
         } else {
-            curr_free_contiguous = 0; 
+            free_blocks = 0; 
         }
+        index++; 
     }
+    
+    printf("Out of space"); 
     return -1; 
 }
 
