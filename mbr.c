@@ -39,6 +39,8 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         if (buf == NULL)
             return (1);
         numberBlock = volumeSize / blockSize;
+        int rootStartingBlock = memory_map_init(1); 
+
         inttostr(numberBlock, snum, 10);
         memset(buf, 0, blockSize);
         strcpy(buf, "I");     //INIT OR NOT
@@ -55,9 +57,9 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "|");
         strcat(buf, "1"); //FIRST BLOCK OF THE VOLUME
         strcat(buf, "|");
-        strcat(buf, "1"); //POINTER TO ROOT DIRECTORY
+        strcat(buf, "2"); //POINTER TO ROOT DIRECTORY
         strcat(buf, "|");
-        strcat(buf, "2"); // POINTER TO BITMAP FREESPACE
+        strcat(buf, "1"); // POINTER TO BITMAP FREESPACE
         strcat(buf, "|");
         strcat(buf, "DIR"); // MAGIC NUMBER FOR A DIR
         strcat(buf, "|");
@@ -65,6 +67,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "#");    // # MEAN END OF THE BUFFER
         // printf("buf =%s\n", buf);
         LBAwrite(buf, 1, 0);
+        find_free_index(2); 
         free(buf2);
         free(buf);
     }
