@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+nano.save
 
 # Object files
 *.o

@@ -30,6 +30,8 @@
 // but using the test files system function calls
 // This must be off for testing your file system
 
+int long volumeSizeArg = 0;
+
 #include <sys/stat.h>
 #include <rootDirInit/dirEntry.h>
 #define fs_mkdir mkdir
@@ -686,6 +688,8 @@ int main(int argc, char *argv[])
 
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
+
+	volumeSizeArg = my_getnbr(argv[2]);
 
 	char *cmdin;
 	char *cmd;

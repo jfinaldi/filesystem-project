@@ -24,7 +24,7 @@ int find_free_index(blocks_needed, volume_size, block_size) {
     int bitmap_size_in_blocks = bitmap_size_in_bytes/block_size;
 
     _Bool * bitmap = (_Bool*)malloc(bitmap_size_in_blocks * sizeof(_Bool)); 
-    if (bitmap === NULL){
+    if (bitmap == NULL){
         return -1; 
     }
 
