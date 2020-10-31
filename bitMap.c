@@ -1,7 +1,8 @@
 
 #include "mfs.h"
-
-void memory_map_init(volume_size, block_size, starting_block)
+int volume_size = 10000000;
+int block_size = 512; 
+void memory_map_init(starting_block)
 {
     int block_count = volume_size / block_size;
     int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
@@ -18,13 +19,13 @@ void memory_map_init(volume_size, block_size, starting_block)
     return bitmap_size_in_blocks + starting_block; 
 }
 
-int find_free_index(blocks_needed, volume_size, block_size) {
+int find_free_index(blocks_needed) {
     int block_count = volume_size / block_size;
     int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
-    int bitmap_size_in_blocks = bitmap_size_in_bytes/block_size;
+    int bitmap_size_in_blocks = (bitmap_size_in_bytes/block_size) + 1;
 
     _Bool * bitmap = (_Bool*)malloc(bitmap_size_in_blocks * sizeof(_Bool)); 
-    if (bitmap === NULL){
+    if (bitmap == NULL){
         return -1; 
     }
 
