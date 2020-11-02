@@ -35,12 +35,13 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
     if (MBR == 0) //to change to 0
     {
         char snum[512];
+        char snum2[512]; 
         char *buf = malloc(blockSize);
         if (buf == NULL)
             return (1);
         numberBlock = volumeSize / blockSize;
-        int rootStartingBlock = memory_map_init(1); 
-
+        int rootStartingBlock = memory_map_init(1, volumeSize, blockSize); 
+        inttostr(rootStartingBlock, snum2, 10); 
         inttostr(numberBlock, snum, 10);
         memset(buf, 0, blockSize);
         strcpy(buf, "I");     //INIT OR NOT
@@ -57,7 +58,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "|");
         strcat(buf, "1"); //FIRST BLOCK OF THE VOLUME
         strcat(buf, "|");
-        strcat(buf, "2"); //POINTER TO ROOT DIRECTORY
+        strcat(buf, snum2); //POINTER TO ROOT DIRECTORY
         strcat(buf, "|");
         strcat(buf, "1"); // POINTER TO BITMAP FREESPACE
         strcat(buf, "|");
@@ -67,7 +68,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcat(buf, "#");    // # MEAN END OF THE BUFFER
         // printf("buf =%s\n", buf);
         LBAwrite(buf, 1, 0);
-        find_free_index(2); 
+        find_free_index(20); 
         free(buf2);
         free(buf);
     }

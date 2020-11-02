@@ -1,9 +1,13 @@
 
 #include "mfs.h"
-int volume_size = 10000000;
-int block_size = 512; 
-void memory_map_init(starting_block)
+int volume_size = 0;
+int block_size = 0; 
+int starting_block = 0; 
+void memory_map_init(start, volumeSize, blockSize)
 {
+    volume_size = volumeSize; 
+    starting_block = start; 
+    block_size = blockSize; 
     int block_count = volume_size / block_size;
     int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
     
@@ -19,7 +23,8 @@ void memory_map_init(starting_block)
     }
     LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
     free(bitmap); 
-    return bitmap_size_in_blocks + starting_block; 
+    int result = bitmap_size_in_blocks + starting_block;
+    return result; 
     
 }
 
@@ -28,12 +33,12 @@ int find_free_index(blocks_needed) {
     int bitmap_size_in_bytes =  block_count * sizeof(_Bool);
     int bitmap_size_in_blocks = (bitmap_size_in_bytes/block_size) + 1;
 
-    _Bool * bitmap = (_Bool*)malloc(bitmap_size_in_blocks * block_size * sizeof(_Bool)); 
+    _Bool * bitmap = (_Bool*)calloc(bitmap_size_in_blocks * block_size, sizeof(_Bool)); 
     if (bitmap == NULL){
         return -1; 
     }
-
-    LBAread(bitmap, bitmap_size_in_blocks, 1); 
+    printf("hello?"); 
+    LBAread(bitmap, bitmap_size_in_blocks, starting_block); 
 
     int free_blocks = 0; 
     int index = 0; 
@@ -42,13 +47,12 @@ int find_free_index(blocks_needed) {
     while(index < bitmap_size_in_bytes) {
         if (bitmap[index] == 0) {
             free_blocks++; 
-            printf(free_blocks); 
             if (free_blocks == blocks_needed) {
                 result = index - blocks_needed; 
-                for (int i = result; i < index; i--){
+                for (int i = result; i < index; i++){
                     bitmap[i] = 1; 
                 }
-                LBAwrite(bitmap, bitmap_size_in_blocks, 1); 
+                LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
                 return result; 
             }
         } else {

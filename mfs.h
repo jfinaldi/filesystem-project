@@ -37,9 +37,10 @@ typedef u_int32_t uint32_t;
 
 #include "b_io.h"
 #include "./rootDirInit/dirEntry.h"
+#include "bitMap.h"
+
 
 #define BLOCK_SIZE 512
-
 extern int long volumeSizeArg;
 
 struct fs_diriteminfo
@@ -88,6 +89,5 @@ int closePartitionSystem();
 uint64_t LBAwrite(void *buffer, uint64_t lbaCount, uint64_t lbaPosition);
 uint64_t LBAread(void *buffer, uint64_t lbaCount, uint64_t lbaPosition);
 int initializePartition(int fd, uint64_t volSize, uint64_t blockSize);
-int my_getnbr(char const *str);
 
 #endif
