@@ -10,27 +10,8 @@
 *            and saves it on disk
 *
 **************************************************************/
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
-#include <string.h>
-#include <pthread.h>
-#include <errno.h>
-#include <math.h>
 
-#include "initDirectory.h"
-#include "dirEntry.h"
-#include "bitMap.h" //for find_free_index()
 #include "mfs.h" //for LBAWrite()
-
-#define BLOCK_SIZE 512 //size of one LBA block
-#define STARTING_NUM_DIR 50 //starting number of directories for array
- 
-void testOutput(dirEntry* rootDir);
 
 long initDirectory(int parentLBA)
 {
@@ -41,7 +22,7 @@ long initDirectory(int parentLBA)
 	printf("bytes = %ld\n", bytes);
 	long numBlocks = 1 + (bytes / BLOCK_SIZE);
 	printf("numBlocks = %ld\n", numBlocks);
-	int trackOffset = 0; //keeps track of where we are in each block
+	int trackOffset = 0;  //keeps track of where we are in each block
 	int currentBlock = 0; //keeps track of which LBA block we're in
 
 	//get an address for the starting block
@@ -50,19 +31,21 @@ long initDirectory(int parentLBA)
 	currentBlock = startingBlock;
 
 	//create a space in RAM to start manipulating
-	dirEntry* ptr = (dirEntry*)malloc(BLOCK_SIZE * numBlocks);
-	if(ptr == NULL) 
+	dirEntry *ptr = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	if (ptr == NULL)
 	{
 		printf("Error with malloc ln50.\n");
-		return -1; 
-	} else printf("Malloc succeeded\n\n");
+		return -1;
+	}
+	else
+		printf("Malloc succeeded\n\n");
 
 	//fill the root struct with default info
 	initEntry(&ptr[0]); //initialize this root dir instance
 	printf("root directory successfully initiated.\n\n");
 
 	//if the parentLBA is 0, then we are creating the very first root entry
-	if(parentLBA == 0)
+	if (parentLBA == 0)
 	{
 		//assign the location LBA of self
 		ptr[0].locationSelf = startingBlock;
@@ -78,22 +61,22 @@ long initDirectory(int parentLBA)
 	}
 
 	trackOffset += (int)sizeof(dirEntry); //move the tracker to the end of this struct
-	if((trackOffset/BLOCK_SIZE) > currentBlock)
+	if ((trackOffset / BLOCK_SIZE) > currentBlock)
 	{
-		currentBlock++; //we're crossing into a new block
+		currentBlock++;			   //we're crossing into a new block
 		trackOffset -= BLOCK_SIZE; //now we know how far into the next block we are
 	}
 
 	//testOutput(&ptr[0]); //print this first root entry
-	
+
 	//initialize an array of directory entries, all set to unused
-	for(int i = 1; i < STARTING_NUM_DIR; i++)
+	for (int i = 1; i < STARTING_NUM_DIR; i++)
 	{
 		initEntry(&ptr[i]);
 
 		//only the first and second entries get . and .. assigned
-		if(i < 2)
-		{ 
+		if (i < 2)
+		{
 			//set the second entry's parent name
 			ptr[i].root[0] = '.';
 			ptr[i].root[1] = '.';
@@ -105,7 +88,7 @@ long initDirectory(int parentLBA)
 		}
 
 		//calculate which block this entry starts in
-		if(((trackOffset/BLOCK_SIZE) + startingBlock) > currentBlock)
+		if (((trackOffset / BLOCK_SIZE) + startingBlock) > currentBlock)
 			currentBlock++; //we're crossing into a new block
 		trackOffset += (int)sizeof(dirEntry);
 
@@ -115,16 +98,16 @@ long initDirectory(int parentLBA)
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
-	
+
 	//call LBA write to put this directory on disk
-	LBAWrite(ptr, numBlocks, startingBlock);
+	LBAwrite(ptr, numBlocks, startingBlock);
 
 	//free(ptr); //just for testing purposes
-	
+
 	return startingBlock; //returning the location of the directory in LBA
 }
 
-void testOutput(dirEntry* rootDir)
+void testOutput(dirEntry *rootDir)
 {
 	//print out its contents
 	printf("\n\n---- Directory Contents ----\n");
@@ -142,14 +125,14 @@ void testOutput(dirEntry* rootDir)
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 	//printf("Parent Block: %ld\n", rootDir->parent);
-	
-	struct tm * timeInfo = localtime(&(rootDir->dateModifiedDirectory));
+
+	struct tm *timeInfo = localtime(&(rootDir->dateModifiedDirectory));
 	printf("DateModified: %s", asctime(timeInfo));
 	timeInfo = localtime(&(rootDir->dateAccessedDirectory));
 	printf("DateAccessed: %s", asctime(timeInfo));
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);
-	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");	
+	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");
 }
 
 /*int main() 
