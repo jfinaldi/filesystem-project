@@ -14,7 +14,7 @@ void memory_map_init(volume_size, block_size, starting_block)
     for (int i = 0; i <  bitmap_size_in_blocks; i++){
         bitmap[i] = 1; 
     }
-    return LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
+    LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
     return bitmap_size_in_blocks + starting_block; 
 }
 

@@ -36,7 +36,8 @@ typedef u_int32_t uint32_t;
 #endif
 
 #include "b_io.h"
-#include "./rootDirInit/dirEntry.h"
+#include "dirEntry.h"
+#include "initDirectory.h"
 
 #define BLOCK_SIZE 512
 

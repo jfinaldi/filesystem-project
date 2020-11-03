@@ -22,9 +22,10 @@
 #include <errno.h>
 #include <math.h>
 
+#include "initDirectory.h"
 #include "dirEntry.h"
-//#include "bitMap.h" //for find_free_index()
-//#include "mfs.h" //for LBAWrite()
+#include "bitMap.h" //for find_free_index()
+#include "mfs.h" //for LBAWrite()
 
 #define BLOCK_SIZE 512 //size of one LBA block
 #define STARTING_NUM_DIR 50 //starting number of directories for array
@@ -44,8 +45,8 @@ long initDirectory(int parentLBA)
 	int currentBlock = 0; //keeps track of which LBA block we're in
 
 	//get an address for the starting block
-	//long startingBlock = (long)find_free_index(numBlocks, 10000000, BLOCK_SIZE);
-	long startingBlock = 50; //TEMP hardcoded
+	long startingBlock = (long)find_free_index(numBlocks, volumeSizeArg, BLOCK_SIZE);
+	//long startingBlock = 50; //TEMP hardcoded
 	currentBlock = startingBlock;
 
 	//create a space in RAM to start manipulating
@@ -83,7 +84,7 @@ long initDirectory(int parentLBA)
 		trackOffset -= BLOCK_SIZE; //now we know how far into the next block we are
 	}
 
-	testOutput(&ptr[0]); //print this first root entry
+	//testOutput(&ptr[0]); //print this first root entry
 	
 	//initialize an array of directory entries, all set to unused
 	for(int i = 1; i < STARTING_NUM_DIR; i++)
@@ -112,11 +113,11 @@ long initDirectory(int parentLBA)
 		ptr[i].rootDir = startingBlock; //all entries should be able to find their root
 		ptr[i].locationSelf = currentBlock;
 
-		testOutput(&ptr[i]); //print out the individual entry just created
+		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
 	
 	//call LBA write to put this directory on disk
-	//LBAWrite(ptr, numBlocks, startingBlock);
+	LBAWrite(ptr, numBlocks, startingBlock);
 
 	//free(ptr); //just for testing purposes
 	
@@ -151,7 +152,7 @@ void testOutput(dirEntry* rootDir)
 	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");	
 }
 
-int main() 
+/*int main() 
 {
 	printf("rootDirInit executed without errors: %s\n\n", initDirectory(0) > 0 ? "true" : "false");
-}
+}*/
