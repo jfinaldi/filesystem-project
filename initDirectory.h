@@ -4,15 +4,21 @@
 * Student ID: N/A
 * Project: Basic File System
 *
-* File: bitMap.h
+* File: initDirectory.h
 *
 * Description: 
 *	This is the header file for initDirectory
 *
 **************************************************************/
 
-#ifndef _BITMAP_H
-#define _BITMAP_H
+#ifndef _INITDIRECTORY_H
+#define _INITDIRECTORY_H
 
-void memory_map_init(int starting_block);
-int find_free_index(int blocks_needed);
+#include "mfs.h"
+
+#define STARTING_NUM_DIR 50 //starting number of directories for array
+
+void testOutput(dirEntry *rootDir);
+long initDirectory(int parentLBA);
+
+#endif

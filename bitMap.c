@@ -1,3 +1,15 @@
+/**************************************************************
+* Class:  CSC-415
+* Name: Professor Bierman
+* Student ID: N/A
+* Project: Basic File System
+*
+* File: bitMap.c
+*
+* Description: 
+*	This is the header file for initDirectory
+*
+**************************************************************/
 
 #include "mfs.h"
 int volume_size = 0;
@@ -18,8 +30,9 @@ void memory_map_init(start, volumeSize, blockSize)
     if (bitmap == NULL) {
         return -1; 
     }
-    for (int i = 0; i <  bitmap_size_in_blocks; i++){
-        bitmap[i] = 1; 
+    for (int i = 0; i < bitmap_size_in_blocks; i++)
+    {
+        bitmap[i] = 1;
     }
     LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
     free(bitmap); 
@@ -40,28 +53,33 @@ int find_free_index(blocks_needed) {
     printf("hello?"); 
     LBAread(bitmap, bitmap_size_in_blocks, starting_block); 
 
-    int free_blocks = 0; 
-    int index = 0; 
+    int free_blocks = 0;
+    int index = 0;
     int result = -1;
-    
-    while(index < bitmap_size_in_bytes) {
-        if (bitmap[index] == 0) {
-            free_blocks++; 
-            if (free_blocks == blocks_needed) {
-                result = index - blocks_needed; 
-                for (int i = result; i < index; i++){
-                    bitmap[i] = 1; 
+
+    while (index < bitmap_size_in_bytes)
+    {
+        if (bitmap[index] == 0)
+        {
+            free_blocks++;
+            if (free_blocks == blocks_needed)
+            {
+                result = index - blocks_needed;
+                for (int i = result; i < index; i++)
+                {
+                    bitmap[i] = 1;
                 }
                 LBAwrite(bitmap, bitmap_size_in_blocks, starting_block); 
                 return result; 
             }
-        } else {
-            free_blocks = 0; 
         }
-        index++; 
+        else
+        {
+            free_blocks = 0;
+        }
+        index++;
     }
-    
-    printf("Out of space"); 
-    return -1; 
-}
 
+    printf("Out of space");
+    return (-1);
+}

@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <string.h>
 #include "mfs.h"
+#include "initDirectory.h"
 
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
 #define TEMP_LINUX 0 //MUST be ZERO for working with your file system
@@ -33,7 +34,6 @@
 int long volumeSizeArg = 0;
 
 #include <sys/stat.h>
-#include <rootDirInit/dirEntry.h>
 #define fs_mkdir mkdir
 #define fs_getcwd getcwd
 #define fs_setcwd chdir
@@ -690,6 +690,8 @@ int main(int argc, char *argv[])
 	MBRinit(volumeSize, blockSize, argv);
 
 	volumeSizeArg = my_getnbr(argv[2]);
+
+	int locationRootDir = initDirectory(0); //initialize the root directory
 
 	char *cmdin;
 	char *cmd;
