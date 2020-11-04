@@ -11,8 +11,5 @@
 *
 **************************************************************/
 
-#ifndef _BITMAP_H
-#define _BITMAP_H
-
-void memory_map_init(int starting_block);
+int memory_map_init(int starting_block, int volume_size, int block_size);
 int find_free_index(int blocks_needed);

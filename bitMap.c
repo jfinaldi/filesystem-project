@@ -15,7 +15,7 @@
 int volume_size = 0;
 int block_size = 0; 
 int starting_block = 0; 
-void memory_map_init(start, volumeSize, blockSize)
+int memory_map_init(start, volumeSize, blockSize)
 {
     volume_size = volumeSize; 
     starting_block = start; 

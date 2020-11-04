@@ -26,7 +26,7 @@ long initDirectory(int parentLBA)
 	int currentBlock = 0; //keeps track of which LBA block we're in
 
 	//get an address for the starting block
-	long startingBlock = (long)find_free_index(numBlocks, volumeSizeArg, BLOCK_SIZE);
+	int startingBlock = find_free_index(numBlocks);
 	//long startingBlock = 50; //TEMP hardcoded
 	currentBlock = startingBlock;
 
@@ -66,7 +66,6 @@ long initDirectory(int parentLBA)
 		currentBlock++;			   //we're crossing into a new block
 		trackOffset -= BLOCK_SIZE; //now we know how far into the next block we are
 	}
-
 	//testOutput(&ptr[0]); //print this first root entry
 
 	//initialize an array of directory entries, all set to unused
@@ -101,6 +100,8 @@ long initDirectory(int parentLBA)
 
 	//call LBA write to put this directory on disk
 	LBAwrite(ptr, numBlocks, startingBlock);
+
+
 
 	//free(ptr); //just for testing purposes
 
