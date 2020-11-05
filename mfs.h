@@ -45,9 +45,20 @@ typedef u_int32_t uint32_t;
 #include "initDirectory.h"
 #include "bitMap.h"
 
-
 #define BLOCK_SIZE 512
-extern int long volumeSizeArg;
+
+typedef struct MBRstruct
+{
+	int init;
+	int long volumeSize;
+	int long blockSize;
+	int long totalBlockLBA;
+	char fsType[12];
+	char magicNumber[2][8];
+	int long freeSpacePos;
+	int long rootDirectoryPos;
+} MBRstruct;
+extern MBRstruct *MBR_st;
 
 struct fs_diriteminfo
 {
