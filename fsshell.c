@@ -31,7 +31,7 @@
 // but using the test files system function calls
 // This must be off for testing your file system
 
-int long volumeSizeArg = 0;
+MBRstruct *MBR_st = NULL;
 
 #include <sys/stat.h>
 #define fs_mkdir mkdir
@@ -685,13 +685,17 @@ int main(int argc, char *argv[])
 		printf("Usage: ./fsshell volumeFileName volumeSize blockSize\n");
 		return (-1);
 	}
+	MBR_st = malloc(512);
+	if (MBR_st == NULL)
+	{
+		printf("ERROR: malloc main\n");
+		return (1);
+	}
 
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
 
-	volumeSizeArg = my_getnbr(argv[2]);
-
-	int locationRootDir = initDirectory(0); //initialize the root directory
+	// int locationRootDir = initDirectory(0); //initialize the root directory
 
 	char *cmdin;
 	char *cmd;

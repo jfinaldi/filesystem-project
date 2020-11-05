@@ -14,62 +14,30 @@
 
 int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
 {
-    char *filename;
     int MBR = 0;
     int numberBlock = 0;
 
-    char *buf2 = malloc(blockSize);
-    if (buf2 == NULL)
-        return (1);
+    LBAread(MBR_st, 1, 0);
 
-    LBAread(buf2, 1, 0);
-
-    // printf("\n%c\n", buf2[0]);
-    if (buf2[0] == 'I')
+    if (strcmp(MBR_st->fsType, "DreamTeamFS") == 0)
     {
-        write(1, "MBR already init\n", 17);
-        MBR = 1;
-        free(buf2);
+        printf("The Disk Is Already Format to a DreamTeamFS (The best file system of all time)\n");
     }
-
-    if (MBR == 0) //to change to 0
+    else
     {
-        char snum[512];
-        char snum2[512]; 
-        char *buf = malloc(blockSize);
-        if (buf == NULL)
-            return (1);
+        MBR_st->init = 1;
+        MBR_st->volumeSize = my_getnbr(argv[2]);
+        MBR_st->blockSize = blockSize;
         numberBlock = volumeSize / blockSize;
-        int rootStartingBlock = memory_map_init(1, volumeSize, blockSize); 
-        inttostr(rootStartingBlock, snum2, 10); 
-        inttostr(numberBlock, snum, 10);
-        memset(buf, 0, blockSize);
-        strcpy(buf, "I");     //INIT OR NOT
-        strcat(buf, "|");     // | USE TO SEPARATE THE VARIABLE
-        strcat(buf, argv[2]); //VOLUME SIZE
-        strcat(buf, "|");
-        strcat(buf, "512"); // BLOCK SIZE
-        strcat(buf, "|");
-        strcat(buf, snum); // NUMBER OF BLOCK INSIDE LBA
-        strcat(buf, "|");
-        strcat(buf, "DreamTeamFS"); // NAME OF THE FS
-        strcat(buf, "|");
-        strcat(buf, "TREE"); // DIRECTORY STRUCTURE
-        strcat(buf, "|");
-        strcat(buf, "1"); //FIRST BLOCK OF THE VOLUME
-        strcat(buf, "|");
-        strcat(buf, snum2); //POINTER TO ROOT DIRECTORY
-        strcat(buf, "|");
-        strcat(buf, "1"); // POINTER TO BITMAP FREESPACE
-        strcat(buf, "|");
-        strcat(buf, "DIR"); // MAGIC NUMBER FOR A DIR
-        strcat(buf, "|");
-        strcat(buf, "FILE"); // MAGIC NUMBER FOR A FILE
-        strcat(buf, "#");    // # MEAN END OF THE BUFFER
-        // printf("buf =%s\n", buf);
-        LBAwrite(buf, 1, 0);
-        find_free_index(20); 
-        free(buf2);
-        free(buf);
+        MBR_st->totalBlockLBA = numberBlock;
+        strcpy(MBR_st->fsType, "DreamTeamFS");
+        strcpy(MBR_st->magicNumber[0], "DIR");
+        strcpy(MBR_st->magicNumber[1], "FILE");
+        MBR_st->freeSpacePos = 1;     //TODO Change that to the real pos of freespace bitmap.
+        MBR_st->rootDirectoryPos = 2; //TODO Change that by the real pos of rootDirectory.
+        LBAwrite(MBR_st, 1, 0);
+        // int rootStartingBlock = memory_map_init(1, volumeSize, blockSize);
+        // find_free_index(20);
     }
+    return (0);
 }
