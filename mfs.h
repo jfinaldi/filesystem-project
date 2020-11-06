@@ -88,6 +88,7 @@ struct fs_stat
 	/* add additional attributes here for your file system */
 };
 
+
 int fs_mkdir(const char *pathname, mode_t mode);
 int fs_rmdir(const char *pathname);
 fdDir *fs_opendir(const char *name);

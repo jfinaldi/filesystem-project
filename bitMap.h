@@ -11,5 +11,5 @@
 *
 **************************************************************/
 
-int memory_map_init(int starting_block, int volume_size, int block_size);
+int memory_map_init(int starting_block);
 int find_free_index(int blocks_needed);
