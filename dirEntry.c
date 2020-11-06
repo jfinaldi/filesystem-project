@@ -16,7 +16,7 @@
 void initEntry(dirEntry *dE)
 {
 	//initialize location variables
-	dE->dataLocation = 2020; // location where file data starts
+	dE->dataLocation = 20000; //valid data location will be between block 0-19531
 	dE->locationLBA = 2020; //location of this entry in logical block
 	dE->entryIndex = -1; //the position of this entry in the array of entries
 
@@ -33,4 +33,5 @@ void initEntry(dirEntry *dE)
 
 	dE->locationMetadata = 2020; //512 file per directory
 	dE->isBeingUsed = 0;		 //this file is currently not being used
+	dE->isFile = 0; //initially this will be a directory until datalocation is != 20000
 }

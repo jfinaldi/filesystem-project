@@ -28,6 +28,7 @@ typedef struct DirectoryEntry
 	time_t dateAccessedDirectory;	// date the file was last accessed
 	unsigned long locationMetadata; //512 file per directory
 	unsigned short isBeingUsed;		//tells whether this entry is currently in use or not
+	unsigned short isFile; //flags if an entry is for a file. 0 means it is a directory
 } dirEntry;
 
 void initEntry(dirEntry *dE);
