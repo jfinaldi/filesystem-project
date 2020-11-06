@@ -13,21 +13,20 @@
 
 #include "mfs.h"
 
-void initEntry(dirEntry *dE)
+void initEntry(dirEntry *dE, char* name)
 {
-	dE->rootDir = 0; // location of first root directory
-	//dE->id = 0; // id of the file
+	//initialize location variables
 	dE->dataLocation = 2020; // location where file data starts
-	dE->locationSelf = 2020; //location of this entry in logical block
+	dE->locationLBA = 2020; //location of this entry in logical block
+	dE->entryIndex = -1; //the position of this entry in the array of entries
 
 	//initialize a default name
 	dE->name[0] = '%';
 	dE->name[1] = '\0';
-	dE->root[0] = '%';
-	dE->root[1] = '\0';
 
 	dE->sizeOfFile = 0; // the number of bytes of the file data
 	dE->numBlocks = 0;	// the number of blocks occupied by the file
+	//dE->id = -1; //the id number for the entry
 
 	time(&(dE->dateModifiedDirectory)); // date the file was last modified
 	time(&(dE->dateAccessedDirectory)); // date the file was last accessed

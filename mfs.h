@@ -57,6 +57,7 @@ typedef struct MBRstruct
 	char magicNumber[2][8];
 	int long freeSpacePos;
 	int long rootDirectoryPos;
+	unsigned long idCounter; //this keeps track of all of the IDs assigned to dir entries
 } MBRstruct;
 extern MBRstruct *MBR_st;
 
