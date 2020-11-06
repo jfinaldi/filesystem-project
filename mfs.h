@@ -48,8 +48,6 @@ typedef u_int32_t uint32_t;
 
 #define BLOCK_SIZE 512
 
-char* cwd = ""; //global to store current working directory
-
 typedef struct MBRstruct
 {
 	int init;
@@ -78,6 +76,7 @@ typedef struct
 	unsigned short dirEntryPosition; /*which directory entry position, like file pos */
 	uint64_t directoryStartLocation; /*Starting LBA of directory */
 } fdDir;
+
 
 struct fs_stat
 {
