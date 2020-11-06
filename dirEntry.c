@@ -17,12 +17,16 @@ void initEntry(dirEntry *dE)
 {
 	//initialize location variables
 	dE->dataLocation = 20000; //valid data location will be between block 0-19531
-	dE->locationLBA = 2020; //location of this entry in logical block
+	dE->locationLBA = 20000; //location of this entry in logical block
 	dE->entryIndex = -1; //the position of this entry in the array of entries
+	dE->childLocation = 20000;
 
 	//initialize a default name
 	dE->name[0] = '%';
 	dE->name[1] = '\0';
+
+	//initialize a child name
+	dE->childName[0] = '\0';
 
 	dE->sizeOfFile = 0; // the number of bytes of the file data
 	dE->numBlocks = 0;	// the number of blocks occupied by the file
