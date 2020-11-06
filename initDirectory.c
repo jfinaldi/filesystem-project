@@ -67,6 +67,8 @@ long initDirectory(int parentLBA)
 		}
 
 		ptr[i].entryIndex = i;
+		//MBR_st->idCounter++;
+		//ptr[i].id = MBR_st->idCounter;
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}

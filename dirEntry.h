@@ -17,18 +17,13 @@
 
 typedef struct DirectoryEntry
 {
-	//unsigned long rootDir;		// location of root directory LBA
 	unsigned long locationLBA; //location of this directory, logical block
-	unsigned long dirIndex; //the index in the directory array
+	unsigned long entryIndex; //the index in the directory array
 	//unsigned long id; // id of the file
 	unsigned long dataLocation; // location where file data starts
 	char name[256];				// directory name for self
-	//char root[200];				// directory name for root
-	//short permission[3]; // three-digit code for rwx, owner/group/all, 0-7
-	//unsigned int owner; // the user ID of the owner of the file
 	uint64_t sizeOfFile;	 // the number of bytes of the file data
 	unsigned long numBlocks; // the number of blocks occupied by the file
-	//unsigned long parent;   // # of block where parent directory is located
 	time_t dateModifiedDirectory;	// date the file was last modified
 	time_t dateAccessedDirectory;	// date the file was last accessed
 	unsigned long locationMetadata; //512 file per directory
