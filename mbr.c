@@ -34,9 +34,10 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcpy(MBR_st->magicNumber[0], "DIR");
         strcpy(MBR_st->magicNumber[1], "FILE");
         MBR_st->freeSpacePos = 1;     //TODO Change that to the real pos of freespace bitmap.
-        MBR_st->rootDirectoryPos = 2; //TODO Change that by the real pos of rootDirectory.
+        int rootStartingBlock = memory_map_init(1);
+        MBR_st->rootDirectoryPos = rootStartingBlock; //TODO Change that by the real pos of rootDirectory.
         LBAwrite(MBR_st, 1, 0);
-        // int rootStartingBlock = memory_map_init(1, volumeSize, blockSize);
+        
         // find_free_index(20);
     }
     return (0);
