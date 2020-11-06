@@ -13,7 +13,7 @@
 
 #include "mfs.h"
 
-void initEntry(dirEntry *dE, char* name)
+void initEntry(dirEntry *dE)
 {
 	//initialize location variables
 	dE->dataLocation = 2020; // location where file data starts

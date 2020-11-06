@@ -25,7 +25,7 @@
 #include "initDirectory.h"
 
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
-#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
+#define TEMP_LINUX 0//MUST be ZERO for working with your file system
 #if (TEMP_LINUX == 0)
 // All the following it TEMPORARY ONLY - It allows testing the shell in linux
 // but using the test files system function calls
@@ -103,8 +103,8 @@ int fs_isDir(char *path)
 #define CMDLS_ON 0
 #define CMDCP_ON 0
 #define CMDMV_ON 0
-#define CMDMD_ON 0
-#define CMDRM_ON 0
+#define CMDMD_ON 1
+#define CMDRM_ON 1
 #define CMDCP2L_ON 0
 #define CMDCP2FS_ON 0
 #define CMDCD_ON 0

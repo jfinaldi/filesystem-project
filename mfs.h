@@ -44,6 +44,7 @@ typedef u_int32_t uint32_t;
 #include "dirEntry.h"
 #include "initDirectory.h"
 #include "bitMap.h"
+#include "MakeRemove.h"
 
 #define BLOCK_SIZE 512
 

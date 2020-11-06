@@ -27,7 +27,7 @@ long initDirectory(int parentLBA)
 
 	//get an address for the starting block
 	int startingBlock = find_free_index(numBlocks);
-	currentBlock = startingBlock;
+	//currentBlock = startingBlock;
 
 	//create a space in RAM to start manipulating
 	dirEntry *ptr = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
