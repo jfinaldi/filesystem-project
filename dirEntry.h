@@ -21,7 +21,8 @@ typedef struct DirectoryEntry
 	unsigned long entryIndex; //the index in the directory array
 	//unsigned long id; // id of the file
 	unsigned long dataLocation; // location where file data starts
-	char name[256];				// directory name for self
+	char name[200];				// directory name for self
+	char childName[200];  // directory name for the child
 	uint64_t sizeOfFile;	 // the number of bytes of the file data
 	unsigned long numBlocks; // the number of blocks occupied by the file
 	time_t dateModifiedDirectory;	// date the file was last modified

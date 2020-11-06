@@ -48,6 +48,8 @@ typedef u_int32_t uint32_t;
 
 #define BLOCK_SIZE 512
 
+char* cwd = ""; //global to store current working directory
+
 typedef struct MBRstruct
 {
 	int init;
