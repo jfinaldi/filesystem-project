@@ -38,6 +38,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         int rootStartingBlock = memory_map_init(1);
         MBR_st->rootDirectoryPos = rootStartingBlock;
         printf("mbr root %d", MBR_st->rootDirectoryPos ) ;
+        int locationRootDir = initDirectory(0); //initialize the root directory
         LBAwrite(MBR_st, 1, 0);
     }
     // fdDirCWD -> cwd_path = "/"; 

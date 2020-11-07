@@ -73,12 +73,12 @@ long initDirectory(int parentLBA)
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
-	// ptr[6].locationLBA = 1700
-	// dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
-	// //call LBA write to put this directory on disk
+	ptr[6].locationLBA = 1700;
+	dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	//call LBA write to put this directory on disk
 	 LBAwrite(ptr, numBlocks, startingBlock);
-	// LBAread (buff, numBlocks, startingBlock); 
-	// printf("HELLLLOOOO %d", buff[6].locationLBA); 
+	LBAread (buff, numBlocks, startingBlock); 
+	printf("HELLLLOOOO %d", buff[6].locationLBA); 
 
 	//free(ptr); //just for testing purposes
 
