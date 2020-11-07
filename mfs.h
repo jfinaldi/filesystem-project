@@ -76,7 +76,7 @@ typedef struct
 	unsigned short dirEntryPosition; /*which directory entry position, like file pos */
 	uint64_t directoryStartLocation; /*Starting LBA of directory */
 } fdDir;
-
+extern fdDir* cur_fdDir; 
 
 struct fs_stat
 {

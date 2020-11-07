@@ -37,9 +37,12 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         MBR_st->freeSpacePos = 1;     //TODO Change that to the real pos of freespace bitmap.
         int rootStartingBlock = memory_map_init(1);
         MBR_st->rootDirectoryPos = rootStartingBlock; //TODO Change that by the real pos of rootDirectory.
+        
+        printf("line 41 mbrinit\n");
         LBAwrite(MBR_st, 1, 0);
         
         // find_free_index(20);
     }
+    cur_fdDir->dirEntryStartLocation = MBR_st->rootDirectoryPos;
     return (0);
 }

@@ -694,8 +694,8 @@ int main(int argc, char *argv[])
 
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
-
-	// int locationRootDir = initDirectory(0); //initialize the root directory
+	printf("I made it to line 697 fsshell");
+	int locationRootDir = initDirectory(0); //initialize the root directory
 
 	char *cmdin;
 	char *cmd;

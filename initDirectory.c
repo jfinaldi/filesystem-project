@@ -15,6 +15,7 @@
 
 long initDirectory(int parentLBA)
 {
+	printf("I made it inside initDirectory line 18\n");
 	//calculate the number of blocks
 	long structSize = sizeof(dirEntry);
 	long bytes = structSize * STARTING_NUM_DIR;
@@ -26,11 +27,13 @@ long initDirectory(int parentLBA)
 	printf("numBlocks = %ld\n", numBlocks);
 
 	//get an address for the starting block
-	int startingBlock = find_free_index(numBlocks);
+	//int startingBlock = find_free_index(numBlocks);
+	int startingBlock = 55;
 	//currentBlock = startingBlock;
 
+	printf("I got my starting block\n");
 	//create a space in RAM to start manipulating
-	dirEntry *ptr = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	dirEntry* ptr = (dirEntry*)malloc(BLOCK_SIZE * numBlocks);
 	if (ptr == NULL)
 	{
 		printf("Error with malloc ln50.\n");
@@ -76,7 +79,7 @@ long initDirectory(int parentLBA)
 	//call LBA write to put this directory on disk
 	LBAwrite(ptr, numBlocks, startingBlock);
 
-	//free(ptr); //just for testing purposes
+	free(ptr); 
 
 	printf("root directory successfully initiated.\n\n");
 
