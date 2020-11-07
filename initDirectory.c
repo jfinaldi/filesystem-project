@@ -28,7 +28,7 @@ long initDirectory(int parentLBA)
 
 	//get an address for the starting block
 	//int startingBlock = find_free_index(numBlocks);
-	int startingBlock = 55;
+	int startingBlock = 50; 
 	//currentBlock = startingBlock;
 
 	printf("I got my starting block\n");
@@ -75,9 +75,12 @@ long initDirectory(int parentLBA)
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
-
-	//call LBA write to put this directory on disk
-	LBAwrite(ptr, numBlocks, startingBlock);
+	// ptr[6].locationLBA = 1700
+	// dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	// //call LBA write to put this directory on disk
+	 LBAwrite(ptr, numBlocks, startingBlock);
+	// LBAread (buff, numBlocks, startingBlock); 
+	// printf("HELLLLOOOO %d", buff[6].locationLBA); 
 
 	free(ptr); 
 

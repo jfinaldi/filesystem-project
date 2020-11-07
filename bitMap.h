@@ -13,3 +13,4 @@
 
 int memory_map_init(int starting_block);
 int find_free_index(int blocks_needed);
+int free_mem(int index, int count);

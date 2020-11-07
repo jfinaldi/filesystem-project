@@ -75,8 +75,9 @@ typedef struct
 	unsigned short d_reclen;		 /*length of this record */
 	unsigned short dirEntryPosition; /*which directory entry position, like file pos */
 	uint64_t directoryStartLocation; /*Starting LBA of directory */
+	char * cwd_path; 
 } fdDir;
-extern fdDir* cur_fdDir; 
+extern fdDir *fdDirCWD;
 
 struct fs_stat
 {
