@@ -54,6 +54,7 @@ typedef struct MBRstruct
 	int long volumeSize;
 	int long blockSize;
 	int long totalBlockLBA;
+	int long directoryBlockSize;
 	char fsType[12];
 	char magicNumber[2][8];
 	int long freeSpacePos;
