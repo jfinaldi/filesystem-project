@@ -18,7 +18,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
     int numberBlock = 0;
 
     LBAread(MBR_st, 1, 0);
-
+    
     if (strcmp(MBR_st->fsType, "DreamTeamFS") == 0)
     {
         printf("The Disk Is Already Format to a DreamTeamFS (The best file system of all time)\n");
@@ -34,12 +34,14 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcpy(MBR_st->fsType, "DreamTeamFS");
         strcpy(MBR_st->magicNumber[0], "DIR");
         strcpy(MBR_st->magicNumber[1], "FILE");
-        MBR_st->freeSpacePos = 1;     //TODO Change that to the real pos of freespace bitmap.
+        MBR_st->freeSpacePos = 1;     
         int rootStartingBlock = memory_map_init(1);
-        MBR_st->rootDirectoryPos = rootStartingBlock; //TODO Change that by the real pos of rootDirectory.
+        MBR_st->rootDirectoryPos = rootStartingBlock; 
         LBAwrite(MBR_st, 1, 0);
-        
-        // find_free_index(20);
     }
+    fdDirCWD -> cwd_path = "/"; 
+    fdDirCWD -> rec_length = 0; 
+    fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
+    fdDirCWD -> directoryStartLocation = 0; 
     return (0);
 }

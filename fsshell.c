@@ -32,6 +32,7 @@
 // This must be off for testing your file system
 
 MBRstruct *MBR_st = NULL;
+fdDir *fdDirCWD = NULL; 
 
 #include <sys/stat.h>
 #define fs_mkdir mkdir
