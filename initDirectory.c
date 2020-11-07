@@ -15,6 +15,7 @@
 
 long initDirectory(int parentLBA)
 {
+	printf("I made it inside initDirectory line 18\n");
 	//calculate the number of blocks
 	long structSize = sizeof(dirEntry);
 	long bytes = structSize * STARTING_NUM_DIR;
@@ -30,8 +31,9 @@ long initDirectory(int parentLBA)
 	int startingBlock = 50; 
 	//currentBlock = startingBlock;
 
+	printf("I got my starting block\n");
 	//create a space in RAM to start manipulating
-	dirEntry *ptr = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	dirEntry* ptr = (dirEntry*)malloc(BLOCK_SIZE * numBlocks);
 	if (ptr == NULL)
 	{
 		printf("Error with malloc ln50.\n");
@@ -80,7 +82,7 @@ long initDirectory(int parentLBA)
 	LBAread (buff, numBlocks, startingBlock); 
 	printf("HELLLLOOOO %d", buff[6].locationLBA); 
 
-	//free(ptr); //just for testing purposes
+	free(ptr); 
 
 	printf("root directory successfully initiated.\n\n");
 
