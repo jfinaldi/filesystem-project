@@ -79,7 +79,6 @@ typedef struct
 } fdDir;
 extern fdDir *fdDirCWD;
 
-
 struct fs_stat
 {
 	off_t st_size;		  /* total size, in bytes */

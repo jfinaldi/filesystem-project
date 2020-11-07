@@ -33,6 +33,7 @@
 
 MBRstruct *MBR_st = NULL;
 fdDir *fdDirCWD = NULL; 
+_Bool *globalBitMap = NULL; 
 
 #include <sys/stat.h>
 #define fs_mkdir mkdir
@@ -696,7 +697,7 @@ int main(int argc, char *argv[])
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
 
-	// int locationRootDir = initDirectory(0); //initialize the root directory
+	int locationRootDir = initDirectory(0); //initialize the root directory
 
 	char *cmdin;
 	char *cmd;

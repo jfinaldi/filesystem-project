@@ -36,12 +36,13 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcpy(MBR_st->magicNumber[1], "FILE");
         MBR_st->freeSpacePos = 1;     
         int rootStartingBlock = memory_map_init(1);
-        MBR_st->rootDirectoryPos = rootStartingBlock; 
+        MBR_st->rootDirectoryPos = rootStartingBlock;
+        printf("mbr root %d", MBR_st->rootDirectoryPos ) ;
         LBAwrite(MBR_st, 1, 0);
     }
-    fdDirCWD -> cwd_path = "/"; 
-    fdDirCWD -> rec_length = 0; 
-    fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
-    fdDirCWD -> directoryStartLocation = 0; 
+    // fdDirCWD -> cwd_path = "/"; 
+    // fdDirCWD -> rec_length = 0; 
+    // fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
+    // fdDirCWD -> directoryStartLocation = 0; 
     return (0);
 }
