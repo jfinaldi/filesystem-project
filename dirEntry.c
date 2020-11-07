@@ -32,7 +32,7 @@ void initEntry(dirEntry *dE)
 	time(&(dE->dateModifiedDirectory)); // date the file was last modified
 	time(&(dE->dateAccessedDirectory)); // date the file was last accessed
 
-	dE->locationMetadata = 2020; //512 file per directory
+	dE->locationMetadata = 20000; //512 file per directory
 	dE->isBeingUsed = 0;		 //this file is currently not being used
 	dE->isFile = 0; //initially this will be a directory until datalocation is != 20000
 }

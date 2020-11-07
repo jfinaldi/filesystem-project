@@ -15,7 +15,7 @@
 fdDir *fs_opendir(const char *name)
 {
     //we should know the global variable for fdDir object
-    //create a dirEntry pointer
+    //create a dirEntry pointer, malloc a 
     //dirEntry* ptr = cur_fdDir->;
     //start a for-loop to iterate through fdDir, sizeof(dirEntry) bytes at a time
 

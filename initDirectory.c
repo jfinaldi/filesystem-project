@@ -16,24 +16,18 @@
 long initDirectory(int parentLBA)
 {
 	printf("I made it inside initDirectory line 18\n");
-	//calculate the number of blocks
-	long structSize = sizeof(dirEntry);
-	long bytes = structSize * STARTING_NUM_DIR;
-	long numBlocks = 1 + (bytes / BLOCK_SIZE);
 	int i = 0; //iterator for array of entries
 
 	printf("sizeof(dirEntry): %ld\n", sizeof(dirEntry));
-	printf("bytes = %ld\n", bytes);
-	printf("numBlocks = %ld\n", numBlocks);
+	printf("numBlocks = %ld\n", MBR_st->dirNumBlocks);
 
 	//get an address for the starting block
-	//int startingBlock = find_free_index(numBlocks);
-	int startingBlock = 50; 
-	//currentBlock = startingBlock;
+	int startingBlock = find_free_index(MBR_st->dirNumBlocks);
+	//int startingBlock = 50; 
 
-	printf("I got my starting block\n");
+	printf("I got my starting block at: %d\n", startingBlock);
 	//create a space in RAM to start manipulating
-	dirEntry* ptr = (dirEntry*)malloc(BLOCK_SIZE * numBlocks);
+	dirEntry* ptr = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
 	if (ptr == NULL)
 	{
 		printf("Error with malloc ln50.\n");
@@ -75,12 +69,12 @@ long initDirectory(int parentLBA)
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
-	ptr[6].locationLBA = 1700;
-	dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	//ptr[6].locationLBA = 1700;
+	//dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
 	//call LBA write to put this directory on disk
-	 LBAwrite(ptr, numBlocks, startingBlock);
-	LBAread (buff, numBlocks, startingBlock); 
-	printf("HELLLLOOOO %d", buff[6].locationLBA); 
+	 LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
+	//LBAread (buff, numBlocks, startingBlock); 
+	//printf("HELLLLOOOO %d", buff[6].locationLBA); 
 
 	free(ptr); 
 

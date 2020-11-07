@@ -54,7 +54,8 @@ typedef struct MBRstruct
 	int long volumeSize;
 	int long blockSize;
 	int long totalBlockLBA;
-	int long directoryBlockSize;
+	int long dirNumBlocks; //the number of blocks per directory
+	int long dirBufMallocSize; //the number of bytes we always malloc for a directory buffer
 	char fsType[12];
 	char magicNumber[2][8];
 	int long freeSpacePos;

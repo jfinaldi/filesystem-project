@@ -33,8 +33,6 @@
 
 MBRstruct *MBR_st = NULL;
 fdDir *fdDirCWD = NULL; 
-_Bool *globalBitMap = NULL; 
-
 #include <sys/stat.h>
 #define fs_mkdir mkdir
 #define fs_getcwd getcwd
@@ -696,12 +694,6 @@ int main(int argc, char *argv[])
 
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
-<<<<<<< HEAD
-	printf("I made it to line 697 fsshell");
-=======
-
->>>>>>> 0a5c7c3f89e68c58c691603a6d549e5ddbaa1a0b
-	int locationRootDir = initDirectory(0); //initialize the root directory
 
 	char *cmdin;
 	char *cmd;
