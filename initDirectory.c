@@ -89,9 +89,8 @@ void testOutput(dirEntry *rootDir)
 	printf("\n\n---- Directory Contents ----\n");
 	printf("Location of Self: %ld\n", rootDir->locationLBA);
 	printf("Data Location: %ld\n", rootDir->dataLocation);
-	printf("Child Location: %ld\n", rootDir->childLocation);
+	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Name: %s\n", rootDir->name);
-	if(rootDir->childName) printf("Child Name: %s\n", rootDir->childName);
 	printf("Index: %ld\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);

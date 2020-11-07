@@ -18,12 +18,13 @@
 typedef struct DirectoryEntry
 {
 	unsigned long locationLBA; //location of this directory, logical block
+	unsigned long childLBA; //location of the parent directory this entry is stored
 	long entryIndex; //the index in the directory array
 	//unsigned long id; // id of the file
 	unsigned long dataLocation; // location where file data starts
-	char name[200];				// directory name for self
-	char childName[200];  // directory name for the child
-	unsigned long childLocation; //LBA location of child directory
+	char name[200];				// directory name for the directory it points to
+	//char childName[200];  // directory name for the child
+	//unsigned long childLocation; //LBA location of child directory
 	uint64_t sizeOfFile;	 // the number of bytes of the file data
 	unsigned long numBlocks; // the number of blocks occupied by the file
 	time_t dateModifiedDirectory;	// date the file was last modified
