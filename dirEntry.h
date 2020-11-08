@@ -17,9 +17,9 @@
 
 typedef struct DirectoryEntry
 {
-	unsigned long locationLBA; //location of this directory, logical block
-	unsigned long childLBA; //location of the parent directory this entry is stored
-	long entryIndex; //the index in the directory array
+	unsigned long locationLBA; //location of this directory entry, logical block
+	unsigned long childLBA; //location of the directory this entry points to
+	short entryIndex; //the index in the directory array
 	//unsigned long id; // id of the file
 	unsigned long dataLocation; // location where file data starts
 	char name[256];				// directory name for the directory it points to
@@ -29,7 +29,7 @@ typedef struct DirectoryEntry
 	time_t dateAccessedDirectory;	// date the file was last accessed
 	unsigned long locationMetadata; //512 file per directory
 	unsigned short isBeingUsed;		//tells whether this entry is currently in use or not
-	unsigned short isFile; //flags if an entry is for a file. 0 means it is a directory
+	unsigned char type; //f for file, d for directory
 } dirEntry;
 
 void initEntry(dirEntry *dE);

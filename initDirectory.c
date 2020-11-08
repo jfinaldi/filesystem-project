@@ -91,7 +91,7 @@ void testOutput(dirEntry *rootDir)
 	printf("Data Location: %ld\n", rootDir->dataLocation);
 	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Name: %s\n", rootDir->name);
-	printf("Index: %ld\n", rootDir->entryIndex);
+	printf("Index: %d\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 
@@ -102,6 +102,7 @@ void testOutput(dirEntry *rootDir)
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);
 	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");
+	printf("type: %s\n", rootDir->type);
 }
 
 /*int main() 
