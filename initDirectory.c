@@ -107,7 +107,8 @@ void testOutput(dirEntry *rootDir)
 	printf("DateAccessed: %s", asctime(timeInfo));
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);
-	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");
+	printf("isBeingUsed: %s\n", rootDir->isBeingUsed ? "true" : "false");
+	printf("type: %s\n\n", rootDir->type);
 }
 
 /*int main() 
