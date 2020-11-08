@@ -97,18 +97,17 @@ void testOutput(dirEntry *rootDir)
 	printf("Data Location: %ld\n", rootDir->dataLocation);
 	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Name: %s\n", rootDir->name);
-	printf("Index: %d\n", rootDir->entryIndex);
+	printf("Index: %ld\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 
 	struct tm *timeInfo = localtime(&(rootDir->dateModifiedDirectory));
-	printf("DateModified: %s", asctime(timeInfo));
+	printf("DateModified: %s", asctigit me(timeInfo));
 	timeInfo = localtime(&(rootDir->dateAccessedDirectory));
 	printf("DateAccessed: %s", asctime(timeInfo));
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);
 	printf("isBeingUsed: %s\n\n", rootDir->isBeingUsed ? "true" : "false");
-	printf("type: %s\n", rootDir->type);
 }
 
 /*int main() 

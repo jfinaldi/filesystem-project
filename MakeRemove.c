@@ -37,26 +37,28 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 }
 int fs_remove_helper(int blockToRemove) {
-    dirEntry *entryBuffer = (dirEntry *)malloc(sizeof(dirEntry) * STARTING_NUM_DIR); 
-    int blocks = (sizeof(dirEntry) * STARTING_NUM_DIR) / MBR_st -> blockSize + 1;
-    LBAread(entryBuffer, blocks, blockToRemove); 
-    for (int i = 0; i < STARTING_NUM_DIR; i++) {
-        if (entryBuffer[i] . isFile == 1) {
-            entryBuffer[i] . isBeingUsed = 0;
-            // deletefile();
-            // free_mem(fileStartLBA, fileLength); 
-        } else if (entryBuffer[i]. isBeingUsed == 1) {
-            entryBuffer[i] . isBeingUsed = 0;
-            fs_remove_helper(entryBuffer[i] . locationLBA);
-        }
-    }
-    free_mem(blockToRemove, blocks);
-     
-    free(entryBuffer);  
+    // dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
+    // int blocks = MBR_st -> dirNumBlocks;
+    // LBAread(entryBuffer, blocks, blockToRemove); 
+    // for (int i = 0; i < STARTING_NUM_DIR; i++) {
+    //     if (0) {
+    //         entryBuffer[i] . isBeingUsed = 0;
+    //         // deletefile();
+    //         // free_mem(fileStartLBA, fileLength); 
+    //     } else if (entryBuffer[i]. isBeingUsed == 1) {
+    //         entryBuffer[i] . isBeingUsed = 0;
+    //         fs_remove_helper(entryBuffer[i] . locationLBA);
+    //     }
+    // }
+    // free_mem(blockToRemove, blocks);
+    //  for (int i = 0; i < 6; i++) {
+    //     testOutput(&entryBuffer[i]);
+    // }
+    //free(entryBuffer);  
 }
 int fs_rmdir(const char *pathname){
-    dirEntry *entryBuffer = (dirEntry *)malloc(sizeof(dirEntry) * STARTING_NUM_DIR); 
-    int blocks = (sizeof(dirEntry) * STARTING_NUM_DIR) / MBR_st -> blockSize + 1;
+    dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
+    int blocks = MBR_st -> dirNumBlocks;
     LBAread(entryBuffer, blocks, fdDirCWD -> directoryStartLocation); 
     int remove_index = -1;
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
@@ -65,7 +67,7 @@ int fs_rmdir(const char *pathname){
            remove_index = i;  
         }
     }
-    fs_remove_helper(entryBuffer[remove_index] . locationLBA);
+    fs_remove_helper(entryBuffer[remove_index].locationLBA);
     free(entryBuffer); 
 
 }
