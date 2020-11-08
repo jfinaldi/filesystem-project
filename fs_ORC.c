@@ -109,7 +109,7 @@ int fs_closedir(fdDir *dirp)
 void outputFdDirCWD(fdDir* dirp)
 {
     printf("\n\n-----------------------------------------------\n");
-    printf("Printing Current working directory\n");
+    printf("Printing directory\n");
     printf("-----------------------------------------------")
     printf("Current Working Directory: %s\n", dirp->cwd_path);
     printf("Start Location: %ld\n", dirp->directoryStartLocation);
