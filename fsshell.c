@@ -23,7 +23,8 @@
 #include <string.h>
 #include "mfs.h"
 #include "initDirectory.h"
-
+MBRstruct *MBR_st = NULL;
+fdDir *fdDirCWD = NULL;
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
 #define TEMP_LINUX 0//MUST be ZERO for working with your file system
 #if (TEMP_LINUX == 0)
@@ -31,13 +32,12 @@
 // but using the test files system function calls
 // This must be off for testing your file system
 
-MBRstruct *MBR_st = NULL;
-fdDir *fdDirCWD = NULL; 
+ 
 #include <sys/stat.h>
-#define fs_mkdir mkdir
+//#define fs_mkdir mkdir
 #define fs_getcwd getcwd
 #define fs_setcwd chdir
-#define fs_rmdir rmdir
+//#define fs_rmdir rmdir
 #define fs_delete unlink
 
 fdDir *fs_opendir(const char *name)
@@ -342,7 +342,9 @@ int cmd_mv(int argcnt, char *argvec[])
 // Make Directory
 int cmd_md(int argcnt, char *argvec[])
 {
+	printf("ahhh"); 
 #if (CMDMD_ON == 1)
+printf("whattt?"); 
 	if (argcnt != 2)
 	{
 		printf("Usage: md pathname\n");
@@ -350,6 +352,7 @@ int cmd_md(int argcnt, char *argvec[])
 	}
 	else
 	{
+		printf("trying to make %s", argvec[1]); 
 		return (fs_mkdir(argvec[1], 0777));
 	}
 #endif
@@ -686,6 +689,8 @@ int main(int argc, char *argv[])
 		return (-1);
 	}
 	MBR_st = malloc(512);
+	fdDirCWD = malloc(sizeof(fdDir)); 
+
 	if (MBR_st == NULL)
 	{
 		printf("ERROR: malloc main\n");
@@ -731,8 +736,9 @@ int main(int argc, char *argv[])
 			}
 			processcommand(cmd);
 		}
-		closePartitionSystem();
+		
+	} // end while
+	closePartitionSystem();
 		free(cmd);
 		cmd = NULL;
-	} // end while
 }

@@ -45,6 +45,7 @@ int find_free_index(int blocks_needed)
     {
         return -1;
     }
+    printf("FREESPACE POS %d", MBR_st -> blockSize); 
     LBAread(bitmap, bitmap_size_in_blocks, MBR_st ->freeSpacePos);
     int free_blocks = 0;
     int index = 0;
@@ -74,7 +75,7 @@ int find_free_index(int blocks_needed)
     }
 
     printf("Out of space");
-    return (50);
+    return (-1);
 }
 int free_mem(int index, int count) {
     int block_count = MBR_st -> totalBlockLBA;

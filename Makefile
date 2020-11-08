@@ -42,7 +42,7 @@ CC=gcc
 CFLAGS= -g -I.
 LIBS =pthread
 DEPS = 
-ADDOBJ= fsLow/fsLow.o readWrite.o mbr.o misc.o bitMap.o initDirectory.o dirEntry.o
+ADDOBJ= fsLow/fsLow.o readWrite.o mbr.o misc.o bitMap.o initDirectory.o dirEntry.o MakeRemove.o
 OBJ = $(ROOTNAME)$(HW)$(FOPTION).o $(ADDOBJ)
 
 %.o: %.c $(DEPS)

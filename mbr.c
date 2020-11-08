@@ -36,8 +36,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         strcpy(MBR_st->magicNumber[1], "FILE");
         MBR_st->freeSpacePos = 1;     
         int rootStartingBlock = memory_map_init(1);
-        MBR_st->rootDirectoryPos = rootStartingBlock;
-        printf("mbr root %d", MBR_st->rootDirectoryPos ) ;
+        
         
         //calculate the number of blocks
 	    long structSize = sizeof(dirEntry);
@@ -46,12 +45,13 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         MBR_st->dirBufMallocSize = blockSize * MBR_st->dirNumBlocks;
 
         int locationRootDir = initDirectory(0); //initialize the root directory
+        MBR_st->rootDirectoryPos = locationRootDir;
+        printf("mbr root %d", MBR_st->rootDirectoryPos ) ;
         
         LBAwrite(MBR_st, 1, 0);
     }
-    // fdDirCWD -> cwd_path = "/"; 
-    // fdDirCWD -> rec_length = 0; 
-    // fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
-    // fdDirCWD -> directoryStartLocation = 0; 
+    fdDirCWD -> cwd_path = "/"; 
+    fdDirCWD -> d_reclen = 0; 
+    fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
     return (0);
 }

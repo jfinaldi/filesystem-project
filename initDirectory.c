@@ -42,6 +42,7 @@ long initDirectory(int parentLBA)
 	ptr[i].entryIndex = 0;
 	ptr[i].name[0] = '.';
 	ptr[i].name[1] = '\0';
+	ptr[i].isBeingUsed = 1; 
 	i++; //increment to next directory
 	
 	//testOutput(&ptr[0]); //print this first root entry
@@ -53,17 +54,22 @@ long initDirectory(int parentLBA)
 
 		//initialize the .. entry
 		if(i < 2) {
-			if(parentLBA == 0)
-				ptr[i].locationLBA = startingBlock; //.. points to starting block
-			else ptr[i].locationLBA = parentLBA; //.. points to parentLBA of parent dir
+			// if(parentLBA == 0)
+			// 	ptr[i].locationLBA = startingBlock; //.. points to starting block
+			// else ptr[i].locationLBA = parentLBA; //.. points to parentLBA of parent dir
 
 			//set the second entry's name
 			ptr[i].name[0] = '.';
 			ptr[i].name[1] = '.';
 			ptr[i].name[2] = '\0';
+			
+			ptr[i].isBeingUsed = 1; 
 		}
-
 		ptr[i].entryIndex = i;
+		if(parentLBA == 0)
+			ptr[i].locationLBA = startingBlock; //.. points to starting block
+		else ptr[i].locationLBA = parentLBA;
+		
 		//MBR_st->idCounter++;
 		//ptr[i].id = MBR_st->idCounter;
 
@@ -76,7 +82,7 @@ long initDirectory(int parentLBA)
 	//LBAread (buff, numBlocks, startingBlock); 
 	//printf("HELLLLOOOO %d", buff[6].locationLBA); 
 
-	free(ptr); 
+	//free(ptr); 
 
 	printf("root directory successfully initiated.\n\n");
 
