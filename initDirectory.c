@@ -102,7 +102,7 @@ void testOutput(dirEntry *rootDir)
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 
 	struct tm *timeInfo = localtime(&(rootDir->dateModifiedDirectory));
-	printf("DateModified: %s", asctigit me(timeInfo));
+	printf("DateModified: %s", asctime(timeInfo));
 	timeInfo = localtime(&(rootDir->dateAccessedDirectory));
 	printf("DateAccessed: %s", asctime(timeInfo));
 
