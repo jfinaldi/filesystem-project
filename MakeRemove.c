@@ -54,6 +54,7 @@ int fs_remove_helper(dirEntry *deToRemove) {
             fs_remove_helper(&entryBuff[i]);
         }
     }
+    LBAwrite(entryBuff, blocks, deToRemove -> childLBA);
     free_mem(deToRemove -> childLBA, blocks);
      
     //free(entryBuffer);  
@@ -73,6 +74,7 @@ int fs_rmdir(const char *pathname){
         }
     }
     fs_remove_helper(&entryBuffer[remove_index]);
+    LBAwrite(entryBuffer, blocks, fdDirCWD -> directoryStartLocation); 
     //free(entryBuffer); 
     for (int i = 0; i < 6; i++) {
         testOutput(&entryBuffer[i]);
