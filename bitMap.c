@@ -78,6 +78,7 @@ int find_free_index(int blocks_needed)
     return (-1);
 }
 int free_mem(int index, int count) {
+    
     int block_count = MBR_st -> totalBlockLBA;
     int bitmap_size_in_bytes = block_count * sizeof(_Bool);
     int bitmap_size_in_blocks = (bitmap_size_in_bytes / MBR_st -> blockSize) + 1;
@@ -87,7 +88,8 @@ int free_mem(int index, int count) {
         return -1;
     }
     LBAread(bitmap, bitmap_size_in_blocks, MBR_st ->freeSpacePos);
-    for (int i = index; i < index + count; index++) {
+    for (int i = index; i < index + count; i++) {
+        printf("HLEELEO?");
         bitmap[i] = 0; 
     }
     LBAwrite(bitmap, bitmap_size_in_blocks, MBR_st ->freeSpacePos);

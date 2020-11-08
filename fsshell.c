@@ -373,7 +373,7 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
-	if (fs_isDir(path))
+	if (1)
 	{
 		return (fs_rmdir(path));
 	}
@@ -739,6 +739,6 @@ int main(int argc, char *argv[])
 		
 	} // end while
 	closePartitionSystem();
-		free(cmd);
-		cmd = NULL;
+	free(cmd);
+	cmd = NULL;
 }

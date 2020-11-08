@@ -108,7 +108,7 @@ void testOutput(dirEntry *rootDir)
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);
 	printf("isBeingUsed: %s\n", rootDir->isBeingUsed ? "true" : "false");
-	printf("type: %s\n\n", rootDir->type);
+	//printf("type: %s\n\n", rootDir->type);
 }
 
 /*int main() 
