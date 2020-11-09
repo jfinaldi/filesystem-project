@@ -157,6 +157,7 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 	printf("\n");
 	while (di != NULL)
 	{
+<<<<<<< HEAD
 		// if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
 		// {
 		// 	if (fllong)
@@ -171,6 +172,20 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 		// }
 		//temp
 		printf("%s\n", di->d_name);
+=======
+		if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
+		{
+			if (fllong)
+			{
+				fs_stat(di->d_name, &statbuf);
+				printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
+			}
+		else
+			{
+				printf("%s\n", di->d_name);
+			}
+		}
+>>>>>>> 6cc15879682abfd16a2d4cd9700313796145aa03
 		di = fs_readdir(dirp);
 	}
 	fs_closedir(dirp);
@@ -376,7 +391,11 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
+<<<<<<< HEAD
+	if (fs_isDir(path))
+=======
 	if (fs_isFile(path))
+>>>>>>> 5d8f4dbcdbe03d85222d699db76cc61cfb9310bc
 	{
 		return (fs_rmdir(path));
 	}
@@ -742,6 +761,6 @@ int main(int argc, char *argv[])
 		
 	} // end while
 	closePartitionSystem();
-	free(cmd);
-	cmd = NULL;
+		free(cmd);
+		cmd = NULL;
 }
