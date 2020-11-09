@@ -78,6 +78,7 @@ typedef struct
 	unsigned short dirEntryPosition; /*which directory entry position, like file pos */
 	uint64_t directoryStartLocation; /*Starting LBA of directory */
 	char cwd_path[256]; 
+	int streamCount;
 } fdDir;
 extern fdDir *fdDirCWD;
 
@@ -96,9 +97,9 @@ struct fs_stat
 
 int fs_mkdir(const char *pathname, mode_t mode);
 int fs_rmdir(const char *pathname);
-// fdDir *fs_opendir(const char *name);
-// struct fs_diriteminfo *fs_readdir(fdDir *dirp);
-// int fs_closedir(fdDir *dirp);
+fdDir *fs_opendir(const char *name);
+struct fs_diriteminfo *fs_readdir(fdDir *dirp);
+int fs_closedir(fdDir *dirp);
 
 char *fs_getcwd(char *buf, size_t size);
 int fs_setcwd(char *buf);	   //linux chdir

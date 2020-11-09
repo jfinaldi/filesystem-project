@@ -157,18 +157,20 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 	printf("\n");
 	while (di != NULL)
 	{
-		if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
-		{
-			if (fllong)
-			{
-				fs_stat(di->d_name, &statbuf);
-				printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
-			}
-			else
-			{
-				printf("%s\n", di->d_name);
-			}
-		}
+		// if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
+		// {
+		// 	if (fllong)
+		// 	{
+		// 		fs_stat(di->d_name, &statbuf);
+		// 		printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
+		// 	}
+		// 	else
+		// 	{
+		// 		printf("%s\n", di->d_name);
+		// 	}
+		// }
+		//temp
+		printf("%s\n", di->d_name);
 		di = fs_readdir(dirp);
 	}
 	fs_closedir(dirp);
@@ -274,6 +276,7 @@ int cmd_ls(int argcnt, char *argvec[])
 	{
 		char *path = fs_getcwd(cwd, DIRMAX_LEN); //get current working directory
 		fdDir *dirp;
+		printf("hello????"); 
 		dirp = fs_opendir(path);
 		return (displayFiles(dirp, flall, fllong));
 	}
