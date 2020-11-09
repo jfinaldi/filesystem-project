@@ -100,7 +100,7 @@ int fs_isDir(char *path)
 #define DIRMAX_LEN 4096
 
 /****   SET THESE TO 1 WHEN READY TO TEST THAT COMMAND ****/
-#define CMDLS_ON 0
+#define CMDLS_ON 1
 #define CMDCP_ON 0
 #define CMDMV_ON 0
 #define CMDMD_ON 1
@@ -164,7 +164,7 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 				fs_stat(di->d_name, &statbuf);
 				printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
 			}
-			else
+		else
 			{
 				printf("%s\n", di->d_name);
 			}
@@ -373,7 +373,7 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
-	if (1)
+	if (fs_isDir(path))
 	{
 		return (fs_rmdir(path));
 	}
@@ -739,6 +739,6 @@ int main(int argc, char *argv[])
 		
 	} // end while
 	closePartitionSystem();
-	free(cmd);
-	cmd = NULL;
+		free(cmd);
+		cmd = NULL;
 }

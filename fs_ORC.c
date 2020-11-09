@@ -12,7 +12,7 @@
 **************************************************************/
 #include "mfs.h"
 
-void outputFdDirCWD();
+void outputFdDirCWD(fdDir*);
 
 fdDir *fs_opendir(const char *name)
 {
@@ -96,6 +96,9 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 //this function will free all memory for dirp
 int fs_closedir(fdDir *dirp)
 {
+    //free a corresponding dirItemInfo object associated
+
+
     //free all memory
     free(dirp);
     if(dirp)
