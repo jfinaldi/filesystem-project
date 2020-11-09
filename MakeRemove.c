@@ -1,6 +1,5 @@
 #include "mfs.h"
 
-
 int fs_mkdir(const char *pathname, mode_t mode){
     printf("HELLLO, dir start loc, %d", fdDirCWD -> directoryStartLocation);
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
@@ -22,8 +21,6 @@ int fs_mkdir(const char *pathname, mode_t mode){
     printf("TRY TO STRCOPY %s", pathname);
     strcpy(entryBuffer[freeIndex].name, pathname);
     entryBuffer[freeIndex].name[sizeof(pathname)] = "\0";
-    
-     
     
     entryBuffer[freeIndex].childLBA =  initDirectory(fdDirCWD -> directoryStartLocation); 
     LBAwrite(entryBuffer, blocks, fdDirCWD -> directoryStartLocation);
@@ -81,5 +78,77 @@ int fs_rmdir(const char *pathname){
     }
 
 }
+char *fs_getcwd(char *buf, size_t size){
+    printf("IN GETCWD"); 
+    char path[256];
+    strncpy(path, fdDirCWD -> cwd_path, sizeof(fdDirCWD -> cwd_path));
+    return path;  
+}
+int fs_setcwd(char *buf){
+     
+    char temp[256]; 
+    strncpy(temp, fdDirCWD -> cwd_path, sizeof(fdDirCWD -> cwd_path)); 
+     printf("SETTT %s", fdDirCWD -> cwd_path);
+    if (strcmp(&buf[0], "/") == 0) {
+        strncpy(temp, buf, sizeof(buf)); 
+    } else {
+        strcat(temp, buf);  
+        printf("SETTT %s", temp);
+    }
+    
+    int curr = MBR_st -> rootDirectoryPos; 
+    char * token = strtok(temp, "/");
+    int counter = 0; 
+    char ans[20][256];   
+    int blocks = MBR_st -> dirNumBlocks;
+   // loop through the string to extract all other tokens
+   while( token != NULL ) {
+        printf( "TOKEN! %s\n", token ); //printing each token
+        printf("in loop"); 
+        dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
+        LBAread(entryBuffer, blocks, curr);  
+        int flag = -1; 
+        for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (strcmp(entryBuffer[i].name, token) == 0)
+            {
+                printf("HI HELLO %d  < i %d", i, entryBuffer[i].childLBA); 
+                curr = entryBuffer[i].childLBA; 
+                flag = 0; 
+                break; 
+            }
+        }
+        if (flag == -1) {
+            printf ("not found"); 
+            return -1; 
+        }
+    
+      token = strtok(NULL, "/");
+   }
+    
+    fdDirCWD -> directoryStartLocation = curr; 
+    if (strcmp(&buf[0], "/") == 0) {
+        strncpy(fdDirCWD -> cwd_path, buf, sizeof(buf)); 
+        strncpy(fdDirCWD -> cwd_path, "\0", 1); 
+    } else {
+        
+        strcat(fdDirCWD -> cwd_path, buf); 
+        strcat(fdDirCWD -> cwd_path, "/\0"); 
+    }
+    printf("CURRCWD  %s beep", fdDirCWD -> cwd_path); 
+    return 0; 
+}
+char parsePath(char *buf) {
+    char * token = strtok(buf, "/");
+    int counter = 0; 
+    char ans[20][256];   
+   // loop through the string to extract all other tokens
+   while( token != NULL ) {
+      printf( "TOKEN! %s\n", token ); //printing each token
+      strcpy(ans[counter], token); 
+      token = strtok(NULL, "/");
+   }
+   return ans; 
+}
+//fdDir tempDirectory()
 
 

@@ -50,7 +50,8 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         
         LBAwrite(MBR_st, 1, 0);
     }
-    fdDirCWD -> cwd_path = "/"; 
+    strcpy(fdDirCWD->cwd_path, "/\0"); 
+    //strcpy(fdDirCWD -> cwd_path[1], "\0"); 
     fdDirCWD -> d_reclen = 0; 
     fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
     return (0);
