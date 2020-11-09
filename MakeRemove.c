@@ -1,6 +1,6 @@
 #include "mfs.h"
 fdDir *tempDirectory(char *path) {
-    printf("in tempDir"); 
+    printf("\n\n----------------\nin tempDir\n"); 
     char temp[256]; 
     strncpy(temp, fdDirCWD -> cwd_path, sizeof(fdDirCWD -> cwd_path));
     if (strcmp(&path[0], "/") == 0) {
@@ -12,7 +12,7 @@ fdDir *tempDirectory(char *path) {
     int curr = MBR_st -> rootDirectoryPos;
     fdDir *ans = (fdDir*) malloc(sizeof(fdDir));
     if (strcmp(path, "/") == 0){
-        printf("is Root"); 
+        printf("\nis Root\n"); 
         ans -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
         return ans; 
     }
@@ -22,21 +22,21 @@ fdDir *tempDirectory(char *path) {
    // loop through the string to extract all other tokens
     while( token != NULL ) {
             printf( "TOKEN! %s\n", token ); //printing each token
-            printf("in loop"); 
+            printf("in loop: \n"); 
             dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
             LBAread(entryBuffer, blocks, curr);  
             int flag = -1; 
             for (int i = 0; i < STARTING_NUM_DIR; i++) {
                 if (strcmp(entryBuffer[i].name, token) == 0)
                 {
-                    printf("HI HELLO %d  < i %d", i, entryBuffer[i].childLBA); 
+                    printf("HI HELLO %d  < i %d\n", i, entryBuffer[i].childLBA); 
                     curr = entryBuffer[i].childLBA; 
                     flag = 0; 
                     break; 
                 }
             }
             if (flag == -1) {
-                printf ("not found"); 
+                printf ("not found\n"); 
                 //return -1; 
             }
         
@@ -45,6 +45,7 @@ fdDir *tempDirectory(char *path) {
             ans -> directoryStartLocation = curr; 
         }
     }
+    printf("-------------");
     return ans; 
 }
 fdDir *fs_opendir(const char *name)
