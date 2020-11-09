@@ -183,6 +183,11 @@ int fs_closedir(fdDir *dirp)
 
 
 int fs_mkdir(const char *pathname, mode_t mode){
+    char * pathWithoutName = malloc (sizeof(pathname)); 
+    char * newName = malloc(256); 
+    int slash = '/'; 
+    char * name; 
+    name = strrchr(pathname, slash);
     fdDir *temp = tempDirectory(pathname); 
     printf("\n\nHELLLO, dir start loc: %d", temp -> directoryStartLocation);
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize); 
@@ -202,8 +207,8 @@ int fs_mkdir(const char *pathname, mode_t mode){
     }
     entryBuffer[freeIndex] . isBeingUsed = 1; 
     printf("\nTRY TO STRCOPY: %s", pathname);
-    strcpy(entryBuffer[freeIndex].name, pathname);
-    entryBuffer[freeIndex].name[sizeof(pathname)] = "\0";
+    strcpy(entryBuffer[freeIndex].name, name);
+    entryBuffer[freeIndex].name[sizeof(name)] = "\0";
     
     entryBuffer[freeIndex].childLBA =  initDirectory(temp -> directoryStartLocation); 
     LBAwrite(entryBuffer, blocks, temp -> directoryStartLocation);
