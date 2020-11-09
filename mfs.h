@@ -79,7 +79,7 @@ typedef struct
 	uint64_t directoryStartLocation; /*Starting LBA of directory */
 	char cwd_path[256]; 
 	int streamCount;
-	fs_diriteminfo* dirItemInfo;
+	struct fs_diriteminfo* dirItemInfo;
 } fdDir;
 extern fdDir *fdDirCWD;
 

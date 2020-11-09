@@ -54,7 +54,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
     //strcpy(fdDirCWD -> cwd_path[1], "\0"); 
     fdDirCWD -> d_reclen = 0; 
     fdDirCWD -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
-    fdDirCWD->dirItemInfo = (fd_diriteminfo*)malloc(sizeof(fd_diriteminfo));
+    fdDirCWD->dirItemInfo = (struct fs_diriteminfo*)malloc(sizeof(struct fs_diriteminfo));
     
     return (0);
 }

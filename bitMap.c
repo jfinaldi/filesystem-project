@@ -59,7 +59,7 @@ int find_free_index(int blocks_needed)
             if (free_blocks == blocks_needed)
             {
                 result = index - blocks_needed;
-                for (int i = result; i < index; i++)
+                for (int i = result; i <= index; i++)
                 {
                     bitmap[i] = 1;
                 }

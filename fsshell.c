@@ -746,6 +746,6 @@ int main(int argc, char *argv[])
 		cmd = NULL;
 
 	//deallocate our dirItemInfo pointer
-	if(MBR_st->fdDirCWD->dirItemInfo) free(MBR_st->fdDirCWD->dirItemInfo);
-	MBR_st->fdDirCWD->dirItemInfo = NULL;
+	if(fdDirCWD->dirItemInfo) free(fdDirCWD->dirItemInfo);
+	fdDirCWD->dirItemInfo = NULL;
 }
