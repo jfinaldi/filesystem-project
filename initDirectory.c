@@ -39,8 +39,9 @@ long initDirectory(int parentLBA)
 	//fill the root struct with default info
 	initEntry(&ptr[i]); //initialize this root dir instance
 	ptr[i].locationLBA = startingBlock;
+	ptr[i].childLBA = startingBlock; 
 	ptr[i].entryIndex = 0;
-	ptr[i].name[0] = '.';
+	ptr[i].name[0] = 'Q';
 	ptr[i].name[1] = '\0';
 	ptr[i].isBeingUsed = 1; 
 	i++; //increment to next directory
@@ -59,16 +60,19 @@ long initDirectory(int parentLBA)
 			// else ptr[i].locationLBA = parentLBA; //.. points to parentLBA of parent dir
 
 			//set the second entry's name
-			ptr[i].name[0] = '.';
-			ptr[i].name[1] = '.';
+			ptr[i].name[0] = 'Q';
+			ptr[i].name[1] = 'Q';
 			ptr[i].name[2] = '\0';
-			
+			if(parentLBA == 0){
+				ptr[i].childLBA = startingBlock;
+			}	
+			else {
+				ptr[i].childLBA = parentLBA; 
+			}
 			ptr[i].isBeingUsed = 1; 
 		}
 		ptr[i].entryIndex = i;
-		if(parentLBA == 0)
-			ptr[i].locationLBA = startingBlock; //.. points to starting block
-		else ptr[i].locationLBA = parentLBA;
+		ptr[i].locationLBA = startingBlock;
 		
 		//MBR_st->idCounter++;
 		//ptr[i].id = MBR_st->idCounter;
@@ -79,6 +83,9 @@ long initDirectory(int parentLBA)
 	//dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
 	//call LBA write to put this directory on disk
 	 LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
+	 for (int i = 0; i < 3; i++) {
+        testOutput(&ptr[i]);
+    }
 	//LBAread (buff, numBlocks, startingBlock); 
 	//printf("HELLLLOOOO %d", buff[6].locationLBA); 
 

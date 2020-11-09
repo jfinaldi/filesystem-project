@@ -35,40 +35,40 @@ fdDir *fdDirCWD = NULL;
  
 #include <sys/stat.h>
 //#define fs_mkdir mkdir
-#define fs_getcwd getcwd
-#define fs_setcwd chdir
+//#define fs_getcwd getcwd
+//#define fs_setcwd chdir
 //#define fs_rmdir rmdir
 #define fs_delete unlink
 
-fdDir *fs_opendir(const char *name)
-{
-	DIR *dir;
-	dir = opendir(name);
-	return ((fdDir *)dir);
-}
+// fdDir *fs_opendir(const char *name)
+// {
+// 	DIR *dir;
+// 	dir = opendir(name);
+// 	return ((fdDir *)dir);
+// }
 
 struct fs_diriteminfo fsDi;
-struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-{
-	DIR *dir;
-	dir = (DIR *)dirp;
-	struct dirent *de;
-	de = readdir(dir);
-	if (de == NULL)
-		return (NULL);
+// struct fs_diriteminfo *fs_readdir(fdDir *dirp)
+// {
+// 	DIR *dir;
+// 	dir = (DIR *)dirp;
+// 	struct dirent *de;
+// 	de = readdir(dir);
+// 	if (de == NULL)
+// 		return (NULL);
 
-	fsDi.d_reclen = (unsigned short)sizeof(fsDi);
-	fsDi.fileType = de->d_type;
-	strcpy(fsDi.d_name, de->d_name);
-	return (&fsDi);
-}
+// 	fsDi.d_reclen = (unsigned short)sizeof(fsDi);
+// 	fsDi.fileType = de->d_type;
+// 	strcpy(fsDi.d_name, de->d_name);
+// 	return (&fsDi);
+// }
 
-int fs_closedir(fdDir *dirp)
-{
-	DIR *dir;
-	dir = (DIR *)dirp;
-	return (closedir(dir));
-}
+// int fs_closedir(fdDir *dirp)
+// {
+// 	DIR *dir;
+// 	dir = (DIR *)dirp;
+// 	return (closedir(dir));
+// }
 
 int fs_stat(const char *path, struct fs_stat *buf)
 {
@@ -107,7 +107,7 @@ int fs_isDir(char *path)
 #define CMDRM_ON 1
 #define CMDCP2L_ON 0
 #define CMDCP2FS_ON 0
-#define CMDCD_ON 0
+#define CMDCD_ON 1
 #define CMDPWD_ON 0
 
 typedef struct dispatch_t
@@ -373,7 +373,11 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
+<<<<<<< HEAD
 	if (fs_isDir(path))
+=======
+	if (fs_isFile(path))
+>>>>>>> 5d8f4dbcdbe03d85222d699db76cc61cfb9310bc
 	{
 		return (fs_rmdir(path));
 	}

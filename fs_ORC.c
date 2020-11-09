@@ -30,7 +30,7 @@ fdDir *fs_opendir(const char *name)
 		printf("Malloc succeeded\n\n");
     
     //do LBA read to populate the buffer from our fdDirCWD->directoryStartLocation
-    LBARead(ptr, MBR_st->dirNumBlocks, fdDirCWD->directoryStartLocation);
+    LBAread(ptr, MBR_st->dirNumBlocks, fdDirCWD->directoryStartLocation);
 
     //start a for-loop to iterate through fdDir, sizeof(dirEntry) bytes at a time
     for(int i = 0; i < MBR_st->dirNumBlocks; i++)
@@ -63,7 +63,7 @@ fdDir *fs_opendir(const char *name)
 struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 {
     //malloc an fs_diriteminfo object
-    fs_diriteminfo* result = (fs_diriteminfo*)malloc(sizeof(fs_diriteminfo));
+    struct fs_diriteminfo* result = (struct fs_diriteminfo*)malloc(sizeof(struct fs_diriteminfo));
     if (result == NULL)
 	{
 		printf("Error with malloc.\n");
@@ -82,7 +82,7 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 	else
 		printf("Malloc succeeded\n\n");
 
-    LBARead(ptr, MBR_st->dirNumBlocks, dirp->directoryStartLocation);
+    LBAread(ptr, MBR_st->dirNumBlocks, dirp->directoryStartLocation);
     
     //populate it with information from dirp
     result->fileType = ptr[dirp->dirEntryPosition].type;
@@ -103,7 +103,7 @@ int fs_closedir(fdDir *dirp)
     free(dirp);
     if(dirp)
     {
-        print("Error fsORC.c, failed attempt to free dirp, ln 103\n");
+        printf("Error fsORC.c, failed attempt to free dirp, ln 103\n");
         return 1;
     }
     return 0;
@@ -113,7 +113,7 @@ void outputFdDirCWD(fdDir* dirp)
 {
     printf("\n\n-----------------------------------------------\n");
     printf("Printing directory\n");
-    printf("-----------------------------------------------")
+    printf("-----------------------------------------------");
     printf("Current Working Directory: %s\n", dirp->cwd_path);
     printf("Start Location: %ld\n", dirp->directoryStartLocation);
     printf("Directory Entry Position: %d\n", dirp->dirEntryPosition);
