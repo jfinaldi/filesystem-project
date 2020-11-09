@@ -1,25 +1,36 @@
 #include "mfs.h"
+
+
 fdDir *tempDirectory(char *path) {
     printf("\n\n----------------\nin tempDir\n"); 
-    char temp[256]; 
-    strncpy(temp, fdDirCWD -> cwd_path, sizeof(fdDirCWD -> cwd_path));
+
+    char temp[256]; //create a name for our temp directory path
+    strncpy(temp, fdDirCWD -> cwd_path, sizeof(fdDirCWD -> cwd_path)); //copy over the path from cwd to temp name
+
+    //we have an absolute path given
     if (strcmp(&path[0], "/") == 0) {
         strncpy(temp, path, sizeof(path)); 
-    } else {
+    } 
+    //we have a relative path given
+    else {
         strcat(temp, path);  
     }
     
-    int curr = MBR_st -> rootDirectoryPos;
-    fdDir *ans = (fdDir*) malloc(sizeof(fdDir));
+    int curr = MBR_st -> rootDirectoryPos; //start from the very first directory LBA block
+    fdDir *ans = (fdDir*) malloc(sizeof(fdDir)); //this will be what we return
+
+    //out path consists only of /, indicating we are at root dir
     if (strcmp(path, "/") == 0){
         printf("\nis Root\n"); 
-        ans -> directoryStartLocation = MBR_st -> rootDirectoryPos; 
+        ans -> directoryStartLocation = MBR_st -> rootDirectoryPos; //assign our fdDir start loc to root start loc
         return ans; 
     }
-    char * token = strtok(temp, "/");
+
+    char * token = strtok(temp, "/"); //grab the very first directory name in our path
     int counter = 0; 
-    int blocks = MBR_st -> dirNumBlocks;
-   // loop through the string to extract all other tokens
+    int blocks = MBR_st -> dirNumBlocks; //total LBA blocks in our directory
+
+    // loop through the string to extract all other tokens
     while( token != NULL ) {
             printf( "TOKEN! %s\n", token ); //printing each token
             printf("in loop: \n"); 
@@ -53,6 +64,16 @@ fdDir *fs_opendir(const char *name)
     //we should know the global variable for fdDir object
     fdDir* result = (fdDir*)malloc(sizeof(fdDir));
 
+    //malloc the dirItemInfo struct inside dirp
+    result->dirItemInfo = (fd_diriteminfo*)malloc(sizeof(fd_diriteminfo));
+    if (result->dirItemInfo == NULL)
+	{
+		printf("Error with malloc ln122.\n");
+		return NULL;
+	}
+	else
+		printf("Malloc succeeded\n\n");
+
     //create a dirEntry pointer, malloc dirBUfMallocSize bytes 
     dirEntry* ptr = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
     if (ptr == NULL)
@@ -69,6 +90,7 @@ fdDir *fs_opendir(const char *name)
     temp -> streamCount = 0; 
     printf("\ntemp->directoryStartLocation: %d", temp->directoryStartLocation);
     return temp;
+
     //do LBA read to populate the buffer from our fdDirCWD->directoryStartLocation
     LBAread(ptr, MBR_st->dirNumBlocks, temp->directoryStartLocation);
 
@@ -103,35 +125,27 @@ fdDir *fs_opendir(const char *name)
 struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 {
     printf("\n\nin read------"); 
-    //malloc an fs_diriteminfo object
-    struct fs_diriteminfo* result = (struct fs_diriteminfo*)malloc(sizeof(struct fs_diriteminfo));
-    if (result == NULL)
-	{
-		printf("\nError with malloc.\n");
-		return -1;
-	}
-	else
-		printf("\nMalloc succeeded\n");
 
     //malloc a dirEntry pointer buffer
     dirEntry* ptr = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
     if (ptr == NULL)
 	{
 		printf("Error with malloc.\n");
-		return -1;
+		return NULL;
 	}
 	else
 		printf("\nMalloc succeeded\n");
 
+    //fill our buffer with a directory
     LBAread(ptr, MBR_st->dirNumBlocks, dirp->directoryStartLocation);
     
-    //populate it with information from dirp
+    //populate dirItemInfo with information from dirp
     while (ptr[dirp->streamCount].isBeingUsed == 0 && dirp -> streamCount < 50) {
         dirp -> streamCount++;
     }
     if (ptr[dirp->streamCount].isBeingUsed == 1) {
-        result->fileType = ptr[dirp->streamCount].type;
-        strcpy(result->d_name, ptr[dirp->streamCount].name);
+        dirp->dirItemInfo->fileType = ptr[dirp->streamCount].type;
+        strcpy(dirp->dirItemInfo->d_name, ptr[dirp->streamCount].name);
         dirp -> streamCount++;
         return result; 
     } else {
@@ -148,6 +162,14 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 //this function will free all memory for dirp
 int fs_closedir(fdDir *dirp)
 {
+    //free dirItemInfo
+    if(dirp->dirItemInfo) free(dirp->dirItemInfo);
+    if(dirp->dirItemInfo)
+    {
+        printf("\nERROR, dirItemInfo not deallocated.\n");
+        return 1;
+    }
+    
     //free all memory
     free(dirp);
     if(dirp)
