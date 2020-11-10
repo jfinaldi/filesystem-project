@@ -23,11 +23,11 @@ long initDirectory(int parentLBA)
 
 	//get an address for the starting block
 	int startingBlock = find_free_index(MBR_st->dirNumBlocks);
-	//int startingBlock = 50; 
+	//int startingBlock = 50;
 
 	printf("I got my starting block at: %d\n", startingBlock);
 	//create a space in RAM to start manipulating
-	dirEntry* ptr = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
+	dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
 	if (ptr == NULL)
 	{
 		printf("Error with malloc ln50.\n");
@@ -39,13 +39,13 @@ long initDirectory(int parentLBA)
 	//fill the root struct with default info
 	initEntry(&ptr[i]); //initialize this root dir instance
 	ptr[i].locationLBA = startingBlock;
-	ptr[i].childLBA = startingBlock; 
+	ptr[i].childLBA = startingBlock;
 	ptr[i].entryIndex = 0;
 	ptr[i].name[0] = 'Q';
 	ptr[i].name[1] = '\0';
-	ptr[i].isBeingUsed = 1; 
+	ptr[i].isBeingUsed = 1;
 	i++; //increment to next directory
-	
+
 	//testOutput(&ptr[0]); //print this first root entry
 
 	//initialize an array of directory entries, all set to unused
@@ -54,7 +54,8 @@ long initDirectory(int parentLBA)
 		initEntry(&ptr[i]);
 
 		//initialize the .. entry
-		if(i < 2) {
+		if (i < 2)
+		{
 			// if(parentLBA == 0)
 			// 	ptr[i].locationLBA = startingBlock; //.. points to starting block
 			// else ptr[i].locationLBA = parentLBA; //.. points to parentLBA of parent dir
@@ -63,17 +64,19 @@ long initDirectory(int parentLBA)
 			ptr[i].name[0] = 'Q';
 			ptr[i].name[1] = 'Q';
 			ptr[i].name[2] = '\0';
-			if(parentLBA == 0){
+			if (parentLBA == 0)
+			{
 				ptr[i].childLBA = startingBlock;
-			}	
-			else {
-				ptr[i].childLBA = parentLBA; 
 			}
-			ptr[i].isBeingUsed = 1; 
+			else
+			{
+				ptr[i].childLBA = parentLBA;
+			}
+			ptr[i].isBeingUsed = 1;
 		}
 		ptr[i].entryIndex = i;
 		ptr[i].locationLBA = startingBlock;
-		
+
 		//MBR_st->idCounter++;
 		//ptr[i].id = MBR_st->idCounter;
 
@@ -82,14 +85,15 @@ long initDirectory(int parentLBA)
 	//ptr[6].locationLBA = 1700;
 	//dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
 	//call LBA write to put this directory on disk
-	 LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
-	 for (int i = 0; i < 3; i++) {
-        testOutput(&ptr[i]);
-    }
-	//LBAread (buff, numBlocks, startingBlock); 
-	//printf("HELLLLOOOO %d", buff[6].locationLBA); 
+	LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
+	for (int i = 0; i < 3; i++)
+	{
+		testOutput(&ptr[i]);
+	}
+	//LBAread (buff, numBlocks, startingBlock);
+	//printf("HELLLLOOOO %d", buff[6].locationLBA);
 
-	//free(ptr); 
+	//free(ptr);
 
 	printf("root directory successfully initiated.\n\n");
 
@@ -104,7 +108,7 @@ void testOutput(dirEntry *rootDir)
 	printf("Data Location: %ld\n", rootDir->dataLocation);
 	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Name: %s\n", rootDir->name);
-	printf("Index: %ld\n", rootDir->entryIndex);
+	printf("Index: %d\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 

@@ -12,10 +12,7 @@
 **************************************************************/
 #include "mfs.h"
 
-void outputFdDirCWD(fdDir*);
-
-
-void outputFdDirCWD(fdDir* dirp)
+void outputFdDirCWD(fdDir *dirp)
 {
     printf("\n\n-----------------------------------------------\n");
     printf("Printing directory\n");

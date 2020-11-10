@@ -17,16 +17,27 @@
 
 typedef int b_io_fd;
 
-#define TRUE 1
-#define FALSE 0
+typedef struct fd_struct
+{
+    int Fd;
+    int isAllocate;
+    char *BufferRead;  // For b_read
+    char *BufferWrite; // For b_write
 
-#define EXIT_FAILURE 1
-#define MAX_OPENFILE 20
-
-#define B_CHUNK_SIZE 512
-
-#define MAXFCBS 20
-#define BUFSIZE 512
+    unsigned long locationLBA;
+    unsigned long childLBA;
+    short entryIndex;
+    unsigned long dataLocation;
+    char name[256];
+    uint64_t sizeOfFile;
+    unsigned long numBlocks;
+    time_t dateModifiedDirectory;
+    time_t dateAccessedDirectory;
+    unsigned long locationMetadata;
+    unsigned short isBeingUsed;
+    unsigned char type;
+} fd_struct;
+extern fd_struct *fileOpen;
 
 int b_open(char *filename, int flags);
 int b_read(int fd, char *buffer, int count);

@@ -13,27 +13,18 @@
 *
 **************************************************************/
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <getopt.h>
-#include <string.h>
 #include "mfs.h"
-#include "initDirectory.h"
+
 MBRstruct *MBR_st = NULL;
 fdDir *fdDirCWD = NULL;
+
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
-#define TEMP_LINUX 0//MUST be ZERO for working with your file system
+#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
 #if (TEMP_LINUX == 0)
 // All the following it TEMPORARY ONLY - It allows testing the shell in linux
 // but using the test files system function calls
 // This must be off for testing your file system
 
- 
-#include <sys/stat.h>
 //#define fs_mkdir mkdir
 //#define fs_getcwd getcwd
 //#define fs_setcwd chdir
@@ -276,7 +267,7 @@ int cmd_ls(int argcnt, char *argvec[])
 	{
 		char *path = fs_getcwd(cwd, DIRMAX_LEN); //get current working directory
 		fdDir *dirp;
-		printf("hello????"); 
+		printf("hello????");
 		dirp = fs_opendir(path);
 		return (displayFiles(dirp, flall, fllong));
 	}
@@ -345,9 +336,9 @@ int cmd_mv(int argcnt, char *argvec[])
 // Make Directory
 int cmd_md(int argcnt, char *argvec[])
 {
-	printf("ahhh"); 
+	printf("ahhh");
 #if (CMDMD_ON == 1)
-printf("whattt?"); 
+	printf("whattt?");
 	if (argcnt != 2)
 	{
 		printf("Usage: md pathname\n");
@@ -355,7 +346,7 @@ printf("whattt?");
 	}
 	else
 	{
-		printf("trying to make %s", argvec[1]); 
+		printf("trying to make %s", argvec[1]);
 		return (fs_mkdir(argvec[1], 0777));
 	}
 #endif
@@ -692,7 +683,7 @@ int main(int argc, char *argv[])
 		return (-1);
 	}
 	MBR_st = malloc(512);
-	fdDirCWD = malloc(sizeof(fdDir)); 
+	fdDirCWD = malloc(sizeof(fdDir));
 
 	if (MBR_st == NULL)
 	{
@@ -739,13 +730,14 @@ int main(int argc, char *argv[])
 			}
 			processcommand(cmd);
 		}
-		
+
 	} // end while
 	closePartitionSystem();
-		free(cmd);
-		cmd = NULL;
+	free(cmd);
+	cmd = NULL;
 
 	//deallocate our dirItemInfo pointer
-	if(fdDirCWD->dirItemInfo) free(fdDirCWD->dirItemInfo);
+	if (fdDirCWD->dirItemInfo)
+		free(fdDirCWD->dirItemInfo);
 	fdDirCWD->dirItemInfo = NULL;
 }

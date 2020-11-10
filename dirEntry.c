@@ -17,8 +17,8 @@ void initEntry(dirEntry *dE)
 {
 	//initialize location variables
 	dE->dataLocation = 20000; //valid data location will be between block 0-19531
-	dE->locationLBA = 20000; //location of this entry in logical block
-	dE->entryIndex = -1; //the position of this entry in the array of entries
+	dE->locationLBA = 20000;  //location of this entry in logical block
+	dE->entryIndex = -1;	  //the position of this entry in the array of entries
 	dE->childLBA = 20000;
 
 	//initialize a default name for this child
@@ -33,6 +33,6 @@ void initEntry(dirEntry *dE)
 	time(&(dE->dateAccessedDirectory)); // date the file was last accessed
 
 	dE->locationMetadata = 20000; //512 file per directory
-	dE->isBeingUsed = 0;		 //this file is currently not being used
-	dE->type = 'd'; //initially this will be a directory until datalocation is != 20000
+	dE->isBeingUsed = 0;		  //this file is currently not being used
+	dE->type = 'd';				  //initially this will be a directory until datalocation is != 20000
 }
