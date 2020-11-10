@@ -77,20 +77,20 @@ int fs_stat(const char *path, struct fs_stat *buf)
 	return (stat(path, path_stat));
 }
 
-int fs_isFile(char *path)
-{
-	struct stat path_stat;
-	stat(path, &path_stat);
-	return S_ISREG(path_stat.st_mode);
-}
+// int fs_isFile(char *path)
+// {
+// 	struct stat path_stat;
+// 	stat(path, &path_stat);
+// 	return S_ISREG(path_stat.st_mode);
+// }
 
-int fs_isDir(char *path)
-{
-	struct stat path_stat;
-	if (stat(path, &path_stat) != 0)
-		return 0;
-	return S_ISDIR(path_stat.st_mode);
-}
+// int fs_isDir(char *path)
+// {
+// 	struct stat path_stat;
+// 	if (stat(path, &path_stat) != 0)
+// 		return 0;
+// 	return S_ISDIR(path_stat.st_mode);
+// }
 #endif
 /***************  END LINUX TESTING CODE FOR SHELL ***************/
 
