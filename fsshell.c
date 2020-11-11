@@ -693,7 +693,8 @@ int main(int argc, char *argv[])
 
 	startPartitionSystem(argv[1], &volumeSize, &blockSize);
 	MBRinit(volumeSize, blockSize, argv);
-
+	b_open("/foo/dir/test.txt", O_WRONLY | O_RDONLY);
+	exit(0);
 	char *cmdin;
 	char *cmd;
 	HIST_ENTRY *he;
@@ -739,5 +740,7 @@ int main(int argc, char *argv[])
 	//deallocate our dirItemInfo pointer
 	if (fdDirCWD->dirItemInfo)
 		free(fdDirCWD->dirItemInfo);
+	if (fileOpen != NULL)
+		free(fileOpen);
 	fdDirCWD->dirItemInfo = NULL;
 }

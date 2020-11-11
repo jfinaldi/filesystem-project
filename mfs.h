@@ -61,8 +61,7 @@ typedef u_int32_t uint32_t;
 #define EXIT_FAILURE 1
 
 // flags for b_open
-#define O_READ 0
-#define O_WRITE 1
+// O_CREAT O_RDWR O_WRONLY O_TRUNC O_RDONLY
 
 typedef struct MBRstruct
 {

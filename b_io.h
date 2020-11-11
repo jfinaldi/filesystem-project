@@ -23,8 +23,8 @@ typedef struct fd_struct
     int isAllocate;
     char *BufferRead;  // For b_read
     char *BufferWrite; // For b_write
-
     unsigned long locationLBA;
+
     unsigned long childLBA;
     short entryIndex;
     unsigned long dataLocation;

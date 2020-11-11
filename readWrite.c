@@ -14,10 +14,9 @@
 #include "mfs.h"
 
 int startup = 0; //Indicates that this has not been initialized
-int Fd = 0;
 fd_struct *fileOpen = NULL;
 
-//Method to initialize our file system
+//Method to initialize our Fd struct
 void b_init()
 {
     for (int i = 0; i < MAX_OPENFILE; i++)
@@ -53,6 +52,12 @@ int b_open(char *filename, int flags)
     int length = 0;
     int curr = 0;
     int found = FALSE;
+
+    printf("%d\n", flags);
+    // if (flags == O_RDONLY)
+    // {
+    //     printf("HERE\n");
+    // }
 
     if (filename == NULL)
     {
@@ -105,9 +110,9 @@ int b_open(char *filename, int flags)
     // -------------- SPLIT PATH ----------------
     printf("NbArgument = %d\n", nbArgument);
 
-    // CHECK IF GOOD ????
+    //! CHECK IF GOOD ????
     nbArgument = nbArgument - 1;
-    // CHECK IF GOOD ???
+    //! CHECK IF GOOD ????
 
     printf("NbArgument = %d\n", nbArgument);
 
@@ -131,6 +136,7 @@ int b_open(char *filename, int flags)
             found = FALSE;
             for (int i = 0; i < STARTING_NUM_DIR || found == TRUE; i++)
             {
+                printf("NAME = %s, name = %s\n", ptrOpen[i].name, path_token[n]);
                 if (strcmp(ptrOpen[i].name, path_token[n]) == 0)
                 {
                     printf("NAME = %s, HI HELLO %d < i %ld", ptrOpen[i].name, i, ptrOpen[i].childLBA);
@@ -139,77 +145,60 @@ int b_open(char *filename, int flags)
                     found = TRUE;
                 }
             }
-            if (flags == O_READ)
+            if (n != nbArgument && found == FALSE)
             {
-                if (found == TRUE && n == nbArgument)
-                {
-                    fileOpen[fd].Fd = fd;
-                    fileOpen[fd].isAllocate = TRUE;
-                    fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferRead == NULL)
-                    {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
-                    }
-                    fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferWrite == NULL)
-                    {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
-                    }
-                    fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                    fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                    fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                    fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                    strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                    fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                    fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                    fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                    time(&(fileOpen[fd].dateAccessedDirectory));
-                    free(ptrOpen);
-                    return (fd);
-                }
-                else if (found == FALSE)
-                {
-                    return (1);
-                }
+                return (1); //directory is not exist
             }
-            if (flags == O_WRITE)
+            if (n == nbArgument)
             {
-                if (found == TRUE && n == nbArgument)
+                if (found == TRUE) // IF the file exist
                 {
-                    fileOpen[fd].Fd = fd;
-                    fileOpen[fd].isAllocate = TRUE;
-                    fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferRead == NULL)
+                    if (flags == O_CREAT)
                     {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
+                        return (-1); //Already created
                     }
-                    fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferWrite == NULL)
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
                     {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
+                        fileOpen[fd].Fd = fd;
+                        fileOpen[fd].isAllocate = TRUE;
+                        fileOpen[fd].flag = flags;
+                        fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferRead == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferWrite == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+                        fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
+                        fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
+                        fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                        fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
+                        strcpy(fileOpen[fd].name, ptrOpen[curr].name);
+                        fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
+                        fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+                        fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                        time(&(fileOpen[fd].dateAccessedDirectory));
+                        free(ptrOpen);
+                        return (fd);
                     }
-                    fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                    fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                    fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                    fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                    strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                    fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                    fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                    fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                    time(&(fileOpen[fd].dateAccessedDirectory));
-                    free(ptrOpen);
-                    return (fd);
                 }
-                else if (found == FALSE)
+                if (found == FALSE) // IF the file NOT exist
                 {
-                    //TODO Create File
-                    return (fd);
+                    if (flags == O_CREAT)
+                    {
+                        //TODO Create a file
+                        return (fd);
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        return (-1); // File not exist
+                    }
                 }
             }
             LBAread(ptrOpen, MBR_st->dirNumBlocks, ptrOpen[curr].childLBA);
@@ -243,84 +232,66 @@ int b_open(char *filename, int flags)
                     found = TRUE;
                 }
             }
-            if (flags == O_READ)
+            if (n != nbArgument && found == FALSE)
             {
-                if (found == TRUE && n == nbArgument)
-                {
-                    fileOpen[fd].Fd = fd;
-                    fileOpen[fd].isAllocate = TRUE;
-                    fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferRead == NULL)
-                    {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
-                    }
-                    fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferWrite == NULL)
-                    {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
-                    }
-                    fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                    fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                    fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                    fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                    strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                    fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                    fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                    fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                    time(&(fileOpen[fd].dateAccessedDirectory));
-                    free(ptrOpen);
-                    return (fd);
-                }
-                else if (found == FALSE)
-                {
-                    return (1);
-                }
+                return (1); //directory is not exist
             }
-            if (flags == O_WRITE)
+            if (n == nbArgument)
             {
-                if (found == TRUE && n == nbArgument)
+                if (found == TRUE) // IF the file exist
                 {
-                    fileOpen[fd].Fd = fd;
-                    fileOpen[fd].isAllocate = TRUE;
-                    fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferRead == NULL)
+                    if (flags == O_CREAT)
                     {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
+                        return (-1); //Already created
                     }
-                    fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                    if (fileOpen[fd].BufferWrite == NULL)
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
                     {
-                        write(2, "b_open: malloc failed\n", 23);
-                        return (-1);
+                        fileOpen[fd].Fd = fd;
+                        fileOpen[fd].isAllocate = TRUE;
+                        fileOpen[fd].flag = flags;
+                        fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferRead == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferWrite == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+                        fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
+                        fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
+                        fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                        fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
+                        strcpy(fileOpen[fd].name, ptrOpen[curr].name);
+                        fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
+                        fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+                        fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                        time(&(fileOpen[fd].dateAccessedDirectory));
+                        free(ptrOpen);
+                        return (fd);
                     }
-                    fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                    fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                    fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                    fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                    strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                    fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                    fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                    fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                    time(&(fileOpen[fd].dateAccessedDirectory));
-                    free(ptrOpen);
-                    return (fd);
                 }
-                else if (found == FALSE)
+                if (found == FALSE) // IF the file NOT exist
                 {
-                    //TODO Create File
-                    return (fd);
+                    if (flags == O_CREAT)
+                    {
+                        //TODO Create a file
+                        return (fd);
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        return (-1); // File not exist
+                    }
                 }
             }
             LBAread(ptrOpen, MBR_st->dirNumBlocks, ptrOpen[curr].childLBA);
         }
     }
-
-    return (returnFd); // all set
+    return (-1); // all set
 }
 
 // Interface to Close the file
@@ -332,14 +303,12 @@ void b_close(int fd)
     }
     else
     {
-        //TODO Write what is left inside the buffer of write and read
-        //TODO Before free those two buffer
+        //TODO Write what is left inside the buffer of FD struct
         free(fileOpen[fd].BufferWrite);
         free(fileOpen[fd].BufferRead);
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
     }
-    //! DO NOT FREE THE fileOpen struct (free it inside the closePartitionSystem();)
 }
 
 int b_write(int fd, char *buffer, int count)
@@ -448,7 +417,7 @@ int b_getFCB()
 int b_read(int fd, char *buffer, int count)
 {
     int bytesRead;           // for our reads
-    int bytesReturned; // what we will return
+    int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
 
     if (startup == 0)
