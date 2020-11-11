@@ -116,136 +116,182 @@ int b_open(char *filename, int flags)
 
     printf("NbArgument = %d\n", nbArgument);
 
-    if (1)
+    if (filename[0] == '/')
     { //Absolute path
-        char *newName = malloc(256);
-        int slash = '/';
-        newName = strrchr(filename, slash);
-        if (newName == NULL)
-        {
-            newName = malloc(256);
-            strcpy(newName, filename);
-        }
-        else
-        {
-            newName++;
-        }
-
-        printf("new name %s\n", newName);
-        fdDir *temp = tempDirectory(filename, 0);
-        if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name"); 
-            return -1;
-        }
-        printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
+        printf("ABSOLUTE PATH\n");
+        curr = MBR_st->rootDirectoryPos;
         dirEntry *ptrOpen = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-        int blocks = MBR_st->dirNumBlocks;
-        LBAread(ptrOpen, blocks, temp->directoryStartLocation);
-        int fount = -1; 
-        for (int i = 0; i < STARTING_NUM_DIR; i++)
+        if (ptrOpen == NULL)
         {
-            if (strcmp(ptrOpen[i].name, newName) == 0)
-            {
-                printf("found %s %s", newName, ptrOpen[i].name); 
-                fileOpen[fd].Fd = fd;
-                fileOpen[fd].isAllocate = TRUE;
-                fileOpen[fd].flag = flags;
-                fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferRead == NULL)
-                {
-                    write(2, "b_open: malloc failed\n", 23);
-                    return (-1);
-                }
-                fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferWrite == NULL)
-                {
-                    write(2, "b_open: malloc failed\n", 23);
-                    return (-1);
-                }
-                fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                time(&(fileOpen[fd].dateAccessedDirectory));
-                free(ptrOpen);
-                printf("found fd"); 
-                return (fd);
-            }
+            write(2, "b_open: malloc failed\n", 23);
+            return (-1);
         }
-        if (flags & O_CREAT) {
-            printf("IN CREATE"); 
-            int freeIndex = -1; 
-            for (int i = 0; i < STARTING_NUM_DIR; i++)
+        LBAread(ptrOpen, MBR_st->dirNumBlocks, MBR_st->rootDirectoryPos);
+        for (int n = 0; n != nbArgument; n++)
+        {
+            printf("Name = %s\n", ptrOpen->name);
+            printf("entryIndex = %d\n", ptrOpen->entryIndex);
+            printf("locationMetadata = %ld\n", ptrOpen->locationMetadata);
+            printf("childLBA = %ld\n", ptrOpen->childLBA);
+            found = FALSE;
+            for (int i = 0; i < STARTING_NUM_DIR || found == TRUE; i++)
             {
-                if (ptrOpen[i].isBeingUsed == 0)
+                printf("NAME = %s, name = %s\n", ptrOpen[i].name, path_token[n]);
+                if (strcmp(ptrOpen[i].name, path_token[n]) == 0)
                 {
-                    printf("FREEE INDEX: %d\n", i);
-                    freeIndex = i;
-                    break;
+                    printf("NAME = %s, HI HELLO %d < i %ld", ptrOpen[i].name, i, ptrOpen[i].childLBA);
+                    curr = i;
+                    i = STARTING_NUM_DIR + 1;
+                    found = TRUE;
                 }
             }
-            if (freeIndex == -1){
-                printf("no space"); 
-                return -1;
+            if (n != nbArgument && found == FALSE)
+            {
+                return (1); //directory is not exist
             }
-            ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation;  //location of this entry in logical block
-            ptrOpen[freeIndex].entryIndex = freeIndex;
-
-            //initialize a default name for this child
-            strcpy(ptrOpen[freeIndex].name, newName);
-
-            ptrOpen[freeIndex].sizeOfFile = 20 * 512; // the number of bytes of the file data
-            ptrOpen[freeIndex].numBlocks = 20;	// the number of blocks occupied by the file
-            //ptrOpen[freeIndex].id = -1; //the id number for the entry
-
-            time(&(ptrOpen[freeIndex].dateModifiedDirectory)); // date the file was last modified
-            time(&(ptrOpen[freeIndex].dateAccessedDirectory)); // date the file was last accessed
-
-            ptrOpen[freeIndex].locationMetadata = find_free_index(20); //512 file per directory
-            ptrOpen[freeIndex].isBeingUsed = 1;		  //this file is currently not being used
-            ptrOpen[freeIndex].type = 'f';
-            LBAwrite(ptrOpen, blocks, temp->directoryStartLocation);
-            fileOpen[fd].Fd = fd;
-                fileOpen[fd].isAllocate = TRUE;
-                fileOpen[fd].flag = flags;
-                fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferRead == NULL)
+            if (n == nbArgument)
+            {
+                if (found == TRUE) // IF the file exist
                 {
-                    write(2, "b_open: malloc failed\n", 23);
-                    return (-1);
+                    if (flags == O_CREAT)
+                    {
+                        return (-1); //Already created
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        fileOpen[fd].Fd = fd;
+                        fileOpen[fd].isAllocate = TRUE;
+                        fileOpen[fd].flag = flags;
+                        fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferRead == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferWrite == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+                        fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
+                        fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
+                        fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                        fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
+                        strcpy(fileOpen[fd].name, ptrOpen[curr].name);
+                        fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
+                        fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+                        fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                        time(&(fileOpen[fd].dateAccessedDirectory));
+                        free(ptrOpen);
+                        return (fd);
+                    }
                 }
-                fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferWrite == NULL)
+                if (found == FALSE) // IF the file NOT exist
                 {
-                    write(2, "b_open: malloc failed\n", 23);
-                    return (-1);
+                    if (flags == O_CREAT)
+                    {
+                        //TODO Create a file
+                        return (fd);
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        return (-1); // File not exist
+                    }
                 }
-                fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
-                time(&(fileOpen[fd].dateAccessedDirectory));
-                free(ptrOpen);
-                printf("found fd"); 
-                return (fd);
-            return fd; 
-        } else {
-            printf("file not found"); 
-            return -1; 
+            }
+            LBAread(ptrOpen, MBR_st->dirNumBlocks, ptrOpen[curr].childLBA);
         }
-
     }
-    
+    else
+    { // relative path
+        printf("RELATIVE PATH\n");
+        curr = fdDirCWD->dirEntryPosition;
+        dirEntry *ptrOpen = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+        if (ptrOpen == NULL)
+        {
+            write(2, "b_open: malloc failed\n", 23);
+            return (-1);
+        }
+        LBAread(ptrOpen, MBR_st->dirNumBlocks, fdDirCWD->dirEntryPosition);
+        for (int n = 0; n != nbArgument; n++)
+        {
+            printf("Name = %s\n", ptrOpen->name);
+            printf("entryIndex = %d\n", ptrOpen->entryIndex);
+            printf("locationMetadata = %ld\n", ptrOpen->locationMetadata);
+            printf("childLBA = %ld\n", ptrOpen->childLBA);
+            found = FALSE;
+            for (int i = 0; i < STARTING_NUM_DIR || found == TRUE; i++)
+            {
+                if (strcmp(ptrOpen[i].name, path_token[n]) == 0)
+                {
+                    printf("NAME = %s, HI HELLO %d < i %ld", ptrOpen[i].name, i, ptrOpen[i].childLBA);
+                    curr = i;
+                    i = STARTING_NUM_DIR + 1;
+                    found = TRUE;
+                }
+            }
+            if (n != nbArgument && found == FALSE)
+            {
+                return (1); //directory is not exist
+            }
+            if (n == nbArgument)
+            {
+                if (found == TRUE) // IF the file exist
+                {
+                    if (flags == O_CREAT)
+                    {
+                        return (-1); //Already created
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        fileOpen[fd].Fd = fd;
+                        fileOpen[fd].isAllocate = TRUE;
+                        fileOpen[fd].flag = flags;
+                        fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferRead == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
+                        if (fileOpen[fd].BufferWrite == NULL)
+                        {
+                            write(2, "b_open: malloc failed\n", 23);
+                            return (-1);
+                        }
+                        fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+                        fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
+                        fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
+                        fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                        fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
+                        strcpy(fileOpen[fd].name, ptrOpen[curr].name);
+                        fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
+                        fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+                        fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                        time(&(fileOpen[fd].dateAccessedDirectory));
+                        free(ptrOpen);
+                        return (fd);
+                    }
+                }
+                if (found == FALSE) // IF the file NOT exist
+                {
+                    if (flags == O_CREAT)
+                    {
+                        //TODO Create a file
+                        return (fd);
+                    }
+                    if (flags == O_RDWR || O_WRONLY || O_TRUNC || O_RDONLY)
+                    {
+                        return (-1); // File not exist
+                    }
+                }
+            }
+            LBAread(ptrOpen, MBR_st->dirNumBlocks, ptrOpen[curr].childLBA);
+        }
+    }
+    return (-1); // all set
 }
 
 // Interface to Close the file

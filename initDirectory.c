@@ -44,6 +44,7 @@ long initDirectory(int parentLBA)
 	ptr[i].name[0] = 'Q';
 	ptr[i].name[1] = '\0';
 	ptr[i].isBeingUsed = 1;
+	ptr[i].type = atoi("d");
 	i++; //increment to next directory
 
 	//testOutput(&ptr[0]); //print this first root entry
@@ -76,7 +77,7 @@ long initDirectory(int parentLBA)
 		}
 		ptr[i].entryIndex = i;
 		ptr[i].locationLBA = startingBlock;
-
+		ptr[i].type = atoi("d");
 		//MBR_st->idCounter++;
 		//ptr[i].id = MBR_st->idCounter;
 
