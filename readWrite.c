@@ -23,15 +23,23 @@ void b_init()
     for (int i = 0; i < MAX_OPENFILE; i++)
     {
         fileOpen[i].Fd = -1;
+        fileOpen[i].flag = -1;
         fileOpen[i].isAllocate = FALSE;
         fileOpen[i].BufferRead = '\0';
         fileOpen[i].BufferWrite = '\0';
-        fileOpen[i].locationLBA = 0;
-        fileOpen[i].dataLocation = 0;
+        fileOpen[i].buflenRead = 0;
+        fileOpen[i].buflenWrite = 0;
+        fileOpen[i].indexRead = 0;
+        fileOpen[i].indexWrite = 0;
+        fileOpen[i].locationLBA = 20000;
+        fileOpen[i].dataLocation = 20000;
         fileOpen[i].sizeOfFile = 0;
         fileOpen[i].numBlocks = 0;
-        fileOpen[i].locationMetadata = 0;
+        fileOpen[i].locationMetadata = 20000;
         fileOpen[i].isBeingUsed = 0;
+        fileOpen[i].childLBA = 20000;
+        fileOpen[i].entryIndex = 0;
+        fileOpen[i].indexInDataLocation = 20000;
     }
 }
 
@@ -42,7 +50,7 @@ int b_open(char *filename, int flags)
     char *path_token[MAX_DEEP];
     char *token;
     int nbArgument = 0;
-    int lengh = 0;
+    int length = 0;
     int curr = 0;
     int found = FALSE;
 
@@ -76,13 +84,13 @@ int b_open(char *filename, int flags)
     }
     // -------------- Find a FD not allocated ----
     // -------------- SPLIT PATH ----------------
-    lengh = strlen(filename);
-    if (lengh > MAX_PATH_LENGH)
+    length = strlen(filename);
+    if (length > MAX_PATH_LENGTH)
     {
         return (1);
     }
-    char pathRaw[MAX_PATH_LENGH];
-    memcpy(pathRaw, filename, lengh);
+    char pathRaw[MAX_PATH_LENGTH];
+    memcpy(pathRaw, filename, length);
     token = strtok(pathRaw, "/");
     path_token[nbArgument] = token;
     while (token != NULL)
@@ -153,6 +161,7 @@ int b_open(char *filename, int flags)
                     fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
                     fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
                     fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
                     strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                     fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                     fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
@@ -188,6 +197,7 @@ int b_open(char *filename, int flags)
                     fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
                     fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
                     fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
                     strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                     fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                     fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
@@ -255,6 +265,7 @@ int b_open(char *filename, int flags)
                     fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
                     fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
                     fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
                     strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                     fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                     fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
@@ -290,6 +301,7 @@ int b_open(char *filename, int flags)
                     fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
                     fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
                     fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+                    fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
                     strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                     fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                     fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
@@ -435,72 +447,76 @@ int b_getFCB()
 // Interface to read a buffer
 int b_read(int fd, char *buffer, int count)
 {
-    // int bytesRead;           // for our reads
+    int bytesRead;           // for our reads
     int bytesReturned; // what we will return
-    // int part1, part2, part3; // holds the three potential copy lengths
+    int part1, part2, part3; // holds the three potential copy lengths
 
-    // if (startup == 0)
-    //     b_init(); //Initialize our system
+    if (startup == 0)
+        b_init(); //Initialize our system
 
-    // // check that fd is between 0 and (MAXFCBS-1)
-    // if ((fd < 0) || (fd >= MAXFCBS))
-    // {
-    //     return (-1); //invalid file descriptor
-    // }
+    // check that fd is between 0 and (MAXFCBS-1)
+    if ((fd < 0) || (fd >= MAXFCBS))
+    {
+        return (-1); //invalid file descriptor
+    }
 
-    // if (fcbArray[fd].linuxFd == -1) //File not open for this descriptor
-    // {
-    //     return -1;
-    // }
+    if (fileOpen[fd].Fd == -1) //File not open for this descriptor
+    {
+        return -1;
+    }
 
-    // // number of bytes available to copy from buffer
-    // int remain = fcbArray[fd].buflen - fcbArray[fd].index;
-    // part3 = 0;           //only used if count > BUFSIZE
-    // if (remain >= count) //we have enough in buffer
-    // {
-    //     part1 = count; // completely buffered
-    //     part2 = 0;
-    // }
-    // else
-    // {
-    //     part1 = remain; //spanning buffer (or first read)
-    //     part2 = count - remain;
-    // }
+    // number of bytes available to copy from buffer
+    int remain = fileOpen[fd].buflenRead - fileOpen[fd].indexRead;
+    part3 = 0;           //only used if count > BUFSIZE
+    if (remain >= count) //we have enough in buffer
+    {
+        part1 = count; // completely buffered
+        part2 = 0;
+    }
+    else
+    {
+        part1 = remain; //spanning buffer (or first read)
+        part2 = count - remain;
+    }
 
-    // if (part1 > 0) // memcpy part 1
-    // {
-    //     memcpy(buffer, fcbArray[fd].buf + fcbArray[fd].index, part1);
-    //     fcbArray[fd].index = fcbArray[fd].index + part1;
-    // }
+    if (part1 > 0) // memcpy part 1
+    {
+        memcpy(buffer, fileOpen[fd].BufferRead + fileOpen[fd].indexRead, part1);
+        fileOpen[fd].indexRead = fileOpen[fd].indexRead + part1;
+    }
 
-    // if (part2 > 0) //We need to read to copy more bytes to user
-    // {
-    //     // Handle special case where user is asking for more than a buffer worth
-    //     if (part2 > BUFSIZE)
-    //     {
-    //         int blocks = part2 / BUFSIZE; // calculate number of blocks they want
-    //         bytesRead = read(fcbArray[fd].linuxFd, buffer + part1, blocks * BUFSIZE);
-    //         part3 = bytesRead;
-    //         part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
-    //     }
+    if (part2 > 0) //We need to read to copy more bytes to user
+    {
+        // Handle special case where user is asking for more than a buffer worth
+        if (part2 > BUFSIZE)
+        {
+            int blocks = part2 / BUFSIZE; // calculate number of blocks they want
+            //bytesRead = read(fcbArray[fd].linuxFd, buffer + part1, blocks * BUFSIZE);
+            bytesRead = LBAread(fileOpen[fd].BufferRead, 1, fileOpen[fd].indexInDataLocation);
+            fileOpen[fd].indexInDataLocation = fileOpen[fd].indexInDataLocation + 1;
+            part3 = bytesRead;
+            part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
+        }
 
-    //     //try to read BUFSIZE bytes into our buffer
-    //     bytesRead = read(fcbArray[fd].linuxFd, fcbArray[fd].buf, BUFSIZE);
+        //try to read BUFSIZE bytes into our buffer
+        //bytesRead = read(fcbArray[fd].linuxFd, fcbArray[fd].buf, BUFSIZE);
+        bytesRead = LBAread(fileOpen[fd].BufferRead, 1, fileOpen[fd].indexInDataLocation);
+        fileOpen[fd].indexInDataLocation = fileOpen[fd].indexInDataLocation + 1;
 
-    //     // error handling here...  if read fails
+        // error handling here...  if read fails
 
-    //     fcbArray[fd].index = 0;
-    //     fcbArray[fd].buflen = bytesRead; //how many bytes are actually in buffer
+        fileOpen[fd].indexRead = 0;
+        fileOpen[fd].buflenRead = bytesRead; //how many bytes are actually in buffer
 
-    //     if (bytesRead < part2) // not even enough left to satisfy read
-    //         part2 = bytesRead;
+        if (bytesRead < part2) // not even enough left to satisfy read
+            part2 = bytesRead;
 
-    //     if (part2 > 0) // memcpy bytesRead
-    //     {
-    //         memcpy(buffer + part1 + part3, fcbArray[fd].buf + fcbArray[fd].index, part2);
-    //         fcbArray[fd].index = fcbArray[fd].index + part2;
-    //     }
-    // }
-    // bytesReturned = part1 + part2 + part3;
+        if (part2 > 0) // memcpy bytesRead
+        {
+            memcpy(buffer + part1 + part3, fileOpen[fd].BufferRead + fileOpen[fd].indexRead, part2);
+            fileOpen[fd].indexRead = fileOpen[fd].indexRead + part2;
+        }
+    }
+    bytesReturned = part1 + part2 + part3;
     return (bytesReturned);
 }

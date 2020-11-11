@@ -52,7 +52,7 @@ typedef u_int32_t uint32_t;
 #define BLOCK_SIZE 512
 #define B_CHUNK_SIZE 512
 #define BUFSIZE 512
-#define MAX_PATH_LENGH 512
+#define MAX_PATH_LENGTH 512
 #define TRUE 1
 #define FALSE 0
 #define MAX_OPENFILE 20

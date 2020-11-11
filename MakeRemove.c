@@ -97,9 +97,9 @@ fdDir *fs_opendir(const char *name)
         return ((fdDir *)-1);
     }
     else
-        //printf("Malloc succeeded\n\n");
+        printf("Malloc succeeded\n\n");
 
-        printf("\nname: %s", name);
+    printf("\nname: %s", name);
     fdDir *temp = (fdDir *)malloc(sizeof(fdDir));
     temp = tempDirectory((char *const)name, 0);
     temp->streamCount = 0;
