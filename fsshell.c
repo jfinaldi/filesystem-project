@@ -748,4 +748,13 @@ int main(int argc, char *argv[])
 	if (fileOpen != NULL)
 		free(fileOpen);
 	fdDirCWD->dirItemInfo = NULL;
+	
+	//deallocate our CWD struct
+	if(fdDirCWD)
+	{
+		free(fdDirCWD);
+		fdDirCWD = NULL;
+	}
+	
+	
 }
