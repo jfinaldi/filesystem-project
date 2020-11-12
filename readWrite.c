@@ -326,7 +326,7 @@ int b_write(int fd, char *buffer, int count)
 
      if (fileOpen[fd].isAllocate == FALSE)
      { // this portion deals with memory allocation BUFSIZE = 512
-         fileOpen[fd].BufferWrite = (char)malloc(BUFSIZE);
+         fileOpen[fd].BufferWrite = malloc(BUFSIZE);
          if (fileOpen[fd].BufferWrite == NULL)
          {
              // very bad, we can not allocate our buffer not enought memory
@@ -359,7 +359,7 @@ int b_write(int fd, char *buffer, int count)
       fileOpen[fd].BufferWrite = buffer;
 
       for(int i = 0; i < Total_LBA_Write_Blocks; i++) {
-          int Written_Blocks = LBAwrite(fileOpen[fd].BufferWrite, 1, );
+          int Written_Blocks = LBAwrite(fileOpen[fd].BufferWrite, 1, fileOpen[fd].dataLocation + i);
           if (Written_Blocks == 1) { // we wrote a whole block and the return is 1 so incement by 512          
               fileOpen[fd].BufferWrite = fileOpen[fd].BufferWrite + 512;
                }
