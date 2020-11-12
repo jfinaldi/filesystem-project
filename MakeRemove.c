@@ -194,9 +194,10 @@ int fs_closedir(fdDir *dirp)
 {
     //free all memory
     free(dirp);
+    dirp = NULL;
     if (dirp)
     {
-        printf("Error fsORC.c, failed attempt to free dirp, ln 155\n");
+        printf("Error MakeRemove.c, failed attempt to free dirp, ln 196\n");
         return 1;
     }
     return 0;

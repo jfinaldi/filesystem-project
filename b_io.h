@@ -43,6 +43,7 @@ typedef struct fd_struct
     int buflenRead; //how much of read buffer is occupied
     int buflenWrite; //how much of write buffer is occupied
     unsigned long indexInDataLocation; //place marker, increments 1 for every LBAread call
+    short offsetInDataLocation; //tracks bytes read in an LBA block
 } fd_struct;
 extern fd_struct *fileOpen;
 
