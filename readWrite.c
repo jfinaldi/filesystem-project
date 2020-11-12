@@ -290,33 +290,96 @@ void b_close(int fd)
 }
 
 int b_write(int fd, char *buffer, int count)
-{
+{ // this file system is limited to 20 open files at once.
     int n = 0;
     int returnValue = 0;
 
-    // // check that fd is between 0 and (MAXFCBS-1)
-    // if ((fd < 0) || (fd >= MAXFCBS))
-    // {
-    //     return (-1); //invalid file descriptor
-    // }
+    // the two ifs below check if the file descriptor table is open or if it exists
+    // check that fd is between 0 and (MAXFCBS-1) kind of like in assignment 2 we made an array of 20 structs
+     if ((fd < 0) || (fd >= MAXFCBS)) //given value index does not match the limit of 20 open files.
+     {
+         perror("File descriptor outside range 0-20\n");
+         return (-1); //invalid file descriptor
+     }
 
-    // if (fcbArray[fd].linuxFd == -1) //File not open for this descriptor
-    // {
-    //     return (-1);
-    // }
+     if (fd == -1) //File not open for this descriptor
+     {
+         perror("The file was not opened or created\n"); //file was not initilized so open was not called
+         return (-1);
+     }
 
-    // if (fcbArray[fd].allocateBuffer == FALSE)
-    // {
-    //     fcbArray[fd].writeBuffer = malloc(BUFSIZE);
-    //     if (fcbArray[fd].buf == NULL)
-    //     {
-    //         // very bad, we can not allocate our buffer
-    //         close(fd);                 // close linux file
-    //         fcbArray[fd].linuxFd = -1; //Free FCB
-    //         return (-1);
-    //     }
-    //     fcbArray[fd].allocateBuffer = TRUE;
-    // }
+
+     //TO DO: Check for Write permission still in the process
+
+     /*
+     skeleton format to test if a file is write only 
+     
+     if(fileOpen->flag == O_WRONLY) {
+         printf("The file descriptor specified does have the O_WRITE permission\n");
+         return(-1);
+     }
+     */
+     
+     
+     
+     
+
+     if (fileOpen[fd].isAllocate == FALSE)
+     { // this portion deals with memory allocation BUFSIZE = 512
+         fileOpen[fd].BufferWrite = (char)malloc(BUFSIZE);
+         if (fileOpen[fd].BufferWrite == NULL)
+         {
+             // very bad, we can not allocate our buffer not enought memory
+             perror("ERROR IN ALLOCATION:\n");
+             close(fd);                 // close linux file
+             fileOpen[fd].Fd = -1;      //Free opened File
+             return (-1);
+         }
+         fileOpen->isAllocate = TRUE;
+     }
+     int Total_LBA_Write_Blocks = 0; 
+     int Int_Number_LBA_Writes = count/512; // get the integer number of blocks to write does not include remainder
+     // due to integer division.
+     int Remainder_Bytes = count - Int_Number_LBA_Writes*BUFSIZE; 
+    
+     if (Remainder_Bytes > 0) {
+         // there was a few remaining bytes under 512 i need an extra block to fit those so add 1 block
+         Total_LBA_Write_Blocks = Int_Number_LBA_Writes + 1;
+     }
+     else {
+         //division was perfect no remainder so the count perfectly divided with no remainder
+         Total_LBA_Write_Blocks = Int_Number_LBA_Writes;
+     }
+
+
+      //am i going to be given free lba location blocks once the file is opened or not?
+      //or do i have to allocate my own memory
+      //int Start_Location_Of_LBA = find_free_index(Total_LBA_Write_Blocks);
+      
+      fileOpen[fd].BufferWrite = buffer;
+
+      for(int i = 0; i < Total_LBA_Write_Blocks; i++) {
+          int Written_Blocks = LBAwrite(fileOpen[fd].BufferWrite, 1, );
+          if (Written_Blocks == 1) { // we wrote a whole block and the return is 1 so incement by 512          
+              fileOpen[fd].BufferWrite = fileOpen[fd].BufferWrite + 512;
+               }
+               else if (Written_Blocks == 0) { // if return of LBA return = 0
+                //update eofLBA = 
+                // fileOpen[Fd].offsetDataLocation = Remainder_Bytes;
+
+
+
+
+               }
+               else {
+                   perror("The return of LBAWrite is not 0 or 1\n");
+               }
+               fileOpen[fd].numBlocks++;
+      }
+      
+      
+                //DO NOT RETURN THE LINUX SYSTEM CALL RETURN ASSINGMENT 5
+
 
     // if (fcbArray[fd].lenBuffer + count <= BUFSIZE) // STILL HAVE PLACE IN THE WriteBuffer
     // {
