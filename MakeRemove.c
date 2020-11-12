@@ -40,6 +40,7 @@ fdDir *tempDirectory(const char *path, int needLast)
         return ans;
     }
     char *token = strtok(temp, "/");
+    printf("token ln43: %s\n", token);
     int counter = 0;
     int blocks = MBR_st->dirNumBlocks;
     // loop through the string to extract all other tokens
@@ -47,12 +48,15 @@ fdDir *tempDirectory(const char *path, int needLast)
     while (token != NULL)
     {
         printf("TOKEN! %s\n", token); //printing each token
-        printf("in loop: \n");
+        printf("in while loop: \n");
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+    printf("ln52\n");
         LBAread(entryBuffer, blocks, curr);
+    printf("ln54\n");
         int flag = -1;
         for (int i = 0; i < STARTING_NUM_DIR; i++)
         {
+            printf("%s =? %s\n", entryBuffer[i].name, token);
             if (strcmp(entryBuffer[i].name, token) == 0)
             {
                 printf("HI HELLO %d  < i %ld\n", i, entryBuffer[i].childLBA);
@@ -62,14 +66,15 @@ fdDir *tempDirectory(const char *path, int needLast)
                 break;
             }
         }
+        printf("I did not find a duplicate name.\n");
         if (flag == -1)
         {
-            foundCount ++; 
+            foundCount++; 
         }
 
         token = strtok(NULL, "/");
         if (foundCount > 1) {
-            printf ("NOT FOUND RETURNING NULL"); 
+            printf ("NOT FOUND RETURNING NULL\n"); 
             ans-> directoryStartLocation = 20000;
             
             return ans; 
@@ -85,8 +90,19 @@ fdDir *tempDirectory(const char *path, int needLast)
                 ans->directoryStartLocation = curr;
             }
         }
+        if(entryBuffer) {
+            free(entryBuffer);
+            entryBuffer = NULL;
+        }
+        if(entryBuffer) 
+        {
+            printf("Error deallocating entryBuffer in tempDirectory makeremove.c\n");
+        }
+
+        printf("Jenn's token: %s\n", token);
     }
-    printf("-------------");
+    printf("-------------\n");
+
     return ans;
 }
 
@@ -214,26 +230,31 @@ int fs_closedir(fdDir *dirp)
 int fs_mkdir(const char *pathname, mode_t mode)
 {
     char *pathWithoutName = malloc(sizeof(pathname));
-    //char *newName = malloc(256);
+    char *newName = malloc(256);
+    char* ptr;
     int slash = '/';
-    newName = strrchr(pathname, slash);
-    if (newName == NULL)
-    {
-        newName = malloc(256);
+    ptr = strrchr(pathname, slash); //find the last slash
+
+    //path name has no slashes at all
+    if (ptr == NULL)
         strcpy(newName, pathname);
-    }
+
+    //we found a last slash
     else
     {
-        newName++;
+        ptr++;
+        strcpy(newName, ptr);
     }
-
     printf("new name %s\n", newName);
-    fdDir *temp = tempDirectory(pathname, 0);
+    fdDir *temp = tempDirectory(pathname, 0); //create a temp fdDir struct
     printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
+
+    //create a directory buffer and fill with data from temp
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-    int blocks = MBR_st->dirNumBlocks;
-    LBAread(entryBuffer, blocks, temp->directoryStartLocation);
+    LBAread(entryBuffer, MBR_st->dirNumBlocks, temp->directoryStartLocation);
     int freeIndex = -1;
+
+    //cycle through all entries in directory, till we find an empty one
     for (int i = 0; i < STARTING_NUM_DIR; i++)
     {
         if (entryBuffer[i].isBeingUsed == 0)
@@ -243,27 +264,36 @@ int fs_mkdir(const char *pathname, mode_t mode)
             break;
         }
     }
+
+    //we did not find a free entry. Directory is full
     if (freeIndex == -1)
     {
         return -1;
     }
-    entryBuffer[freeIndex].isBeingUsed = 1;
-    //printf("\nTRY TO STRCOPY: %s", pathname);
-    strcpy(entryBuffer[freeIndex].name, newName);
-    entryBuffer[freeIndex].name[sizeof(newName)] = '\0';
-    entryBuffer[freeIndex].type = atoi("d");
-    //entryBuffer[freeIndex].type = "d";
 
+    //fill entry with new information
+    entryBuffer[freeIndex].isBeingUsed = 1;
+    printf("newName: %s\n", newName);
+    strcpy(entryBuffer[freeIndex].name, newName);
+    printf("entryBuffer[freeIndex].name = %s\n", entryBuffer[freeIndex].name);
+    //we don't need to append a null terminator to a char* string
+    entryBuffer[freeIndex].type = atoi("d");
+
+    //create and initialize a directory for this new entry
     entryBuffer[freeIndex].childLBA = initDirectory(temp->directoryStartLocation);
-    LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
-    printf("STARTINGBLOCK: %ld\n", temp->directoryStartLocation);
-    for (int i = 0; i < 6; i++)
+    LBAwrite(entryBuffer, MBR_st->dirNumBlocks, temp->directoryStartLocation);
+
+    //test this to make sure it created properly
+    printf("\n\nPrinting parent directory of %s at: %ld\n", entryBuffer[freeIndex].name, temp->directoryStartLocation);
+    for (int i = 0; i < 4; i++)
     {
         testOutput(&entryBuffer[i]);
     }
-    //free(entryBuffer);
+    printf("\n");
 
-    return 0;
+    free(entryBuffer); //we don't need you anymore, buffer
+
+    return 0; //0 = success
 }
 
 int fs_remove_helper(dirEntry *deToRemove)
@@ -343,7 +373,7 @@ char *fs_getcwd(char *buf, size_t size)
 
 int fs_setcwd(char *buf)
 {
-
+    if(strcmp(buf, ".") == 0) return 0; //if user enters cd . we do nothing
     char temp[256];
     strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
     printf("SETTT: %s\n", fdDirCWD->cwd_path);
@@ -359,13 +389,15 @@ int fs_setcwd(char *buf)
 
     int curr = MBR_st->rootDirectoryPos;
     char *token = strtok(temp, "/");
-    int counter = 0;
-    char ans[20][256];
+    int tokenCounter = 0; //cunter of tokens
+    char ans[20][256]; //??
     int blocks = MBR_st->dirNumBlocks;
     // loop through the string to extract all other tokens
     while (token != NULL)
     {
+        tokenCounter++;
         printf("TOKEN! %s\n", token); //printing each token
+        printf("tokenCounter: %d\n", tokenCounter);
         printf("in loop---\n");
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         LBAread(entryBuffer, blocks, curr);
@@ -374,7 +406,7 @@ int fs_setcwd(char *buf)
         {
             if (strcmp(entryBuffer[i].name, token) == 0)
             {
-                printf("HI HELLO %d  < i %ld\n", i, entryBuffer[i].childLBA);
+                printf("entryBuf.name = token at i: %d, childLBA: %ld\n", i, entryBuffer[i].childLBA);
                 curr = entryBuffer[i].childLBA;
                 flag = 0;
                 break;
@@ -387,22 +419,52 @@ int fs_setcwd(char *buf)
         }
 
         token = strtok(NULL, "/");
+
+        if(entryBuffer)
+        {
+            free(entryBuffer);
+            entryBuffer = NULL;
+        }
+        if(entryBuffer)
+        {
+            printf("error free entryBuffer makeRemove.c setCWD\n");
+            return -1;
+        }
     }
 
     fdDirCWD->directoryStartLocation = curr;
+    printf("[433]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
     if (strcmp(&buf[0], "/") == 0)
     {
-        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf));
+        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf)); //DANGER: sizeof() returns size of buf ptr, not of string
         strncpy(fdDirCWD->cwd_path, "\0", 1);
     }
     else
     {
-
-        strcat(fdDirCWD->cwd_path, buf);
-        strcat(fdDirCWD->cwd_path, "/\0");
+printf("[441]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
+printf("[442]buf: %s\n", buf);
+        if(strcmp(buf, "Q") && strcmp(buf, "QQ")) 
+        {
+            strcat(fdDirCWD->cwd_path, buf);
+            strcat(fdDirCWD->cwd_path, "/\0");
+        }
     }
+    printf("[452]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
     printf("CURRCWD  %s beep\n", fdDirCWD->cwd_path);
     return 0;
+
+    /********TO DO***********
+    Case1: user enters .
+           Do Nothing (DONE)
+    Case2: user enters ..
+           Do not append .. to the path (DONE)
+           Remove the last directory from path using tokenCounter
+    Case3: user enters absolute path
+           Navigate from the root directory, reconstructing the path
+    Case4: user enters relative path
+           First token needs to be a child of CWD or throw error
+    Case5: If user enters /, take them to the root
+    *************************/
 }
 
 int fs_isDir(char *path)

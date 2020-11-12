@@ -105,7 +105,7 @@ void testOutput(dirEntry *rootDir)
 	printf("Location of Self: %ld\n", rootDir->locationLBA);
 	printf("Data Location: %ld\n", rootDir->dataLocation);
 	printf("EOF LBA:  %ld\n", rootDir->eofLBA);
-	printf("EOF Offset (bytes): %d\n", rootDir->eofOffset)
+	printf("EOF Offset (bytes): %d\n", rootDir->eofOffset);
 	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Name: %s\n", rootDir->name);
 	printf("Index: %d\n", rootDir->entryIndex);

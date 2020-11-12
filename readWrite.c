@@ -136,7 +136,7 @@ int b_open(char *filename, int flags)
         printf("new name %s\n", newName);
         fdDir *temp = tempDirectory(filename, 0);
         if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name"); 
+            printf("not a valid path or name\n"); 
             return -1;
         }
         printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
@@ -148,7 +148,7 @@ int b_open(char *filename, int flags)
         {
             if (strcmp(ptrOpen[i].name, newName) == 0)
             {
-                printf("found %s %s", newName, ptrOpen[i].name); 
+                printf("found %s %s\n", newName, ptrOpen[i].name); 
                 fileOpen[fd].Fd = fd;
                 fileOpen[fd].isAllocate = TRUE;
                 fileOpen[fd].flag = flags;
@@ -175,12 +175,12 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
-                printf("found fd"); 
+                printf("found fd\n"); 
                 return (fd);
             }
         }
         if (flags & O_CREAT) {
-            printf("IN CREATE"); 
+            printf("IN CREATE\n"); 
             int freeIndex = -1; 
             for (int i = 0; i < STARTING_NUM_DIR; i++)
             {
@@ -192,7 +192,7 @@ int b_open(char *filename, int flags)
                 }
             }
             if (freeIndex == -1){
-                printf("no space"); 
+                printf("no space\n"); 
                 return -1;
             }
             ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation;  //location of this entry in logical block
@@ -291,7 +291,7 @@ void b_close(int fd)
 
 int b_write(int fd, char *buffer, int count)
 { // this file system is limited to 20 open files at once.
-    int n = 0;
+    /*int n = 0;
     int returnValue = 0;
 
     // the two ifs below check if the file descriptor table is open or if it exists
@@ -318,7 +318,7 @@ int b_write(int fd, char *buffer, int count)
          printf("The file descriptor specified does have the O_WRITE permission\n");
          return(-1);
      }
-     */
+     
      
      
      
@@ -431,7 +431,8 @@ int b_write(int fd, char *buffer, int count)
     //         }
     //     }
     // }
-    return (returnValue);
+    return (returnValue);*/
+    return 1;
 }
 
 //Method to get a free FCB element

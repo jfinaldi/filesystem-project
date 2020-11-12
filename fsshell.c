@@ -336,9 +336,9 @@ int cmd_mv(int argcnt, char *argvec[])
 // Make Directory
 int cmd_md(int argcnt, char *argvec[])
 {
-	printf("ahhh");
+	//printf("ahhh");
 #if (CMDMD_ON == 1)
-	printf("whattt?");
+	printf("fsshell ln 341\n");
 	if (argcnt != 2)
 	{
 		printf("Usage: md pathname\n");
@@ -346,7 +346,7 @@ int cmd_md(int argcnt, char *argvec[])
 	}
 	else
 	{
-		printf("trying to make %s", argvec[1]);
+		printf("trying to make %s\n", argvec[1]);
 		return (fs_mkdir(argvec[1], 0777));
 	}
 #endif
@@ -695,11 +695,11 @@ int main(int argc, char *argv[])
 	MBRinit(volumeSize, blockSize, argv);
 	// b_open("/foo/dir/test.txt", O_WRONLY | O_RDONLY);
 	// exit(0);
-	int okay = b_open("/beep/helloFile", O_CREAT); 
+	/*int okay = b_open("/beep/helloFile", O_CREAT); 
 	int okay2 = b_open("/beep/helloFile2", O_RDONLY); 
 	int check1 = b_open("/beep/helloFile", O_RDONLY); 
 	int check2 = b_open("/beep/helloFile2", O_RDONLY);
-	 printf("check1 %d, check2 %d", check1, check2);
+	 printf("check1 %d, check2 %d", check1, check2);*/
 	char *cmdin;
 	char *cmd;
 	HIST_ENTRY *he;
