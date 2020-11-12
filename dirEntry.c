@@ -45,12 +45,12 @@ certain information pertaining to the modification of file data.
 */
 void updateEntry(fd_struct* fd, dirEntry* dE)
 {
-    dE.numBlocks = fd.numBlocks;
-    dE.eofLBA = fd.eofLBA;
-    dE.eofOffset = fd.eofOffset;
+    dE->numBlocks = fd->numBlocks;
+    dE->eofLBA = fd->eofLBA;
+    dE->eofOffset = fd->eofOffset;
 
     time(&(dE->dateModifiedDirectory)); // date the file was last modified
     time(&(dE->dateAccessedDirectory)); // date the file was last accessed
 
-	dE.sizeOfFile = (dE.numBlocks * MBR_st->blockSize) + dE.eofLBA;
+	dE->sizeOfFile = (dE->numBlocks * MBR_st->blockSize) + dE->eofLBA;
 }

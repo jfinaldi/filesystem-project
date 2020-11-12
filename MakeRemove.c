@@ -200,7 +200,6 @@ int fs_closedir(fdDir *dirp)
         return 1;
     }
 
-
     //free all memory
     free(dirp);
     dirp = NULL;
@@ -215,7 +214,7 @@ int fs_closedir(fdDir *dirp)
 int fs_mkdir(const char *pathname, mode_t mode)
 {
     char *pathWithoutName = malloc(sizeof(pathname));
-    char *newName = malloc(256);
+    //char *newName = malloc(256);
     int slash = '/';
     newName = strrchr(pathname, slash);
     if (newName == NULL)
@@ -408,10 +407,15 @@ int fs_setcwd(char *buf)
 
 int fs_isDir(char *path)
 {
-    //return 1;
+    //create a new path name and set it to point
+    //to the last occurence of a slash
     char * newName = malloc(256);
     int slash = '/';
-    newName = strrchr(path, slash);
+    newName = strrchr(path, slash); 
+
+    //if we didn't find a / then simply copy the
+    //path to newName and increment its start to 
+    //the second character
     if (newName == NULL){
         newName = malloc(256);
         strcpy(newName, path);
@@ -419,6 +423,8 @@ int fs_isDir(char *path)
         newName++;
     }
 
+    //if the path is literally just a slash, that
+    //means we are at the root, so we are in a dir
     if (strcmp(path, "/") == 0){
         printf("\nis Root\n");
         return 1;
@@ -430,7 +436,7 @@ int fs_isDir(char *path)
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBuffer[i].name, newName) == 0)
         { 
-           if(entryBuffer[i].type == 100) {
+           if(entryBuffer[i].type == 100) { //100 = ascii for 'd'
                return 1;
            } else {
                return 0;
