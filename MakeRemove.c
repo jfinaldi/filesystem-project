@@ -108,6 +108,10 @@ fdDir *fs_opendir(const char *name)
     printf("name: %s\n", name);
     fdDir *temp = (fdDir *)malloc(sizeof(fdDir));
     temp = tempDirectory((char *const)name, 0);
+    if (temp -> directoryStartLocation == 20000) {
+            printf("not a valid path or name"); 
+            return NULL;
+        }
     temp->streamCount = 0;
     printf("temp->directoryStartLocation: %ld\n", temp->directoryStartLocation);
     return temp;
@@ -216,6 +220,10 @@ int fs_mkdir(const char *pathname, mode_t mode)
 
     printf("new name %s\n", newName);
     fdDir *temp = tempDirectory(pathname, 0);
+    if (temp -> directoryStartLocation == 20000) {
+            printf("not a valid path or name"); 
+            return -1;
+        }
     printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
@@ -259,6 +267,9 @@ int fs_remove_helper(dirEntry *deToRemove)
     int blocks = MBR_st->dirNumBlocks;
     deToRemove->isBeingUsed = 0;
     strcpy(deToRemove->name, "deleted\n");
+    if (deToRemove -> type != 100) {
+        free_mem(deToRemove->locationMetadata, 512 * 20);
+    }
     printf("CHILDLABA, %ld\n", deToRemove->childLBA);
     LBAread(entryBuff, blocks, deToRemove->childLBA);
     for (int i = 2; i < STARTING_NUM_DIR; i++)
@@ -297,6 +308,10 @@ int fs_rmdir(const char *pathname)
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     fdDir *temp = tempDirectory(pathname, 1);
+    if (temp -> directoryStartLocation == 20000) {
+            printf("not a valid path or name"); 
+            return -1;
+        }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
     int remove_index = -1;
@@ -388,7 +403,8 @@ int fs_setcwd(char *buf)
         strcat(fdDirCWD->cwd_path, buf);
         strcat(fdDirCWD->cwd_path, "/\0");
     }
-    printf("CURRCWD  %s beep\n", fdDirCWD->cwd_path);
+    //TODO : modify fdDirCWD->cwd_path to get rid of . and ..
+    printf("CURRCWD  %s\n", fdDirCWD->cwd_path);
     return 0;
 }
 
@@ -412,6 +428,10 @@ int fs_isDir(char *path)
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize);
     int blocks = MBR_st -> dirNumBlocks;
     fdDir *temp = tempDirectory(path, 1);
+    if (temp -> directoryStartLocation == 20000) {
+        printf("not a valid path or name"); 
+        return -1;
+    }
     LBAread(entryBuffer, blocks, temp -> directoryStartLocation);
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBuffer[i].name, newName) == 0)
@@ -427,6 +447,9 @@ int fs_isDir(char *path)
 
 int fs_isFile(char *path)
 {
-    return 0;
-    //return !fs_isDir(path);
+    return !fs_isDir(path);
 }
+int fs_delete(char *filename) {
+    fs_rmdir(filename); 
+}
+
