@@ -22,6 +22,8 @@ typedef struct DirectoryEntry
 	short entryIndex;		   //the index in the directory array
 	//unsigned long id; // id of the file
 	unsigned long dataLocation;		// location where file data starts
+	unsigned long eofLBA;    		// LBA of last block of file data
+	short eofOffset;   				// the offset in the LBA block containing EOF
 	char name[256];					// directory name for the directory it points to
 	uint64_t sizeOfFile;			// the number of bytes of the file data
 	unsigned long numBlocks;		// the number of blocks occupied by the file
@@ -33,5 +35,6 @@ typedef struct DirectoryEntry
 } dirEntry;
 
 void initEntry(dirEntry *dE);
+void updateEntry(fd_struct* fd, dirEntry* dE);
 
 #endif

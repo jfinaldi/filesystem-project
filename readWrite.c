@@ -39,6 +39,8 @@ void b_init()
         fileOpen[i].childLBA = 20000;
         fileOpen[i].entryIndex = 0;
         fileOpen[i].indexInDataLocation = 20000;
+        fileOpen[i].offsetInDataLocation = 20000;
+
     }
 }
 
@@ -263,6 +265,28 @@ void b_close(int fd)
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
     }
+
+    //if this fd was written to, update the entry
+    //if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
+    //    || fileOpen[fd].flag == O_CREAT) 
+    //{
+       /* //create a dirEntry pointer, malloc dirBUfMallocSize bytes
+        dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+        if (ptr == NULL)
+        {
+            printf("Error with malloc ln96.\n");
+            return ((fdDir *)-1);
+        }
+        else
+            printf("Malloc succeeded\n\n");
+
+        //fill ptr buffer
+        LBAread(ptr, MBR_st->dirNumBlocks, fileOpen[fd].directoryStartLocation);
+
+        //find the entry and call update
+        dirEntry* entry = ptr[fileOpen[fd].entryIndex];
+        updateEntry(fileOpen[fd], entry);*/
+    //}
 }
 
 int b_write(int fd, char *buffer, int count)

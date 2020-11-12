@@ -20,6 +20,8 @@ void initEntry(dirEntry *dE)
 	dE->locationLBA = 20000;  //location of this entry in logical block
 	dE->entryIndex = -1;	  //the position of this entry in the array of entries
 	dE->childLBA = 20000;
+	dE->eofLBA = 20000;
+	dE->eofOffset = 0;
 
 	//initialize a default name for this child
 	dE->name[0] = '%';
@@ -35,4 +37,20 @@ void initEntry(dirEntry *dE)
 	dE->locationMetadata = 20000; //512 file per directory
 	dE->isBeingUsed = 0;		  //this file is currently not being used
 	dE->type = 'd';				  //initially this will be a directory until datalocation is != 20000
+}
+
+/*
+This function takes an fd_struct object, and a directory entry and updates
+certain information pertaining to the modification of file data.
+*/
+void updateEntry(fd_struct* fd, dirEntry* dE)
+{
+    dE.numBlocks = fd.numBlocks;
+    dE.eofLBA = fd.eofLBA;
+    dE.eofOffset = fd.eofOffset;
+
+    time(&(dE->dateModifiedDirectory)); // date the file was last modified
+    time(&(dE->dateAccessedDirectory)); // date the file was last accessed
+
+	dE.sizeOfFile = (dE.numBlocks * MBR_st->blockSize) + dE.eofLBA;
 }

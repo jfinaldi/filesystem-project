@@ -188,6 +188,19 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp)
 //this function will free all memory for dirp
 int fs_closedir(fdDir *dirp)
 {
+    //deallocate diriteminfo struct
+    if(dirp->dirItemInfo)
+    {
+        free(dirp->dirItemInfo);
+        dirp->dirItemInfo = NULL;
+    }
+    if(dirp->dirItemInfo)
+    {
+        printf("Error fs_closedir failed to deallocate dirp->dirItemInfo\n");
+        return 1;
+    }
+
+
     //free all memory
     free(dirp);
     dirp = NULL;
