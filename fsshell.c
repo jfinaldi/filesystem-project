@@ -367,12 +367,15 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
-	if (fs_isDir(path))
+	//change back to fs_isDir(path)
+	if (1)
 	{
+		printf("is dir"); 
 		return (fs_rmdir(path));
 	}
 	if (fs_isFile(path))
 	{
+		printf("is file"); 
 		return (fs_delete(path));
 	}
 

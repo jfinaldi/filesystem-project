@@ -362,6 +362,7 @@ int fs_remove_helper(dirEntry *deToRemove)
 
 int fs_rmdir(const char *pathname)
 {
+    printf("IN REMOVE"); 
     char *newName = malloc(256);
     int slash = '/';
     newName = strrchr(pathname, slash);
@@ -377,10 +378,12 @@ int fs_rmdir(const char *pathname)
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     fdDir *temp = tempDirectory(pathname, 1);
+    printf("AFTER TEMP IN REMOVE");
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return -1;
         }
+    printf("REMOVE START %ld", temp->directoryStartLocation);
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
     int remove_index = -1;
