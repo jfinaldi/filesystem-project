@@ -267,7 +267,6 @@ int cmd_ls(int argcnt, char *argvec[])
 	{
 		char *path = fs_getcwd(cwd, DIRMAX_LEN); //get current working directory
 		fdDir *dirp;
-		printf("hello????");
 		dirp = fs_opendir(path);
 		return (displayFiles(dirp, flall, fllong));
 	}
@@ -713,6 +712,7 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		printf("\ncurr CWD: %s\n", fdDirCWD -> cwd_path); 
+		printf("\ncurr block: %ld\n", fdDirCWD -> directoryStartLocation);
 		cmdin = readline("Prompt > ");
 #ifdef COMMAND_DEBUG
 		printf("%s\n", cmdin);
