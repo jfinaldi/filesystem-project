@@ -12,83 +12,132 @@
 
 #include "mfs.h"
 
-fdDir *tempDirectory(const char *path, int needLast)
+char** tokenizePath(char* path, int* i)
 {
-    printf("\n\n----------------\nin tempDir, \n");
-    char temp[256];
-    strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
-    // char first[0];
-    // strncpy(first, path, 0);
-    // printf ("FIRST CHAR: %s ahh", &path[0]);
-    if (strncmp(&path[0], "/", 1) == 0)
-    {
-        printf("ABSOLUTE PATH\n");
-        strncpy(temp, path, sizeof(path));
+    printf("[367]In tokenizePath...%s\n", path);
+    char** result = (char**)malloc(strlen(path) * sizeof(char**));
+    printf("before loop"); 
+    // loop through the string to extract all other tokens
+    char* token = strtok(path, "/");
+    (*i) = 0;
+    while (token != NULL)  {
+        result[*i] = token;
+        printf("TOKEN: %s", token); 
+        (*i)++;
+        token = strtok(NULL, "/");
+    } 
+    printf ("end tokenize"); 
+    return result;
+}
+//removes . and .. and directories corresponding to .. from path
+//returns shortest absolute path to CWD
+//81 is ASCII for Q
+char * pathResolver(char *path) {
+    printf ("in resolver with %s\n", path); 
+    int numTokens = 0;
+    char** tokens = tokenizePath(path, &numTokens);
+    char * returnPath = malloc(256); 
+    strcpy(returnPath, "/");
+    //loop through tokens
+    for (int i = numTokens - 1; i >= 0 ; i--) {
+        int count = 0; 
+        _Bool lastLetterQ = tokens[i - count][(strlen(tokens[i - count])-1)] == 81; 
+        _Bool secondToLastLetterQ = tokens[i - count][(strlen(tokens[i - count])-2)] == 81; 
+        //remove QQs
+        while (i - count!= -1 &&  lastLetterQ && secondToLastLetterQ) {
+            strcpy(tokens[i - count], "\0");
+            count++;
+            if (i - count == -1) {
+                break; 
+            }
+            lastLetterQ = tokens[i - count][(strlen(tokens[i - count])-1)] == 81;
+            secondToLastLetterQ = tokens[i - count][(strlen(tokens[i - count])-2)] == 81;
+        } 
+        //remove dirs corresponding to QQs
+        for (int k = 0; k  < count; k++) {
+            int toRemove = i - count - k; 
+            if (toRemove >= 0) {
+                strcpy(tokens[toRemove], "\0");
+            }
+        }
+        //remove Qs
+        if (lastLetterQ && !secondToLastLetterQ){
+            strcpy(tokens[i], "\0");
+        }
     }
-    else
-    {
+    //re-concat path
+    for (int i = 0; i < numTokens ; i++) {
+        printf ("tokens in reconcat: %s", tokens[i]); 
+        strcat(returnPath, tokens[i]);
+        printf("making return path %s\n", returnPath); 
+        if (strcmp(tokens[i], "\0") != 0 && i != numTokens - 1) {
+            
+            strcat(returnPath, "/\0");
+        }
+    } 
+    return returnPath; 
+}
+fdDir *tempDirectory(const char *path, int needLast) {
+
+    //printf("start temp with path %s\n", path); 
+    char temp[256];
+    _Bool isAbsolute = strncmp(&path[0], "/", 1) == 0; 
+    //temp is path if absolute, otherwise concat with CWD
+    if (isAbsolute) {
+        strncpy(temp, path, sizeof(char*) * sizeof(path));
+        printf ("to resolve in temp absolute %s\n", temp); 
+    } else {
+        strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
         strcat(temp, path);
+        printf ("to resolve in temp relative %s\n", temp); 
     }
 
     int curr = MBR_st->rootDirectoryPos;
     int last = curr;
-    fdDir *ans = (fdDir *)malloc(sizeof(fdDir));
-    if (strcmp(path, "/") == 0)
-    {
-        printf("\nis Root\n");
-        ans->directoryStartLocation = MBR_st->rootDirectoryPos;
-        return ans;
+    fdDir *resultDir = (fdDir *)malloc(sizeof(fdDir));
+    _Bool isRoot =  strcmp(path, "/") == 0;
+
+    //early return for Root
+    if (isRoot) {
+        resultDir->directoryStartLocation = MBR_st->rootDirectoryPos;
+        return resultDir;
     }
-    char *token = strtok(temp, "/");
-    printf("token ln43: %s\n", token);
-    int counter = 0;
+
+    int numTokens = 0;
+   
+    char** tokens = tokenizePath(temp, &numTokens);
     int blocks = MBR_st->dirNumBlocks;
-    // loop through the string to extract all other tokens
-    int foundCount = 0; 
-    while (token != NULL)
-    {
-        printf("TOKEN! %s\n", token); //printing each token
-        printf("in while loop: \n");
+    int notFoundCount = 0; 
+     printf("numtokens in temp %d", numTokens);
+
+    //loop through tokens
+    for (int k = 0; k < numTokens; k++) {
+        printf("token in temp %s\n", tokens[k]); 
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     printf("ln52\n");
         LBAread(entryBuffer, blocks, curr);
-    printf("ln54\n");
-        int flag = -1;
-        for (int i = 0; i < STARTING_NUM_DIR; i++)
-        {
-            printf("%s =? %s\n", entryBuffer[i].name, token);
-            if (strcmp(entryBuffer[i].name, token) == 0)
-            {
-                printf("HI HELLO %d  < i %ld\n", i, entryBuffer[i].childLBA);
+        int found = -1;
+        //check children for currToken, note if not found
+        for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
-                flag = 0;
+                if (entryBuffer[i].childLBA == 20000) {
+                    curr = entryBuffer[i].locationMetadata; 
+                }
+                found = 0;
+                printf("found at %d", curr); 
                 break;
             }
         }
-        printf("I did not find a duplicate name.\n");
-        if (flag == -1)
-        {
-            foundCount++; 
+        if (found == -1) {
+            notFoundCount ++; 
         }
-
-        token = strtok(NULL, "/");
-        if (foundCount > 1) {
-            printf ("NOT FOUND RETURNING NULL\n"); 
-            ans-> directoryStartLocation = 20000;
-            
-            return ans; 
-        }
-        if (token == NULL)
-        {
-            if (needLast == 1)
-            {
-                ans->directoryStartLocation = last;
-            }
-            else
-            {
-                ans->directoryStartLocation = curr;
-            }
+        //if more than 1 tokens aren't found return not found 
+        if (notFoundCount > 1) {
+            printf ("not found"); 
+            resultDir-> directoryStartLocation = 20000;
+            return resultDir; 
         }
         if(entryBuffer) {
             free(entryBuffer);
@@ -101,106 +150,64 @@ fdDir *tempDirectory(const char *path, int needLast)
 
         printf("Jenn's token: %s\n", token);
     }
-    printf("-------------\n");
-
-    return ans;
+    if (needLast == 1){
+        resultDir->directoryStartLocation = last;
+    } else {
+        resultDir->directoryStartLocation = curr;
+    }
+    printf("end temp"); 
+    return resultDir;
 }
 
 fdDir *fs_opendir(const char *name)
 {
-    //we should know the global variable for fdDir object
+    printf("name to open %s\n", name); 
     fdDir *result = (fdDir *)malloc(sizeof(fdDir));
-
-    //create a dirEntry pointer, malloc dirBUfMallocSize bytes
     dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-    if (ptr == NULL)
-    {
-        printf("Error with malloc ln96.\n");
+    if (ptr == NULL){
         return ((fdDir *)-1);
     }
-    else
-        printf("Malloc succeeded\n\n");
-
-    printf("name: %s\n", name);
     fdDir *temp = (fdDir *)malloc(sizeof(fdDir));
-    temp = tempDirectory((char *const)name, 0);
+    temp = tempDirectory(name, 0);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return NULL;
-        }
+    }
     temp->streamCount = 0;
-    printf("temp->directoryStartLocation: %ld\n", temp->directoryStartLocation);
     return temp;
-    //do LBA read to populate the buffer from our fdDirCWD->directoryStartLocation
-    // LBAread(ptr, MBR_st->dirNumBlocks, temp->directoryStartLocation);
-
-    // //start a for-loop to iterate through fdDir, sizeof(dirEntry) bytes at a time
-    // for (int i = 0; i < MBR_st->dirNumBlocks; i++)
-    // {
-    //     //if name of entry matches argument name
-    //     if (strcmp(ptr[i].name, name) == 0)
-    //     {
-    //         //fdDirCWD starting directory location should equal child location in ptr
-    //         result->directoryStartLocation = ptr[i].childLBA;
-
-    //         //assign directory entry position to index in ptr
-    //         result->dirEntryPosition = ptr[i].entryIndex;
-
-    //         //set the path string
-    //         char *temp = "/";
-    //         strcat(temp, name); //should now be /name
-    //         strcat(result->cwd_path, temp);
-
-    //         outputFdDirCWD(result);
-
-    //         free(ptr);
-    //         return result;
-    //     }
-    // }
-    // printf("not found.\n");
-    // free(ptr);
-    // return result;
 }
 
-struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-{
-    printf("in read------\n");
-    //malloc an fs_diriteminfo object
+struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
+    
+    //malloc new item infp 
     struct fs_diriteminfo *result = (struct fs_diriteminfo *)malloc(sizeof(struct fs_diriteminfo));
-    if (result == NULL)
-    {
-        printf("Error with malloc.\n");
+    if (result == NULL) {
+        printf("malloc err");
         return ((struct fs_diriteminfo *)-1);
     }
-    //else
-    //printf("\nMalloc succeeded\n");
-
-    //malloc a dirEntry pointer buffer
+   
+   //malloc and put dir in buffer
     dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-    if (ptr == NULL)
-    {
-        printf("Error with malloc.\n");
+    if (ptr == NULL) {
+        printf("malloc err");
         return ((struct fs_diriteminfo *)-1);
     }
-    //else
-        //printf("\nMalloc succeeded\n");
 
     LBAread(ptr, MBR_st->dirNumBlocks, dirp->directoryStartLocation);
-
-    //populate it with information from dirp
-    while (ptr[dirp->streamCount].isBeingUsed == 0 && dirp->streamCount < 50)
-    {
+ 
+    
+    //ignore empty Dirs, incrememnt StreamCount
+    while (ptr[dirp->streamCount].isBeingUsed == 0 && dirp->streamCount < STARTING_NUM_DIR) {
         dirp->streamCount++;
     }
-    if (ptr[dirp->streamCount].isBeingUsed == 1)
-    {
+    //set info to return if being used, increment StreamCount
+    if (!ptr[dirp->streamCount].isBeingUsed == 0) {
         result->fileType = ptr[dirp->streamCount].type;
         strcpy(result->d_name, ptr[dirp->streamCount].name);
         dirp->streamCount++;
         return result;
     }
-    else
-    {
+    else {
         return NULL;
     }
 }
@@ -221,6 +228,7 @@ int fs_closedir(fdDir *dirp)
     }
 
     //free all memory
+    
     free(dirp);
     dirp = NULL;
     if (dirp)
@@ -233,6 +241,7 @@ int fs_closedir(fdDir *dirp)
 
 int fs_mkdir(const char *pathname, mode_t mode)
 {
+    //isolate name of new Dir
     char *pathWithoutName = malloc(sizeof(pathname));
     char *newName = malloc(256);
     char* ptr;
@@ -250,54 +259,38 @@ int fs_mkdir(const char *pathname, mode_t mode)
         strcpy(newName, ptr);
     }
     printf("new name %s\n", newName);
+
+    //resolve pathname and load buffer with Dir
     fdDir *temp = tempDirectory(pathname, 0);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return -1;
-        }
-    printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
-
-    //create a directory buffer and fill with data from temp
+    }
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-    LBAread(entryBuffer, MBR_st->dirNumBlocks, temp->directoryStartLocation);
-    int freeIndex = -1;
+    int blocks = MBR_st->dirNumBlocks;
+    LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
-    //cycle through all entries in directory, till we find an empty one
-    for (int i = 0; i < STARTING_NUM_DIR; i++)
-    {
-        if (entryBuffer[i].isBeingUsed == 0)
-        {
-            printf("FREEE INDEX: %d\n", i);
+    int freeIndex = -1;
+    //find free index
+    for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        if (entryBuffer[i].isBeingUsed == 0) {
             freeIndex = i;
             break;
         }
     }
-
-    //we did not find a free entry. Directory is full
-    if (freeIndex == -1)
-    {
+    if (freeIndex == -1){
+        printf("Dir is full");
         return -1;
     }
 
-    //fill entry with new information
+    //Set info to return 
     entryBuffer[freeIndex].isBeingUsed = 1;
-    printf("newName: %s\n", newName);
     strcpy(entryBuffer[freeIndex].name, newName);
     printf("entryBuffer[freeIndex].name = %s\n", entryBuffer[freeIndex].name);
     //we don't need to append a null terminator to a char* string
     entryBuffer[freeIndex].type = atoi("d");
-
-    //create and initialize a directory for this new entry
     entryBuffer[freeIndex].childLBA = initDirectory(temp->directoryStartLocation);
-    LBAwrite(entryBuffer, MBR_st->dirNumBlocks, temp->directoryStartLocation);
-
-    //test this to make sure it created properly
-    printf("\n\nPrinting parent directory of %s at: %ld\n", entryBuffer[freeIndex].name, temp->directoryStartLocation);
-    for (int i = 0; i < 4; i++)
-    {
-        testOutput(&entryBuffer[i]);
-    }
-    printf("\n");
+    LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
 
     free(entryBuffer); //we don't need you anymore, buffer
 
@@ -306,168 +299,138 @@ int fs_mkdir(const char *pathname, mode_t mode)
 
 int fs_remove_helper(dirEntry *deToRemove)
 {
+    //set toRemove to be empty 
     dirEntry *entryBuff = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     deToRemove->isBeingUsed = 0;
-    strcpy(deToRemove->name, "deleted\n");
+    strcpy(deToRemove->name, "deleted");
+
+    //100 ASCII for "d", remove metaData if File
     if (deToRemove -> type != 100) {
         free_mem(deToRemove->locationMetadata, 512 * 20);
     }
-    printf("CHILDLABA, %ld\n", deToRemove->childLBA);
+    //check for child Directories to delete and recursively delete
     LBAread(entryBuff, blocks, deToRemove->childLBA);
-    for (int i = 2; i < STARTING_NUM_DIR; i++)
-    {
-        // if (0) {
-        //     entryBuffer[i] . isBeingUsed = 0;
-        //     // deletefile();
-        //     // free_mem(fileStartLBA, fileLength);
-        // } else
-        if (entryBuff[i].isBeingUsed == 1)
-        {
-            printf("why is this printing %d??\n", i);
+    for (int i = 2; i < STARTING_NUM_DIR; i++) {
+        if (entryBuff[i].isBeingUsed == 1) {
             fs_remove_helper(&entryBuff[i]);
         }
     }
+    //rewrite and free mem
     LBAwrite(entryBuff, blocks, deToRemove->childLBA);
     free_mem(deToRemove->childLBA, blocks);
-
-    //free(entryBuffer);
 }
 
 int fs_rmdir(const char *pathname)
 {
-    char *newName = malloc(256);
-    int slash = '/';
-    newName = strrchr(pathname, slash);
-    if (newName == NULL)
-    {
-        newName = malloc(256);
-        strcpy(newName, pathname);
+    //resolve name of to remove
+    char *nameToRemove = malloc(256);
+    nameToRemove = strrchr(pathname, '/');
+    if (nameToRemove == NULL) {
+        nameToRemove = malloc(256);
+        strcpy(nameToRemove, pathname);
+    } else {
+        nameToRemove++;
     }
-    else
-    {
-        newName++;
-    }
+
+    //set buffer and check if valid
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
+    pathname = (char *) pathname;
     fdDir *temp = tempDirectory(pathname, 1);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return -1;
-        }
+    }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
+    //find index to remove
     int remove_index = -1;
-    printf("TRYING TO DELETE: %s\n", newName);
-    for (int i = 0; i < STARTING_NUM_DIR; i++)
-    {
-        if (strcmp(entryBuffer[i].name, newName) == 0)
+    for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        if (strcmp(entryBuffer[i].name, nameToRemove) == 0)
         {
             remove_index = i;
-            printf("delete index: %d\n", i);
             break;
         }
     }
+
+    //start recurisve removal and then write
     fs_remove_helper(&entryBuffer[remove_index]);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
-    //free(entryBuffer);
-    for (int i = 0; i < 6; i++)
-    {
-        testOutput(&entryBuffer[i]);
-    }
 }
 
 char *fs_getcwd(char *buf, size_t size)
 {
-
     char *path = malloc(256);
     strncpy(path, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
-    printf("IN GETCWD: %s\n", path);
+    strcat(path, "\0"); 
+    printf("path in get %s\n", path); 
     return path;
 }
 
 int fs_setcwd(char *buf)
 {
-    if(strcmp(buf, ".") == 0) return 0; //if user enters cd . we do nothing
+   printf ("insetcwd with %s\n", buf); 
     char temp[256];
+    //if absolute temp is buf, otherwise concat with CWD
+    int isAbsolute = strncmp(&buf[0], "/", 1) == 0; 
     strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
-    printf("SETTT: %s\n", fdDirCWD->cwd_path);
-    if (strcmp(&buf[0], "/") == 0)
-    {
-        strncpy(temp, buf, sizeof(buf));
+    if (isAbsolute) {
+        printf("set is abs"); 
+        strncpy(temp, buf, sizeof(char*) * sizeof(buf));
     }
-    else
-    {
+    else {
         strcat(temp, buf);
-        printf("SETTT: %s\n", temp);
     }
 
     int curr = MBR_st->rootDirectoryPos;
-    char *token = strtok(temp, "/");
-    int tokenCounter = 0; //cunter of tokens
-    char ans[20][256]; //??
+    int numTokens = 0;
+    char** tokens = tokenizePath(temp, &numTokens);
+    int counter = 0;
+    char resultDir[20][256];
     int blocks = MBR_st->dirNumBlocks;
-    // loop through the string to extract all other tokens
-    while (token != NULL)
-    {
-        tokenCounter++;
-        printf("TOKEN! %s\n", token); //printing each token
-        printf("tokenCounter: %d\n", tokenCounter);
-        printf("in loop---\n");
+
+    //loop looking for correct dir
+    for (int k = 0; k < numTokens; k++) {
+        printf("token in set %s\n", tokens[k]); 
+        //set buffer
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         LBAread(entryBuffer, blocks, curr);
-        int flag = -1;
-        for (int i = 0; i < STARTING_NUM_DIR; i++)
-        {
-            if (strcmp(entryBuffer[i].name, token) == 0)
-            {
-                printf("entryBuf.name = token at i: %d, childLBA: %ld\n", i, entryBuffer[i].childLBA);
+        _Bool found = 0;
+        //find dir with same name as token and chnge curr to that dir's childLoc
+        for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 curr = entryBuffer[i].childLBA;
-                flag = 0;
+                found = 1;
                 break;
             }
         }
-        if (flag == -1)
-        {
+        if (found == 0) {
             printf("not found\n");
             return -1;
         }
-
-        token = strtok(NULL, "/");
-
-        if(entryBuffer)
-        {
-            free(entryBuffer);
-            entryBuffer = NULL;
-        }
-        if(entryBuffer)
-        {
-            printf("error free entryBuffer makeRemove.c setCWD\n");
-            return -1;
-        }
     }
 
+    //set info 
     fdDirCWD->directoryStartLocation = curr;
-    printf("[433]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
-    if (strcmp(&buf[0], "/") == 0)
-    {
-        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf)); //DANGER: sizeof() returns size of buf ptr, not of string
-        strncpy(fdDirCWD->cwd_path, "\0", 1);
+    printf ("NEW CURR %d", curr); 
+    //if is absolute copy, if not concat
+    if (isAbsolute) {
+        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf) * sizeof(char*));
+        //strcat(fdDirCWD->cwd_path, "\0");
+    } else {
+        strcat(fdDirCWD->cwd_path, buf);
+        //strcat(fdDirCWD->cwd_path, "\0");
     }
-    else
-    {
-printf("[441]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
-printf("[442]buf: %s\n", buf);
-        if(strcmp(buf, "Q") && strcmp(buf, "QQ")) 
-        {
-            strcat(fdDirCWD->cwd_path, buf);
-            strcat(fdDirCWD->cwd_path, "/\0");
-        }
+    
+    //resolve path, add ending slash if needed
+    char * newPath = pathResolver(fdDirCWD->cwd_path);
+    strncpy(fdDirCWD->cwd_path, newPath, sizeof(newPath));
+    _Bool isRoot = strcmp(fdDirCWD->cwd_path, "/") == 0; 
+    _Bool lastIsSlash =  strcmp(&fdDirCWD->cwd_path[strlen(fdDirCWD->cwd_path) - 1], "/") == 0; 
+    if (!isRoot && !lastIsSlash) {
+        strcat(fdDirCWD->cwd_path, "/");
     }
-    //TODO : modify fdDirCWD->cwd_path to get rid of . and ..
-    printf("CURRCWD  %s\n", fdDirCWD->cwd_path);
-    printf("[452]fdDirCWD->cwd_path: %s\n", fdDirCWD->cwd_path);
-    printf("CURRCWD  %s beep\n", fdDirCWD->cwd_path);
     return 0;
 
     /********TO DO***********
@@ -484,23 +447,26 @@ printf("[442]buf: %s\n", buf);
     *************************/
 }
 
+//NOT RIGHT, TODO
 int fs_isDir(char *path)
 {
-    //create a new path name and set it to point
-    //to the last occurence of a slash
-    char * newName = malloc(256);
+    return 1;
+    char *newName = malloc(256);
+    char* ptr;
     int slash = '/';
-    newName = strrchr(path, slash); 
+    ptr = strrchr(path, slash); //find the last slash
 
-    //if we didn't find a / then simply copy the
-    //path to newName and increment its start to 
-    //the second character
-    if (newName == NULL){
-        newName = malloc(256);
+    //path name has no slashes at all
+    if (ptr == NULL)
         strcpy(newName, path);
-    } else {
-        newName++;
+
+    //we found a last slash
+    else
+    {
+        ptr++;
+        strcpy(newName, ptr);
     }
+    printf("new name %s\n", newName);
 
     //if the path is literally just a slash, that
     //means we are at the root, so we are in a dir
@@ -519,7 +485,7 @@ int fs_isDir(char *path)
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBuffer[i].name, newName) == 0)
         { 
-           if(entryBuffer[i].type == 100) { //100 = ascii for 'd'
+           if(entryBuffer[i].type == atoi("d")) {
                return 1;
            } else {
                return 0;

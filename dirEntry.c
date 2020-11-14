@@ -49,7 +49,7 @@ void initEntry(dirEntry *dE)
 
 	dE->locationMetadata = DEFAULT_LOCATION; //512 file per directory
 	dE->isBeingUsed = 0;		  //this file is currently not being used
-	dE->type = 'd';				  //initially this will be a directory until datalocation is != 20000
+	dE->type = atoi("d");				  //initially this will be a directory until datalocation is != 20000
 }
 
 /*
