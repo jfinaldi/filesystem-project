@@ -91,7 +91,7 @@ int free_mem(int index, int count)
     LBAread(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);
     for (int i = index; i < index + count; i++)
     {
-        printf("HLEELEO?");
+        //printf("HLEELEO?");
         bitmap[i] = 0;
     }
     LBAwrite(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);

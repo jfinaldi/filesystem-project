@@ -14,7 +14,7 @@
 
 char** tokenizePath(char* path, int* i)
 {
-    printf("[367]In tokenizePath...\n");
+    printf("[367]In tokenizePath...%s\n", path);
     char** result = (char**)malloc(strlen(path) * sizeof(char**));
     printf("before loop"); 
     // loop through the string to extract all other tokens
@@ -65,6 +65,7 @@ char * pathResolver(char *path) {
     }
     //re-concat path
     for (int i = 0; i < numTokens ; i++) {
+        printf ("tokens in reconcat: %s", tokens[i]); 
         strcat(returnPath, tokens[i]);
         printf("making return path %s\n", returnPath); 
         if (strcmp(tokens[i], "\0") != 0 && i != numTokens - 1) {
@@ -100,45 +101,43 @@ fdDir *tempDirectory(const char *path, int needLast) {
         return resultDir;
     }
 
-    char *token = strtok(temp, "/");
-    int counter = 0;
+    int numTokens = 0;
+   
+    char** tokens = tokenizePath(temp, &numTokens);
     int blocks = MBR_st->dirNumBlocks;
     int notFoundCount = 0; 
+     printf("numtokens in temp %d", numTokens);
 
     //loop through tokens
-    while (token != NULL) {
-        printf("token in temp %s\n", token); 
+    for (int k = 0; k < numTokens; k++) {
+        printf("token in temp %s\n", tokens[k]); 
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         LBAread(entryBuffer, blocks, curr);
         int found = -1;
         //check children for currToken, note if not found
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
-            if (strcmp(entryBuffer[i].name, token) == 0) {
+            if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
                 found = 0;
+                printf("found at %d", curr); 
                 break;
             }
         }
         if (found == -1) {
             notFoundCount ++; 
         }
-        token = strtok(NULL, "/");
-
         //if more than 1 tokens aren't found return not found 
         if (notFoundCount > 1) {
             printf ("not found"); 
             resultDir-> directoryStartLocation = 20000;
             return resultDir; 
         }
-        //return either last or second to last dir depending on input
-        if (token == NULL) {
-            if (needLast == 1){
-                 resultDir->directoryStartLocation = last;
-            } else {
-                resultDir->directoryStartLocation = curr;
-            }
-        }
+    }
+    if (needLast == 1){
+        resultDir->directoryStartLocation = last;
+    } else {
+        resultDir->directoryStartLocation = curr;
     }
     printf("end temp"); 
     return resultDir;
@@ -164,12 +163,14 @@ fdDir *fs_opendir(const char *name)
 
 struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     
+    //malloc new item infp 
     struct fs_diriteminfo *result = (struct fs_diriteminfo *)malloc(sizeof(struct fs_diriteminfo));
     if (result == NULL) {
         printf("malloc err");
         return ((struct fs_diriteminfo *)-1);
     }
    
+   //malloc and put dir in buffer
     dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     if (ptr == NULL) {
         printf("malloc err");
@@ -296,6 +297,7 @@ int fs_rmdir(const char *pathname)
     //set buffer and check if valid
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
+    pathname = (char *) pathname;
     fdDir *temp = tempDirectory(pathname, 1);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
@@ -329,34 +331,36 @@ char *fs_getcwd(char *buf, size_t size)
 
 int fs_setcwd(char *buf)
 {
-    printf ("insetcwd with %s/n", buf); 
+   printf ("insetcwd with %s\n", buf); 
     char temp[256];
     //if absolute temp is buf, otherwise concat with CWD
-    int isAbsolute = strcmp(&buf[0], "/") == 0; 
+    int isAbsolute = strncmp(&buf[0], "/", 1) == 0; 
     strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
     if (isAbsolute) {
-        strncpy(temp, buf, sizeof(buf));
+        printf("set is abs"); 
+        strncpy(temp, buf, sizeof(char*) * sizeof(buf));
     }
     else {
         strcat(temp, buf);
     }
 
     int curr = MBR_st->rootDirectoryPos;
-    char *token = strtok(temp, "/");
+    int numTokens = 0;
+    char** tokens = tokenizePath(temp, &numTokens);
     int counter = 0;
     char resultDir[20][256];
     int blocks = MBR_st->dirNumBlocks;
 
     //loop looking for correct dir
-    while (token != NULL) {
-        printf("token in set %s\n", token); 
+    for (int k = 0; k < numTokens; k++) {
+        printf("token in set %s\n", tokens[k]); 
         //set buffer
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         LBAread(entryBuffer, blocks, curr);
         _Bool found = 0;
         //find dir with same name as token and chnge curr to that dir's childLoc
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
-            if (strcmp(entryBuffer[i].name, token) == 0) {
+            if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 curr = entryBuffer[i].childLBA;
                 found = 1;
                 break;
@@ -366,7 +370,6 @@ int fs_setcwd(char *buf)
             printf("not found\n");
             return -1;
         }
-        token = strtok(NULL, "/");
     }
 
     //set info 
@@ -421,7 +424,7 @@ int fs_isDir(char *path)
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBuffer[i].name, newName) == 0)
         { 
-           if(entryBuffer[i].type == 100) {
+           if(entryBuffer[i].type == atoi("d")) {
                return 1;
            } else {
                return 0;
