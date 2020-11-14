@@ -16,6 +16,7 @@
 long initDirectory(int parentLBA)
 {
 	printf("I made it inside initDirectory line 18\n");
+	printf("parentLBA: %d\n", parentLBA);
 	int i = 0; //iterator for array of entries
 
 	printf("sizeof(dirEntry): %ld\n", sizeof(dirEntry));
@@ -25,7 +26,7 @@ long initDirectory(int parentLBA)
 	int startingBlock = find_free_index(MBR_st->dirNumBlocks);
 	//int startingBlock = 50;
 
-	printf("I got my starting block at: %d\n", startingBlock);
+	printf("\nstartingBlock: %d\n", startingBlock);
 	//create a space in RAM to start manipulating
 	dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
 	if (ptr == NULL)
@@ -41,7 +42,7 @@ long initDirectory(int parentLBA)
 	ptr[i].locationLBA = startingBlock;
 	ptr[i].childLBA = startingBlock;
 	ptr[i].entryIndex = 0;
-	ptr[i].name[0] = 'Q';
+	ptr[i].name[0] = '.';
 	ptr[i].name[1] = '\0';
 	ptr[i].isBeingUsed = 1;
 	ptr[i].type = atoi("d");
@@ -54,30 +55,29 @@ long initDirectory(int parentLBA)
 	{
 		initEntry(&ptr[i]);
 
+		ptr[i].entryIndex = i;
+		ptr[i].locationLBA = startingBlock;
+		ptr[i].type = atoi("d");
+
 		//initialize the .. entry
 		if (i < 2)
 		{
-			// if(parentLBA == 0)
-			// 	ptr[i].locationLBA = startingBlock; //.. points to starting block
-			// else ptr[i].locationLBA = parentLBA; //.. points to parentLBA of parent dir
-
 			//set the second entry's name
-			ptr[i].name[0] = 'Q';
-			ptr[i].name[1] = 'Q';
+			ptr[i].name[0] = '.';
+			ptr[i].name[1] = '.';
 			ptr[i].name[2] = '\0';
-			if (parentLBA == 0)
+			if (parentLBA == 0) //this is the very first directory
 			{
+				ptr[i].locationLBA = startingBlock; //location of self should point to root
 				ptr[i].childLBA = startingBlock;
 			}
-			else
+			else //this is not the first directory, .. points one dir up
 			{
+				ptr[i].locationLBA = parentLBA;
 				ptr[i].childLBA = parentLBA;
 			}
 			ptr[i].isBeingUsed = 1;
 		}
-		ptr[i].entryIndex = i;
-		ptr[i].locationLBA = startingBlock;
-		ptr[i].type = atoi("d");
 		//MBR_st->idCounter++;
 		//ptr[i].id = MBR_st->idCounter;
 
