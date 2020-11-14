@@ -104,7 +104,6 @@ fdDir *tempDirectory(const char *path, int needLast) {
     }
 
     int numTokens = 0;
-   
     char** tokens = tokenizePath(temp, &numTokens);
     int blocks = MBR_st->dirNumBlocks;
     int notFoundCount = 0; 
@@ -135,7 +134,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
         }
         //if more than 1 tokens aren't found return not found 
         if (notFoundCount > 1) {
-            printf ("not found"); 
+            printf ("not found in temp"); 
             resultDir-> directoryStartLocation = 20000;
             return resultDir; 
         }
@@ -148,7 +147,6 @@ fdDir *tempDirectory(const char *path, int needLast) {
             printf("Error deallocating entryBuffer in tempDirectory makeremove.c\n");
         }
 
-        printf("Jenn's token: %s\n", token);
     }
     if (needLast == 1){
         resultDir->directoryStartLocation = last;
@@ -215,6 +213,10 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
 //this function will free all memory for dirp
 int fs_closedir(fdDir *dirp)
 {
+    printf ("close dir\n"); 
+    if (dirp == NULL) {
+        return 0; 
+    }
     //deallocate diriteminfo struct
     if(dirp->dirItemInfo)
     {
@@ -228,14 +230,17 @@ int fs_closedir(fdDir *dirp)
     }
 
     //free all memory
-    
-    free(dirp);
-    dirp = NULL;
-    if (dirp)
-    {
-        printf("Error MakeRemove.c, failed attempt to free dirp, ln 196\n");
-        return 1;
+    if (dirp) {
+        free(dirp);
+        dirp = NULL;
+        if (dirp)
+        {
+            printf("Error MakeRemove.c, failed attempt to free dirp, ln 196\n");
+            return 1;
+        }
     }
+        
+    printf("end close dir\n"); 
     return 0;
 }
 
@@ -406,7 +411,7 @@ int fs_setcwd(char *buf)
             }
         }
         if (found == 0) {
-            printf("not found\n");
+            printf("not found in set\n");
             return -1;
         }
     }
