@@ -13,13 +13,19 @@
 
 #include "mfs.h"
 
+#define EXTENT_ARRAY_ROWS 4
+#define EXTENT_STARTING_BLOCKS 20
+#define DEFAULT_LOCATION 20000
+
 void initEntry(dirEntry *dE)
 {
 	//initialize location variables
-	dE->dataLocation = 20000; //valid data location will be between block 0-19531
-	dE->locationLBA = 20000;  //location of this entry in logical block
+	dE->dataLocation = DEFAULT_LOCATION; //valid data location will be between block 0-19531
+	dE->locationLBA = DEFAULT_LOCATION;  //location of this entry in logical block
 	dE->entryIndex = -1;	  //the position of this entry in the array of entries
-	dE->childLBA = 20000;
+	dE->childLBA = DEFAULT_LOCATION;
+	dE->eofLBA = DEFAULT_LOCATION;
+	dE->eofOffset = 0;
 
 	//initialize a default name for this child
 	dE->name[0] = '%';
@@ -32,7 +38,40 @@ void initEntry(dirEntry *dE)
 	time(&(dE->dateModifiedDirectory)); // date the file was last modified
 	time(&(dE->dateAccessedDirectory)); // date the file was last accessed
 
-	dE->locationMetadata = 20000; //512 file per directory
+	//initialize extent block numbers in cols, but not the LBAs
+	int extentBlocks = EXTENT_STARTING_BLOCKS;
+	for(int i = 0; i < EXTENT_ARRAY_ROWS; i++)
+	{
+		dE->extent[i][0] = DEFAULT_LOCATION;
+		dE->extent[i][1] = extentBlocks;
+		extentBlocks *= 2;
+	}
+
+	dE->locationMetadata = DEFAULT_LOCATION; //512 file per directory
 	dE->isBeingUsed = 0;		  //this file is currently not being used
 	dE->type = 'd';				  //initially this will be a directory until datalocation is != 20000
+}
+
+/*
+This function takes an fd_struct object, and a directory entry and updates
+certain information pertaining to the modification of file data.
+*/
+void updateEntry(fd_struct* fd, dirEntry* dE)
+{
+    dE->numBlocks = fd->numBlocks;
+    dE->eofLBA = fd->eofLBA;
+    dE->eofOffset = fd->eofOffset;
+
+    time(&(dE->dateModifiedDirectory)); // date the file was last modified
+    time(&(dE->dateAccessedDirectory)); // date the file was last accessed
+
+	dE->sizeOfFile = (dE->numBlocks * MBR_st->blockSize) + dE->eofLBA;
+}
+
+int addAnExtent(dirEntry* dE)
+{
+	//find the first extent that doesn't have DEFAULT LOCATION in first col
+	//get free space, passing in the second col value for this row
+	//update extents allocated
+	return 0;
 }

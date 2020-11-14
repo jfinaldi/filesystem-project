@@ -44,6 +44,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         MBR_st->dirBufMallocSize = blockSize * MBR_st->dirNumBlocks;
 
         int locationRootDir = initDirectory(0); //initialize the root directory
+        printf("back in mbr.c ln47\n");
         MBR_st->rootDirectoryPos = locationRootDir;
         printf("mbr root %ld", MBR_st->rootDirectoryPos);
 

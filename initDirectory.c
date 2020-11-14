@@ -83,18 +83,15 @@ long initDirectory(int parentLBA)
 
 		//testOutput(&ptr[i]); //print out the individual entry just created
 	}
-	//ptr[6].locationLBA = 1700;
-	//dirEntry *buff = (dirEntry *)malloc(BLOCK_SIZE * numBlocks);
+	
 	//call LBA write to put this directory on disk
 	LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
 	for (int i = 0; i < 3; i++)
 	{
 		testOutput(&ptr[i]);
 	}
-	//LBAread (buff, numBlocks, startingBlock);
-	//printf("HELLLLOOOO %d", buff[6].locationLBA);
 
-	//free(ptr);
+	free(ptr);
 
 	printf("root directory successfully initiated.\n\n");
 
@@ -105,10 +102,12 @@ void testOutput(dirEntry *rootDir)
 {
 	//print out its contents
 	printf("\n\n---- Directory Contents ----\n");
+	printf("Name: %s\n", rootDir->name);
 	printf("Location of Self: %ld\n", rootDir->locationLBA);
 	printf("Data Location: %ld\n", rootDir->dataLocation);
+	printf("EOF LBA:  %ld\n", rootDir->eofLBA);
+	printf("EOF Offset (bytes): %d\n", rootDir->eofOffset);
 	printf("Child Location: %ld\n", rootDir->childLBA);
-	printf("Name: %s\n", rootDir->name);
 	printf("Index: %d\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
