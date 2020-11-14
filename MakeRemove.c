@@ -12,11 +12,79 @@
 
 #include "mfs.h"
 
+char** tokenizePath(char* path, int* i)
+{
+    printf("[367]In tokenizePath...\n");
+    char** result = (char**)malloc(strlen(path) * sizeof(char**));
+
+    // loop through the string to extract all other tokens
+    //printf("in tokenizing while-loop\n-------------\n");
+    char* token = strtok(path, "/");
+    //printf("token: %s\n", token);
+    (*i) = 0;
+    while (token != NULL) 
+    {
+        printf("i: %d\ntoken: %s\n", *i, token);
+        result[*i] = token;
+        printf("result[%d]: %s\n", (*i), result[*i]);
+        (*i)++;
+        token = strtok(NULL, "/");
+    } 
+    //printf("path: %s\n", path);
+    printf("numTokens: %d\n", *i);
+
+
+    printf("printing tokens:\n");
+    for(int j = 0; j < (*i); j++) {
+        printf("tokens[%d]: %s\n", j, result[j]);
+    }
+    return result;
+}
+char * pathSimplifier(char *path) {
+    int numTokens = 0;
+    char** tokens = tokenizePath(path, &numTokens);
+    char * returnPath = malloc(256); 
+    strcat(returnPath, "/");
+    printf("BEEP"); 
+    for (int i = numTokens - 1; i >= 0 ; i--) {
+        printf("AAHHH"); 
+        int count = 0; 
+        while (i - count!= -1
+            &&tokens[i - count][(strlen(tokens[i - count])-1)] == 81 
+            && tokens[i - count][(strlen(tokens[i - count])-2)] == 81 
+            ){
+            strcpy(tokens[i - count], "\0");
+            count++;
+            if (i - count == -1) {
+                break; 
+            }
+        } 
+        for (int k = 0; k  < count; k++) {
+            printf("K %d", k); 
+            int toRemove = i - count - k; 
+            strcpy(tokens[toRemove], "\0");
+        }
+        // if (tokens[i][(strlen(tokens[i])-1)] == 81 
+        //     && tokens[i][(strlen(tokens[i])-2)] != 81 ){
+        //     strcpy(tokens[i], "\0");
+        // }
+    }
+    for (int i = 0; i < numTokens ; i++) {
+        
+        strcat(returnPath, tokens[i]);
+        if (strcmp(tokens[i], "\0") != 0 && i != numTokens - 1) {
+            strcat(returnPath, "/");
+        }
+        
+    }
+    printf("PATH %s", returnPath); 
+    return returnPath; 
+}
 fdDir *tempDirectory(const char *path, int needLast)
 {
     printf("\n\n----------------\nin tempDir, \n");
     char temp[256];
-    strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
+    
     // char first[0];
     // strncpy(first, path, 0);
     // printf ("FIRST CHAR: %s ahh", &path[0]);
@@ -27,17 +95,18 @@ fdDir *tempDirectory(const char *path, int needLast)
     }
     else
     {
+        strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
         strcat(temp, path);
     }
 
     int curr = MBR_st->rootDirectoryPos;
     int last = curr;
-    fdDir *ans = (fdDir *)malloc(sizeof(fdDir));
+    fdDir *resultDir = (fdDir *)malloc(sizeof(fdDir));
     if (strcmp(path, "/") == 0)
     {
         printf("\nis Root\n");
-        ans->directoryStartLocation = MBR_st->rootDirectoryPos;
-        return ans;
+        resultDir->directoryStartLocation = MBR_st->rootDirectoryPos;
+        return resultDir;
     }
     char *token = strtok(temp, "/");
     int counter = 0;
@@ -70,24 +139,23 @@ fdDir *tempDirectory(const char *path, int needLast)
         token = strtok(NULL, "/");
         if (foundCount > 1) {
             printf ("NOT FOUND RETURNING NULL"); 
-            ans-> directoryStartLocation = 20000;
-            
-            return ans; 
+            resultDir-> directoryStartLocation = 20000;
+            return resultDir; 
         }
         if (token == NULL)
         {
             if (needLast == 1)
             {
-                ans->directoryStartLocation = last;
+                resultDir->directoryStartLocation = last;
             }
             else
             {
-                ans->directoryStartLocation = curr;
+                resultDir->directoryStartLocation = curr;
             }
         }
     }
     printf("-------------");
-    return ans;
+    return resultDir;
 }
 
 fdDir *fs_opendir(const char *name)
@@ -348,11 +416,13 @@ int fs_setcwd(char *buf)
 {
 
     char temp[256];
+    int isRelative = 0; 
     strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
     printf("SETTT: %s\n", fdDirCWD->cwd_path);
     if (strcmp(&buf[0], "/") == 0)
     {
         strncpy(temp, buf, sizeof(buf));
+        isRelative = 1; 
     }
     else
     {
@@ -363,7 +433,7 @@ int fs_setcwd(char *buf)
     int curr = MBR_st->rootDirectoryPos;
     char *token = strtok(temp, "/");
     int counter = 0;
-    char ans[20][256];
+    char resultDir[20][256];
     int blocks = MBR_st->dirNumBlocks;
     // loop through the string to extract all other tokens
     while (token != NULL)
@@ -393,16 +463,26 @@ int fs_setcwd(char *buf)
     }
 
     fdDirCWD->directoryStartLocation = curr;
-    if (strcmp(&buf[0], "/") == 0)
+     
+    if (isRelative)
     {
         strncpy(fdDirCWD->cwd_path, buf, sizeof(buf));
-        strncpy(fdDirCWD->cwd_path, "\0", 1);
+        char * newPath = pathSimplifier(fdDirCWD->cwd_path);
+        strncpy(fdDirCWD->cwd_path, newPath, sizeof(buf));
+        if (strcmp(fdDirCWD->cwd_path, "/") != 0 && strcmp(&fdDirCWD->cwd_path[strlen(fdDirCWD->cwd_path) - 1], "/") != 0) {
+            strcat(fdDirCWD->cwd_path, "/\0");
+        }
+        
     }
     else
     {
-
         strcat(fdDirCWD->cwd_path, buf);
-        strcat(fdDirCWD->cwd_path, "/\0");
+        char * newPath = pathSimplifier(fdDirCWD->cwd_path);
+        strncpy(fdDirCWD->cwd_path, newPath, sizeof(newPath));
+        if (strcmp(fdDirCWD->cwd_path, "/") != 0 && strcmp(&fdDirCWD->cwd_path[strlen(fdDirCWD->cwd_path) - 1], "/") != 0) {
+            printf("WHAHT?"); 
+            strcat(fdDirCWD->cwd_path, "/\0");
+        }
     }
     //TODO : modify fdDirCWD->cwd_path to get rid of . and ..
     printf("CURRCWD  %s\n", fdDirCWD->cwd_path);
