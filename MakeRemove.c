@@ -37,7 +37,7 @@ char * pathResolver(char *path) {
     int numTokens = 0;
     char** tokens = tokenizePath(path, &numTokens);
     char * returnPath = malloc(256); 
-    strcat(returnPath, "/");
+    strcpy(returnPath, "/");
     //loop through tokens
     for (int i = numTokens - 1; i >= 0 ; i--) {
         int count = 0; 
@@ -47,16 +47,18 @@ char * pathResolver(char *path) {
         while (i - count!= -1 &&  lastLetterQ && secondToLastLetterQ) {
             strcpy(tokens[i - count], "\0");
             count++;
-            lastLetterQ = tokens[i - count][(strlen(tokens[i - count])-1)] == 81;
-            secondToLastLetterQ = tokens[i - count][(strlen(tokens[i - count])-2)] == 81;
             if (i - count == -1) {
                 break; 
             }
+            lastLetterQ = tokens[i - count][(strlen(tokens[i - count])-1)] == 81;
+            secondToLastLetterQ = tokens[i - count][(strlen(tokens[i - count])-2)] == 81;
         } 
         //remove dirs corresponding to QQs
         for (int k = 0; k  < count; k++) {
             int toRemove = i - count - k; 
-            strcpy(tokens[toRemove], "\0");
+            if (toRemove >= 0) {
+                strcpy(tokens[toRemove], "\0");
+            }
         }
         //remove Qs
         if (lastLetterQ && !secondToLastLetterQ){
@@ -119,6 +121,9 @@ fdDir *tempDirectory(const char *path, int needLast) {
             if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
+                if (entryBuffer[i].childLBA == 20000) {
+                    curr = entryBuffer[i].locationMetadata; 
+                }
                 found = 0;
                 printf("found at %d", curr); 
                 break;
@@ -216,13 +221,21 @@ int fs_mkdir(const char *pathname, mode_t mode)
     //isolate name of new Dir
     char *pathWithoutName = malloc(sizeof(pathname));
     char *newName = malloc(256);
-    newName = strrchr(pathname, '/');
-    if (newName == NULL){
-        newName = malloc(256);
+    char* ptr;
+    int slash = '/';
+    ptr = strrchr(pathname, slash); //find the last slash
+
+    //path name has no slashes at all
+    if (ptr == NULL)
         strcpy(newName, pathname);
-    } else {
-        newName++;
+
+    //we found a last slash
+    else
+    {
+        ptr++;
+        strcpy(newName, ptr);
     }
+    printf("new name %s\n", newName);
 
     //resolve pathname and load buffer with Dir
     fdDir *temp = tempDirectory(pathname, 0);
@@ -377,11 +390,11 @@ int fs_setcwd(char *buf)
     printf ("NEW CURR %d", curr); 
     //if is absolute copy, if not concat
     if (isAbsolute) {
-        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf));
-        strcat(fdDirCWD->cwd_path, "\0");
+        strncpy(fdDirCWD->cwd_path, buf, sizeof(buf) * sizeof(char*));
+        //strcat(fdDirCWD->cwd_path, "\0");
     } else {
         strcat(fdDirCWD->cwd_path, buf);
-        strcat(fdDirCWD->cwd_path, "\0");
+        //strcat(fdDirCWD->cwd_path, "\0");
     }
     
     //resolve path, add ending slash if needed
@@ -390,7 +403,7 @@ int fs_setcwd(char *buf)
     _Bool isRoot = strcmp(fdDirCWD->cwd_path, "/") == 0; 
     _Bool lastIsSlash =  strcmp(&fdDirCWD->cwd_path[strlen(fdDirCWD->cwd_path) - 1], "/") == 0; 
     if (!isRoot && !lastIsSlash) {
-        strcat(fdDirCWD->cwd_path, "/\0");
+        strcat(fdDirCWD->cwd_path, "/");
     }
     return 0;
 }
@@ -399,15 +412,22 @@ int fs_setcwd(char *buf)
 int fs_isDir(char *path)
 {
     return 1;
-    char * newName = malloc(256);
+    char *newName = malloc(256);
+    char* ptr;
     int slash = '/';
-    newName = strrchr(path, slash);
-    if (newName == NULL){
-        newName = malloc(256);
+    ptr = strrchr(path, slash); //find the last slash
+
+    //path name has no slashes at all
+    if (ptr == NULL)
         strcpy(newName, path);
-    } else {
-        newName++;
+
+    //we found a last slash
+    else
+    {
+        ptr++;
+        strcpy(newName, ptr);
     }
+    printf("new name %s\n", newName);
 
     if (strcmp(path, "/") == 0){
         printf("\nis Root\n");
