@@ -22,14 +22,13 @@ void b_init()
     for (int i = 0; i < MAX_OPENFILE; i++)
     {
         fileOpen[i].Fd = -1;
+        fileOpen[i].filePointer = 0;
         fileOpen[i].flag = -1;
         fileOpen[i].isAllocate = FALSE;
-        fileOpen[i].BufferRead = '\0';
-        fileOpen[i].BufferWrite = '\0';
-        fileOpen[i].buflenRead = 0;
-        fileOpen[i].buflenWrite = 0;
-        fileOpen[i].indexRead = 0;
-        fileOpen[i].indexWrite = 0;
+        fileOpen[i].buffer = '\0';
+        fileOpen[i].buflen = 0;
+        fileOpen[i].bufIndex = 0;
+        fileOpen[i].filePointer = 0;
         fileOpen[i].locationLBA = 20000;
         fileOpen[i].dataLocation = 20000;
         fileOpen[i].sizeOfFile = 0;
@@ -38,7 +37,6 @@ void b_init()
         fileOpen[i].isBeingUsed = 0;
         fileOpen[i].childLBA = 20000;
         fileOpen[i].entryIndex = 0;
-        fileOpen[i].indexInDataLocation = 20000;
         fileOpen[i].offsetInDataLocation = 20000;
 
     }
@@ -120,6 +118,8 @@ int b_open(char *filename, int flags)
 
     if (1)
     { //Absolute path
+
+        /*****FIX THIS MEMORY LEAK*********/
         char *newName = malloc(256);
         int slash = '/';
         newName = strrchr(filename, slash);
@@ -132,7 +132,8 @@ int b_open(char *filename, int flags)
         {
             newName++;
         }
-
+        /**********************************/
+        
         printf("new name %s\n", newName);
         fdDir *temp = tempDirectory(filename, 0);
         if (temp -> directoryStartLocation == 20000) {
@@ -152,14 +153,14 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].Fd = fd;
                 fileOpen[fd].isAllocate = TRUE;
                 fileOpen[fd].flag = flags;
-                fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferRead == NULL)
+                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
+                if (fileOpen[fd].buffer == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
                     return (-1);
                 }
-                fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferWrite == NULL)
+                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
+                if (fileOpen[fd].buffer == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
                     return (-1);
@@ -175,6 +176,7 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
+                ptrOpen = NULL;
                 printf("found fd\n"); 
                 return (fd);
             }
@@ -219,12 +221,14 @@ int b_open(char *filename, int flags)
                 if (fileOpen[fd].BufferRead == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
+                    free(ptrOpen);
                     return (-1);
                 }
                 fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
                 if (fileOpen[fd].BufferWrite == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
+                    free(ptrOpen);
                     return (-1);
                 }
                 fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
@@ -238,11 +242,14 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
+                ptrOpen = NULL;
                 printf("found fd"); 
                 return (fd);
             return fd; 
         } else {
-            printf("file not found"); 
+            printf("file not found");
+            free(ptrOpen);
+            ptrOpen = NULL; 
             return -1; 
         }
 
@@ -503,8 +510,10 @@ int b_read(int fd, char *buffer, int count)
         {
             int blocks = part2 / BUFSIZE; // calculate number of blocks they want
             //bytesRead = read(fcbArray[fd].linuxFd, buffer + part1, blocks * BUFSIZE);
+            //LBAread returns 0 so we have to figure out another way to see how many bytes were actually read
             bytesRead = LBAread(fileOpen[fd].BufferRead, 1, fileOpen[fd].indexInDataLocation);
             fileOpen[fd].indexInDataLocation = fileOpen[fd].indexInDataLocation + 1;
+            fileOpen[fd].filePointer = fileOpen[fd].filePointer + strlen(fileOpen[fd].buffer); //add the length of this buffer to fp
             part3 = bytesRead;
             part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
         }
@@ -530,4 +539,18 @@ int b_read(int fd, char *buffer, int count)
     }
     bytesReturned = part1 + part2 + part3;
     return (bytesReturned);
+}
+
+int b_seek(int fd, int offset, int whence)
+{
+    //reposition the file pointer
+    //
+    //Whence: 
+        //SEEK_SET= file offset set to offset bytes
+        //SEEK_CUR= file offset is set to its current location plus offset
+        //SEEK_END= file offset is set to the size of the file plus offset bytes
+    //this fcn returns the offset location (bytes) from the start of file
+
+    //
+    return 0;
 }
