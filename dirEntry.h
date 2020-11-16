@@ -27,8 +27,9 @@ typedef struct DirectoryEntry
 	char name[256];					// directory name for the directory it points to
 	uint64_t sizeOfFile;			// the number of bytes of the file data
 	unsigned long numBlocks;		// the number of blocks occupied by the file
-	time_t dateModifiedDirectory;	// date the file was last modified
-	time_t dateAccessedDirectory;	// date the file was last accessed
+	time_t dateCreated;			    // the date the file was created
+	time_t dateModified;			// date the file was last modified
+	time_t dateAccessed;			// date the file was last accessed
 	unsigned long locationMetadata; // 512 file per directory
 	unsigned short extent[4][2];    // [LBA Block][number of blocks]
 	unsigned short isBeingUsed;		// tells whether this entry is currently in use or not

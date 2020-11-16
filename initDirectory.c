@@ -112,9 +112,11 @@ void testOutput(dirEntry *rootDir)
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);
 	printf("Number of Blocks: %ld\n", rootDir->numBlocks);
 
-	struct tm *timeInfo = localtime(&(rootDir->dateModifiedDirectory));
+	struct tm *timeInfo = localtime(&(rootDir->dateCreated));
+	printf("DateCreated: %s", asctime(timeInfo));
+	timeInfo = localtime(&(rootDir->dateModified));
 	printf("DateModified: %s", asctime(timeInfo));
-	timeInfo = localtime(&(rootDir->dateAccessedDirectory));
+	timeInfo = localtime(&(rootDir->dateAccessed));
 	printf("DateAccessed: %s", asctime(timeInfo));
 
 	printf("Location of Metadata: %ld\n", rootDir->locationMetadata);

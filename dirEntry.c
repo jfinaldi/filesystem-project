@@ -35,8 +35,9 @@ void initEntry(dirEntry *dE)
 	dE->numBlocks = 0;	// the number of blocks occupied by the file
 	//dE->id = -1; //the id number for the entry
 
-	time(&(dE->dateModifiedDirectory)); // date the file was last modified
-	time(&(dE->dateAccessedDirectory)); // date the file was last accessed
+	time(&(dE->dateCreated));  // date the file was created
+	time(&(dE->dateModified)); // date the file was last modified
+	time(&(dE->dateAccessed)); // date the file was last accessed
 
 	//initialize extent block numbers in cols, but not the LBAs
 	int extentBlocks = EXTENT_STARTING_BLOCKS;
