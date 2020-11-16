@@ -465,6 +465,14 @@ int b_getFCB()
 // Interface to read a buffer
 int b_read(int fd, char *buffer, int count)
 {
+    printf("b_read:\n");
+    printf("------------------------------\n");
+    if(!(fileOpen[fd].flag & O_RDONLY) && !(fileOpen[fd].flag & O_RDWR))
+    {
+        printf("------------------------------\n");
+        perror("Error: We do not have read permissions.\n");
+        return -1;
+    }
     int bytesRead;           // for our reads
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
@@ -476,11 +484,13 @@ int b_read(int fd, char *buffer, int count)
     // check that fd is between 0 and (MAXFCBS-1)
     if ((fd < 0) || (fd >= MAXFCBS))
     {
+        printf("------------------------------\n");
         return (-1); //invalid file descriptor
     }
 
     if (fileOpen[fd].Fd == -1) //File not open for this descriptor
     {
+        printf("------------------------------\n");
         return -1;
     }
 
@@ -550,6 +560,8 @@ int b_read(int fd, char *buffer, int count)
         }
     }
     bytesReturned = part1 + part2 + part3;
+    printf("returning bytesReturned = %d\n", bytesReturned);
+    printf("------------------------------\n");
     return (bytesReturned);
 }
 
@@ -589,3 +601,4 @@ int b_seek(int fd, int offset, int whence)
     }
     return 0;
 }
+
