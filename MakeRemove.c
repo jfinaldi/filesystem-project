@@ -507,3 +507,22 @@ int fs_delete(char *filename) {
     fs_rmdir(filename); 
 }
 
+int fs_stat(const char *path, struct fs_stat *buf)
+{
+    printf("\nfs_stat:\n");
+    printf("------------------------------\n");
+    printf("path: %s\n", path);
+    //navigate the path to the bottom directory and fill the fs_stat buffer with info
+
+    char* temp;
+    strcpy(temp, path);
+    int numTokens = 0;
+    char* tokens = tokenizePath(path, &numTokens);
+    if(!tokens)
+    {
+        printf("Error: path is empty.\n");
+    }
+    printf("numTokens: %d\n", numTokens);
+
+    
+}
