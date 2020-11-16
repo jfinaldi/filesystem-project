@@ -468,6 +468,7 @@ int b_read(int fd, char *buffer, int count)
     int bytesRead;           // for our reads
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
+    int prevBufSize = 0;     // caches the previous size of buffer to calculate bytesRead
 
     if (startup == 0)
         b_init(); //Initialize our system
@@ -484,7 +485,7 @@ int b_read(int fd, char *buffer, int count)
     }
 
     // number of bytes available to copy from buffer
-    int remain = fileOpen[fd].buflenRead - fileOpen[fd].indexRead;
+    int remain = fileOpen[fd].buflen - fileOpen[fd].bufIndex;
     part3 = 0;           //only used if count > BUFSIZE
     if (remain >= count) //we have enough in buffer
     {
@@ -499,8 +500,8 @@ int b_read(int fd, char *buffer, int count)
 
     if (part1 > 0) // memcpy part 1
     {
-        memcpy(buffer, fileOpen[fd].BufferRead + fileOpen[fd].indexRead, part1);
-        fileOpen[fd].indexRead = fileOpen[fd].indexRead + part1;
+        memcpy(buffer, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part1);
+        fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part1;
     }
 
     if (part2 > 0) //We need to read to copy more bytes to user
@@ -510,31 +511,42 @@ int b_read(int fd, char *buffer, int count)
         {
             int blocks = part2 / BUFSIZE; // calculate number of blocks they want
             //bytesRead = read(fcbArray[fd].linuxFd, buffer + part1, blocks * BUFSIZE);
-            //LBAread returns 0 so we have to figure out another way to see how many bytes were actually read
-            bytesRead = LBAread(fileOpen[fd].BufferRead, 1, fileOpen[fd].indexInDataLocation);
-            fileOpen[fd].indexInDataLocation = fileOpen[fd].indexInDataLocation + 1;
-            fileOpen[fd].filePointer = fileOpen[fd].filePointer + strlen(fileOpen[fd].buffer); //add the length of this buffer to fp
+            LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].indexInDataLocation);
+            printf("prevBufSize: %d\n", prevBufSize);
+            bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; //subtract prev buf size to get what we just read
+            prevBufSize += bytesRead; //update the new previous buffer size for next time
+            printf("bytesRead: %d\n", bytesRead);
+            printf("prevBufSize: %d\n", prevBufSize);
+            fileOpen[fd].indexInDataLocation += 1; //increment data location by 1 LBA block
+            fileOpen[fd].filePointer += bytesRead; //add the length of this buffer to fp
+            //fileOpen[fd].bufIndex += bytesRead; //update bufIndex
             part3 = bytesRead;
             part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
         }
 
         //try to read BUFSIZE bytes into our buffer
-        //bytesRead = read(fcbArray[fd].linuxFd, fcbArray[fd].buf, BUFSIZE);
-        bytesRead = LBAread(fileOpen[fd].BufferRead, 1, fileOpen[fd].indexInDataLocation);
-        fileOpen[fd].indexInDataLocation = fileOpen[fd].indexInDataLocation + 1;
+        LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].bufIndex);
+        printf("prevBufSize: %d\n", prevBufSize);
+        bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; // cur size of buffer - what it used to be
+        prevBufSize += bytesRead;                              // update the new previous buffer size for next time
+        printf("bytesRead: %d\n", bytesRead);
+        printf("prevBufSize: %d\n", prevBufSize);
+        fileOpen[fd].indexInDataLocation += 1;
+        fileOpen[fd].filePointer += bytesRead;                 // update the file pointer
+        //fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
 
         // error handling here...  if read fails
 
-        fileOpen[fd].indexRead = 0;
-        fileOpen[fd].buflenRead = bytesRead; //how many bytes are actually in buffer
+        fileOpen[fd].bufIndex = 0;
+        fileOpen[fd].buflen = bytesRead; //how many bytes are actually in buffer
 
         if (bytesRead < part2) // not even enough left to satisfy read
             part2 = bytesRead;
 
         if (part2 > 0) // memcpy bytesRead
         {
-            memcpy(buffer + part1 + part3, fileOpen[fd].BufferRead + fileOpen[fd].indexRead, part2);
-            fileOpen[fd].indexRead = fileOpen[fd].indexRead + part2;
+            memcpy(buffer + part1 + part3, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part2);
+            fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part2;
         }
     }
     bytesReturned = part1 + part2 + part3;

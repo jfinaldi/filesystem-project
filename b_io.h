@@ -21,13 +21,12 @@ typedef struct fd_struct
 {
     int Fd;
     int isAllocate;
-    char *BufferRead;  // For b_read
-    char *BufferWrite; // For b_write
     unsigned long locationLBA;
 
     unsigned long childLBA;
     short entryIndex;
     unsigned long dataLocation;
+    unsigned long indexInDataLocation;
     char name[256];
     uint64_t sizeOfFile;
     unsigned long numBlocks;
@@ -38,16 +37,14 @@ typedef struct fd_struct
     unsigned char type;
     int flag; //stores read/write permissions
 
-    //Read variables
-    int indexRead; //index in read buffer we are at
-    int buflenRead; //how much of read buffer is occupied
-    unsigned long indexInDataLocation; //place marker, increments 1 for every LBAread call
+    int filePointer; //file pointer tracks the current byte in the file
+    char *buffer;  // For b_read and b_write
+    short bufIndex; //tracks where in the buffer we are
+    short buflen; //tracks how much of buffer is being used
+
+    //Read/write variables
     unsigned long eofLBA; //last LBA block of our file data
     short eofOffset; //offset in byes from the start of eofLBA
-    
-    //Write Variables
-    int indexWrite; //index in write buffer we are at
-    int buflenWrite; //how much of write buffer is occupied
     short offsetInDataLocation; //tracks bytes read in an LBA block
 } fd_struct;
 extern fd_struct *fileOpen;
