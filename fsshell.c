@@ -61,12 +61,12 @@ struct fs_diriteminfo fsDi;
 // 	return (closedir(dir));
 // }
 
-int fs_stat(const char *path, struct fs_stat *buf)
-{
-	struct stat *path_stat;
-	path_stat = (struct stat *)buf;
-	return (stat(path, path_stat));
-}
+// int fs_stat(const char *path, struct fs_stat *buf)
+// {
+// 	struct stat *path_stat;
+// 	path_stat = (struct stat *)buf;
+// 	return (stat(path, path_stat));
+// }
 
 // int fs_isFile(char *path)
 // {
@@ -152,8 +152,8 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 		// {
 		// 	if (fllong)
 		// 	{
-		// 		fs_stat(di->d_name, &statbuf);
-		// 		printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
+				fs_stat(di->d_name, &statbuf);
+				printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
 		// 	}
 		// 	else
 		// 	{
@@ -164,7 +164,7 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 		printf("%s\n", di->d_name);
 		di = fs_readdir(dirp);
 	}
-	fs_closedir(dirp);
+	//fs_closedir(dirp);
 	return 0;
 }
 
@@ -697,11 +697,11 @@ int main(int argc, char *argv[])
 	MBRinit(volumeSize, blockSize, argv);
 	// b_open("/foo/dir/test.txt", O_WRONLY | O_RDONLY);
 	// exit(0);
-	/*int okay = b_open("/beep/helloFile", O_CREAT); 
+	int okay = b_open("/beep/helloFile", O_CREAT); 
 	int okay2 = b_open("/beep/helloFile2", O_RDONLY); 
 	int check1 = b_open("/beep/helloFile", O_RDONLY); 
 	int check2 = b_open("/beep/helloFile2", O_RDONLY);
-	 printf("check1 %d, check2 %d", check1, check2);*/
+	 printf("check1 %d, check2 %d", check1, check2);
 	char *cmdin;
 	char *cmd;
 	HIST_ENTRY *he;
