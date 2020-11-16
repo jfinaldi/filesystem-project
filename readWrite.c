@@ -555,14 +555,37 @@ int b_read(int fd, char *buffer, int count)
 
 int b_seek(int fd, int offset, int whence)
 {
+    printf("\nb_seek:\n");
+    printf("------------------------------\n");
+    printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
     //reposition the file pointer
-    //
-    //Whence: 
+    switch(whence)
+    { 
         //SEEK_SET= file offset set to offset bytes
-        //SEEK_CUR= file offset is set to its current location plus offset
-        //SEEK_END= file offset is set to the size of the file plus offset bytes
-    //this fcn returns the offset location (bytes) from the start of file
+        case SEEK_SET:
+            fileOpen[fd].filePointer = fileOpen[fd].dataLocation + offset; //reposition fp to dataLocation + offset
+            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+             printf("------------------------------\n");
+            return fileOpen[fd].filePointer;                               //return fp
 
-    //
+        //SEEK_CUR= file offset is set to its current location plus offset
+        case SEEK_CUR:
+            fileOpen[fd].filePointer += offset;                            //fp += offset
+            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+             printf("------------------------------\n");
+            return fileOpen[fd].filePointer;                               //return fp;
+
+        //SEEK_END= file offset is set to the size of the file plus offset bytes
+        case SEEK_END:
+            fileOpen[fd].filePointer = fileOpen[fd].sizeOfFile + offset;   //position fp to the end of file
+            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+            printf("------------------------------\n");
+            //If the above line breaks: fp = dataLocation + sizeOfFile + offset
+            return fileOpen[fd].filePointer;//return fp;
+        default:
+            perror("Error: invalid value of whence for b_seek.\n");
+            printf("------------------------------\n");
+            return -1;
+    }
     return 0;
 }
