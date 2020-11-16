@@ -61,12 +61,12 @@ struct fs_diriteminfo fsDi;
 // 	return (closedir(dir));
 // }
 
-int fs_stat(const char *path, struct fs_stat *buf)
-{
-	struct stat *path_stat;
-	path_stat = (struct stat *)buf;
-	return (stat(path, path_stat));
-}
+// int fs_stat(const char *path, struct fs_stat *buf)
+// {
+// 	struct stat *path_stat;
+//	path_stat = (struct stat *)buf;
+//	return (stat(path, path_stat));
+// }
 
 // int fs_isFile(char *path)
 // {

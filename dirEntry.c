@@ -63,8 +63,8 @@ void updateEntry(fd_struct* fd, dirEntry* dE)
     dE->eofLBA = fd->eofLBA;
     dE->eofOffset = fd->eofOffset;
 
-    time(&(dE->dateModifiedDirectory)); // date the file was last modified
-    time(&(dE->dateAccessedDirectory)); // date the file was last accessed
+    time(&(dE->dateModified)); // date the file was last modified
+    time(&(dE->dateAccessed)); // date the file was last accessed
 
 	dE->sizeOfFile = (dE->numBlocks * MBR_st->blockSize) + dE->eofLBA;
 }

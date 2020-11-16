@@ -517,12 +517,12 @@ int fs_stat(const char *path, struct fs_stat *buf)
     char* temp;
     strcpy(temp, path);
     int numTokens = 0;
-    char* tokens = tokenizePath(path, &numTokens);
+    char** tokens = tokenizePath(temp, &numTokens);
     if(!tokens)
     {
         printf("Error: path is empty.\n");
     }
     printf("numTokens: %d\n", numTokens);
 
-    
+
 }

@@ -37,7 +37,7 @@ typedef struct fd_struct
     unsigned char type;
     int flag; //stores read/write permissions
 
-    int filePointer; //file pointer tracks the current byte in the file
+    unsigned long filePointer; //file pointer tracks the current byte in the file
     char *buffer;  // For b_read and b_write
     short bufIndex; //tracks where in the buffer we are
     short buflen; //tracks how much of buffer is being used

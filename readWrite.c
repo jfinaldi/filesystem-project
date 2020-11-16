@@ -173,7 +173,7 @@ int b_open(char *filename, int flags)
                 strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                 fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                 fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
                 ptrOpen = NULL;
@@ -207,8 +207,8 @@ int b_open(char *filename, int flags)
             ptrOpen[freeIndex].numBlocks = 20;	// the number of blocks occupied by the file
             //ptrOpen[freeIndex].id = -1; //the id number for the entry
 
-            time(&(ptrOpen[freeIndex].dateModifiedDirectory)); // date the file was last modified
-            time(&(ptrOpen[freeIndex].dateAccessedDirectory)); // date the file was last accessed
+            time(&(ptrOpen[freeIndex].dateModified)); // date the file was last modified
+            time(&(ptrOpen[freeIndex].dateAccessed)); // date the file was last accessed
 
             ptrOpen[freeIndex].locationMetadata = find_free_index(20); //512 file per directory
             ptrOpen[freeIndex].isBeingUsed = 1;		  //this file is currently not being used
@@ -217,15 +217,15 @@ int b_open(char *filename, int flags)
             fileOpen[fd].Fd = fd;
                 fileOpen[fd].isAllocate = TRUE;
                 fileOpen[fd].flag = flags;
-                fileOpen[fd].BufferRead = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferRead == NULL)
+                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
+                if (fileOpen[fd].buffer == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
                     free(ptrOpen);
                     return (-1);
                 }
-                fileOpen[fd].BufferWrite = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].BufferWrite == NULL)
+                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
+                if (fileOpen[fd].buffer == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
                     free(ptrOpen);
@@ -239,7 +239,7 @@ int b_open(char *filename, int flags)
                 strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                 fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                 fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModifiedDirectory;
+                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
                 ptrOpen = NULL;
@@ -267,8 +267,8 @@ void b_close(int fd)
     else
     {
         //TODO Write what is left inside the buffer of FD struct
-        free(fileOpen[fd].BufferWrite);
-        free(fileOpen[fd].BufferRead);
+        free(fileOpen[fd].buffer);
+        free(fileOpen[fd].buffer);
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
     }
@@ -565,7 +565,7 @@ int b_read(int fd, char *buffer, int count)
     return (bytesReturned);
 }
 
-int b_seek(int fd, int offset, int whence)
+int b_seek(int fd, off_t offset, int whence)
 {
     printf("\nb_seek:\n");
     printf("------------------------------\n");
