@@ -215,24 +215,35 @@ int fs_closedir(fdDir *dirp)
 {
     printf ("close dir\n"); 
     if (dirp == NULL) {
+        printf("ln 218\n");
         return 0; 
     }
+    printf("ln 220\n");
     //deallocate diriteminfo struct
+    /*
     if(dirp->dirItemInfo)
     {
-        free(dirp->dirItemInfo);
-        dirp->dirItemInfo = NULL;
+        printf("ln 224\n");
+        //free(dirp->dirItemInfo);
+        printf("ln 227\n");
+        //dirp->dirItemInfo = NULL;
+        printf("ln 229\n");
     }
+    printf("ln 231\n");
     if(dirp->dirItemInfo)
     {
+        printf("ln 230\n");
         printf("Error fs_closedir failed to deallocate dirp->dirItemInfo\n");
         return 1;
-    }
-
+    }*/
+    printf("ln 236\n");
     //free all memory
     if (dirp) {
+        printf("ln 239\n");
         free(dirp);
+        printf("ln 241\n");
         dirp = NULL;
+        printf("ln 243\n");
         if (dirp)
         {
             printf("Error MakeRemove.c, failed attempt to free dirp, ln 196\n");
