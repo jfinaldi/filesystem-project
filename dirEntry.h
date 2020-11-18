@@ -39,4 +39,40 @@ typedef struct DirectoryEntry
 void initEntry(dirEntry *dE);
 void updateEntry(fd_struct* fd, dirEntry* dE);
 
+/*GETTERS*/
+unsigned long getLocationLBA(dirEntry *dE);
+unsigned long getChildLBA(dirEntry *dE);
+short getEntryIndex(dirEntry *dE);
+unsigned long getDataLocation(dirEntry *dE);
+unsigned long getEofLBA(dirEntry *dE);
+short getEofOffset(dirEntry *dE);
+char* getName(dirEntry *dE); // cannot return an array can return a pointer to array
+uint64_t getSizeOfFile(dirEntry *dE);
+unsigned long getNumBlocks(dirEntry *dE);
+time_t getDateCreated(dirEntry *dE);
+time_t getDateModified(dirEntry *dE);
+time_t getDateAccessed(dirEntry *dE);
+unsigned long getLocationMetadata(dirEntry *dE);
+unsigned short* getExtent(dirEntry *dE); //question regarding returning arrays and pointers i cannot return arrays in c
+unsigned short getIsBeingUsed(dirEntry *dE);
+unsigned char getType(dirEntry *dE);
+
+/*SETTERS*/
+int setLocationLBA(dirEntry *dE, unsigned long newLocationLBA);
+int setChildLBA(dirEntry *dE, unsigned long newChildLBA);
+int setEntryIndex(dirEntry *dE, short newEntryIndex);
+int setDataLocation(dirEntry *dE, unsigned long newDataLocation);
+int setEofLBA(dirEntry *dE, unsigned long newEofLBA);
+int setEofOffset(dirEntry *dE, short newEofOffset);
+int setName(dirEntry *dE, char newName[256]);
+int setSizeOfFile(dirEntry *dE, uint64_t newSize);
+int setNumBlocks(dirEntry *dE, unsigned long newNumBlocks);
+int setDateCreated(dirEntry *dE, time_t newDateCreated);
+int setDateModified(dirEntry *dE, time_t newDateModified);
+int setDateAccessed(dirEntry *dE, time_t newDateAccessed);
+int setLocationMetadata(dirEntry *dE, unsigned long newLocationMetadata);
+int setExtent(dirEntry *dE, unsigned short newExtent);
+int setIsBeingUsed(dirEntry *dE, unsigned short newIsBeingUsed);
+int setType(dirEntry *dE, unsigned char newType);
+
 #endif
