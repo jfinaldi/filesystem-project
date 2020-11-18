@@ -23,7 +23,7 @@
 #include <math.h>
 #include <time.h>
 #include "fsLow.h"
-#include "../mfs.h"
+#include "../../include/mfs.h"
 
 int main(int argc, char *argv[])
 {

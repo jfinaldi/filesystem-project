@@ -59,6 +59,7 @@ typedef u_int32_t uint32_t;
 #define MAXFCBS 20
 #define MAX_DEEP 50
 #define EXIT_FAILURE 1
+#define PRE_ALLOCATE_BLOCK 4
 
 // flags for b_open
 // O_CREAT O_RDWR O_WRONLY O_TRUNC O_RDONLY

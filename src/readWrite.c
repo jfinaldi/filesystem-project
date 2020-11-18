@@ -23,6 +23,7 @@ void b_init()
     {
         fileOpen[i].Fd = -1;
         fileOpen[i].filePointer = 0;
+        fileOpen[i].lenBuffer = 0;
         fileOpen[i].flag = -1;
         fileOpen[i].isAllocate = FALSE;
         fileOpen[i].buffer = '\0';
@@ -38,7 +39,6 @@ void b_init()
         fileOpen[i].childLBA = 20000;
         fileOpen[i].entryIndex = 0;
         fileOpen[i].offsetInDataLocation = 20000;
-
     }
 }
 
@@ -133,23 +133,24 @@ int b_open(char *filename, int flags)
             newName++;
         }
         /**********************************/
-        
+
         printf("new name %s\n", newName);
         fdDir *temp = tempDirectory(filename, 0);
-        if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name\n"); 
+        if (temp->directoryStartLocation == 20000)
+        {
+            printf("not a valid path or name\n");
             return -1;
         }
         printf("HELLLO, dir start loc: %ld\n", temp->directoryStartLocation);
         dirEntry *ptrOpen = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         int blocks = MBR_st->dirNumBlocks;
         LBAread(ptrOpen, blocks, temp->directoryStartLocation);
-        int fount = -1; 
+        int fount = -1;
         for (int i = 0; i < STARTING_NUM_DIR; i++)
         {
             if (strcmp(ptrOpen[i].name, newName) == 0)
             {
-                printf("found %s %s\n", newName, ptrOpen[i].name); 
+                printf("found %s %s\n", newName, ptrOpen[i].name);
                 fileOpen[fd].Fd = fd;
                 fileOpen[fd].isAllocate = TRUE;
                 fileOpen[fd].flag = flags;
@@ -159,10 +160,11 @@ int b_open(char *filename, int flags)
                     write(2, "b_open: malloc failed\n", 23);
                     return (-1);
                 }
-                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].buffer == NULL)
+                fileOpen[fd].writeBuffer = malloc(B_CHUNK_SIZE);
+                if (fileOpen[fd].writeBuffer == NULL)
                 {
                     write(2, "b_open: malloc failed\n", 23);
+                    free(ptrOpen);
                     return (-1);
                 }
                 fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
@@ -177,13 +179,14 @@ int b_open(char *filename, int flags)
                 time(&(fileOpen[fd].dateAccessedDirectory));
                 free(ptrOpen);
                 ptrOpen = NULL;
-                printf("found fd\n"); 
+                printf("found fd\n");
                 return (fd);
             }
         }
-        if (flags & O_CREAT) {
-            printf("IN CREATE\n"); 
-            int freeIndex = -1; 
+        if (flags & O_CREAT)
+        {
+            printf("IN CREATE\n");
+            int freeIndex = -1;
             for (int i = 0; i < STARTING_NUM_DIR; i++)
             {
                 if (ptrOpen[i].isBeingUsed == 0)
@@ -193,68 +196,69 @@ int b_open(char *filename, int flags)
                     break;
                 }
             }
-            if (freeIndex == -1){
-                printf("no space\n"); 
+            if (freeIndex == -1)
+            {
+                printf("no space\n");
                 return -1;
             }
-            ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation;  //location of this entry in logical block
+            ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation; //location of this entry in logical block
             ptrOpen[freeIndex].entryIndex = freeIndex;
 
             //initialize a default name for this child
             strcpy(ptrOpen[freeIndex].name, newName);
 
             ptrOpen[freeIndex].sizeOfFile = 20 * 512; // the number of bytes of the file data
-            ptrOpen[freeIndex].numBlocks = 20;	// the number of blocks occupied by the file
+            ptrOpen[freeIndex].numBlocks = 20;        // the number of blocks occupied by the file
             //ptrOpen[freeIndex].id = -1; //the id number for the entry
 
             time(&(ptrOpen[freeIndex].dateModified)); // date the file was last modified
             time(&(ptrOpen[freeIndex].dateAccessed)); // date the file was last accessed
 
             ptrOpen[freeIndex].locationMetadata = find_free_index(20); //512 file per directory
-            ptrOpen[freeIndex].isBeingUsed = 1;		  //this file is currently not being used
+            ptrOpen[freeIndex].isBeingUsed = 1;                        //this file is currently not being used
             ptrOpen[freeIndex].type = 'f';
             LBAwrite(ptrOpen, blocks, temp->directoryStartLocation);
             fileOpen[fd].Fd = fd;
-                fileOpen[fd].isAllocate = TRUE;
-                fileOpen[fd].flag = flags;
-                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].buffer == NULL)
-                {
-                    write(2, "b_open: malloc failed\n", 23);
-                    free(ptrOpen);
-                    return (-1);
-                }
-                fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
-                if (fileOpen[fd].buffer == NULL)
-                {
-                    write(2, "b_open: malloc failed\n", 23);
-                    free(ptrOpen);
-                    return (-1);
-                }
-                fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
-                strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
-                time(&(fileOpen[fd].dateAccessedDirectory));
+            fileOpen[fd].isAllocate = TRUE;
+            fileOpen[fd].flag = flags;
+            fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
+            if (fileOpen[fd].buffer == NULL)
+            {
+                write(2, "b_open: malloc failed\n", 23);
                 free(ptrOpen);
-                ptrOpen = NULL;
-                printf("found fd"); 
-                return (fd);
-            return fd; 
-        } else {
+                return (-1);
+            }
+            fileOpen[fd].writeBuffer = malloc(B_CHUNK_SIZE);
+            if (fileOpen[fd].writeBuffer == NULL)
+            {
+                write(2, "b_open: malloc failed\n", 23);
+                free(ptrOpen);
+                return (-1);
+            }
+            fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+            fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
+            fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
+            fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
+            fileOpen[fd].indexInDataLocation = ptrOpen[curr].dataLocation;
+            strcpy(fileOpen[fd].name, ptrOpen[curr].name);
+            fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
+            fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+            fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
+            time(&(fileOpen[fd].dateAccessedDirectory));
+            free(ptrOpen);
+            ptrOpen = NULL;
+            printf("found fd");
+            return (fd);
+            return fd;
+        }
+        else
+        {
             printf("file not found");
             free(ptrOpen);
-            ptrOpen = NULL; 
-            return -1; 
+            ptrOpen = NULL;
+            return -1;
         }
-
     }
-    
 }
 
 // Interface to Close the file
@@ -275,9 +279,9 @@ void b_close(int fd)
 
     //if this fd was written to, update the entry
     //if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
-    //    || fileOpen[fd].flag == O_CREAT) 
+    //    || fileOpen[fd].flag == O_CREAT)
     //{
-       /* //create a dirEntry pointer, malloc dirBUfMallocSize bytes
+    /* //create a dirEntry pointer, malloc dirBUfMallocSize bytes
         dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         if (ptr == NULL)
         {
@@ -297,149 +301,87 @@ void b_close(int fd)
 }
 
 int b_write(int fd, char *buffer, int count)
-{ // this file system is limited to 20 open files at once.
-    /*int n = 0;
+{
+    int n = 0;
     int returnValue = 0;
 
-    // the two ifs below check if the file descriptor table is open or if it exists
-    // check that fd is between 0 and (MAXFCBS-1) kind of like in assignment 2 we made an array of 20 structs
-     if ((fd < 0) || (fd >= MAXFCBS)) //given value index does not match the limit of 20 open files.
-     {
-         perror("File descriptor outside range 0-20\n");
-         return (-1); //invalid file descriptor
-     }
+    if (fileOpen[fd].flag == O_RDWR || O_WRONLY || O_TRUNC)
+    {
+        // check that fd is between 0 and (MAXFCBS-1)
+        if ((fd < 0) || (fd >= MAXFCBS))
+        {
+            return (-1); //invalid file descriptor
+        }
 
-     if (fd == -1) //File not open for this descriptor
-     {
-         perror("The file was not opened or created\n"); //file was not initilized so open was not called
-         return (-1);
-     }
+        if (fileOpen[fd].Fd == -1) //File not open for this descriptor
+        {
+            return (-1);
+        }
 
+        if (fileOpen[fd].isAllocate == FALSE) // NOT ALLOCATE
+        {
+            return (-1);
+        }
 
-     //TO DO: Check for Write permission still in the process
-
-     /*
-     skeleton format to test if a file is write only 
-     
-     if(fileOpen->flag == O_WRONLY) {
-         printf("The file descriptor specified does have the O_WRITE permission\n");
-         return(-1);
-     }
-     
-     
-     
-     
-     
-
-     if (fileOpen[fd].isAllocate == FALSE)
-     { // this portion deals with memory allocation BUFSIZE = 512
-         fileOpen[fd].BufferWrite = malloc(BUFSIZE);
-         if (fileOpen[fd].BufferWrite == NULL)
-         {
-             // very bad, we can not allocate our buffer not enought memory
-             perror("ERROR IN ALLOCATION:\n");
-             close(fd);                 // close linux file
-             fileOpen[fd].Fd = -1;      //Free opened File
-             return (-1);
-         }
-         fileOpen->isAllocate = TRUE;
-     }
-     int Total_LBA_Write_Blocks = 0; 
-     int Int_Number_LBA_Writes = count/512; // get the integer number of blocks to write does not include remainder
-     // due to integer division.
-     int Remainder_Bytes = count - Int_Number_LBA_Writes*BUFSIZE; 
-    
-     if (Remainder_Bytes > 0) {
-         // there was a few remaining bytes under 512 i need an extra block to fit those so add 1 block
-         Total_LBA_Write_Blocks = Int_Number_LBA_Writes + 1;
-     }
-     else {
-         //division was perfect no remainder so the count perfectly divided with no remainder
-         Total_LBA_Write_Blocks = Int_Number_LBA_Writes;
-     }
-
-
-      //am i going to be given free lba location blocks once the file is opened or not?
-      //or do i have to allocate my own memory
-      //int Start_Location_Of_LBA = find_free_index(Total_LBA_Write_Blocks);
-      
-      fileOpen[fd].BufferWrite = buffer;
-
-      for(int i = 0; i < Total_LBA_Write_Blocks; i++) {
-          int Written_Blocks = LBAwrite(fileOpen[fd].BufferWrite, 1, fileOpen[fd].dataLocation + i);
-          if (Written_Blocks == 1) { // we wrote a whole block and the return is 1 so incement by 512          
-              fileOpen[fd].BufferWrite = fileOpen[fd].BufferWrite + 512;
-               }
-               else if (Written_Blocks == 0) { // if return of LBA return = 0
-                //update eofLBA = 
-                // fileOpen[Fd].offsetDataLocation = Remainder_Bytes;
-
-
-
-
-               }
-               else {
-                   perror("The return of LBAWrite is not 0 or 1\n");
-               }
-               fileOpen[fd].numBlocks++;
-      }
-      
-      
-                //DO NOT RETURN THE LINUX SYSTEM CALL RETURN ASSINGMENT 5
-
-
-    // if (fcbArray[fd].lenBuffer + count <= BUFSIZE) // STILL HAVE PLACE IN THE WriteBuffer
-    // {
-    //     for (int nbr = 0; nbr != count;)
-    //     {
-    //         fcbArray[fd].writeBuffer[fcbArray[fd].lenBuffer] = buffer[nbr];
-    //         fcbArray[fd].lenBuffer++;
-    //         nbr++;
-    //     }
-    // }
-    // else if (fcbArray[fd].lenBuffer + count >= BUFSIZE) // NOT ENOUGHT PLACE IN THE WriteBuffer
-    // {
-    //     for (n = 0; fcbArray[fd].lenBuffer != BUFSIZE;)
-    //     {
-    //         fcbArray[fd].writeBuffer[fcbArray[fd].lenBuffer] = buffer[n];
-    //         fcbArray[fd].lenBuffer++;
-    //         count--;
-    //         n++;
-    //     }
-    //     write(fcbArray[fd].linuxFd, fcbArray[fd].writeBuffer, fcbArray[fd].lenBuffer);
-    //     returnValue = returnValue + fcbArray[fd].lenBuffer;
-    //     fcbArray[fd].lenBuffer = 0;
-    //     memset(fcbArray[fd].writeBuffer, '\0', BUFSIZE);
-    //     if (fcbArray[fd].lenBuffer + count >= BUFSIZE)
-    //     {
-    //         for (; count >= BUFSIZE;)
-    //         {
-    //             for (; fcbArray[fd].lenBuffer != BUFSIZE;)
-    //             {
-    //                 fcbArray[fd].writeBuffer[fcbArray[fd].lenBuffer] = buffer[n];
-    //                 fcbArray[fd].lenBuffer++;
-    //                 count--;
-    //                 n++;
-    //             }
-    //             write(fcbArray[fd].linuxFd, fcbArray[fd].writeBuffer, fcbArray[fd].lenBuffer);
-    //             returnValue = returnValue + fcbArray[fd].lenBuffer;
-    //             fcbArray[fd].lenBuffer = 0;
-    //             memset(fcbArray[fd].writeBuffer, '\0', BUFSIZE);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         for (int a = 0; a != count;)
-    //         {
-    //             fcbArray[fd].writeBuffer[a] = buffer[n];
-    //             fcbArray[fd].lenBuffer++;
-    //             n++;
-    //             a++;
-    //         }
-    //     }
-    // }
-    return (returnValue);*/
-    return 1;
+        if (fileOpen[fd].lenBuffer + count <= BUFSIZE) // STILL HAVE PLACE IN THE WriteBuffer
+        {
+            for (int nbr = 0; nbr != count;)
+            {
+                fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[nbr];
+                fileOpen[fd].lenBuffer++;
+                nbr++;
+            }
+        }
+        else if (fileOpen[fd].lenBuffer + count >= BUFSIZE) // NOT ENOUGHT PLACE IN THE WriteBuffer
+        {
+            for (n = 0; fileOpen[fd].lenBuffer != BUFSIZE;)
+            {
+                fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[n];
+                fileOpen[fd].lenBuffer++;
+                count--;
+                n++;
+            }
+            // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
+            LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].dataLocation);
+            // IS dataLocation the correct variable(where the data begin) ?
+            //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
+            returnValue = returnValue + fileOpen[fd].lenBuffer;
+            fileOpen[fd].lenBuffer = 0;
+            memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);
+            if (fileOpen[fd].lenBuffer + count >= BUFSIZE)
+            {
+                for (; count >= BUFSIZE;)
+                {
+                    for (; fileOpen[fd].lenBuffer != BUFSIZE;)
+                    {
+                        fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[n];
+                        fileOpen[fd].lenBuffer++;
+                        count--;
+                        n++;
+                    }
+                    // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
+                    LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].dataLocation);
+                    // IS dataLocation the correct variable(where the data begin) ?
+                    // IS THE 1 a corect varrible ?
+                    //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
+                    returnValue = returnValue + fileOpen[fd].lenBuffer;
+                    fileOpen[fd].lenBuffer = 0;
+                    memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);
+                }
+            }
+            else
+            {
+                for (int a = 0; a != count;)
+                {
+                    fileOpen[fd].writeBuffer[a] = buffer[n];
+                    fileOpen[fd].lenBuffer++;
+                    n++;
+                    a++;
+                }
+            }
+        }
+    }
+    return (returnValue);
 }
 
 //Method to get a free FCB element
@@ -467,7 +409,7 @@ int b_read(int fd, char *buffer, int count)
 {
     printf("b_read:\n");
     printf("------------------------------\n");
-    if(!(fileOpen[fd].flag & O_RDONLY) && !(fileOpen[fd].flag & O_RDWR))
+    if (!(fileOpen[fd].flag & O_RDONLY) && !(fileOpen[fd].flag & O_RDWR))
     {
         printf("------------------------------\n");
         perror("Error: We do not have read permissions.\n");
@@ -524,7 +466,7 @@ int b_read(int fd, char *buffer, int count)
             LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].indexInDataLocation);
             printf("prevBufSize: %d\n", prevBufSize);
             bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; //subtract prev buf size to get what we just read
-            prevBufSize += bytesRead; //update the new previous buffer size for next time
+            prevBufSize += bytesRead;                              //update the new previous buffer size for next time
             printf("bytesRead: %d\n", bytesRead);
             printf("prevBufSize: %d\n", prevBufSize);
             fileOpen[fd].indexInDataLocation += 1; //increment data location by 1 LBA block
@@ -542,7 +484,7 @@ int b_read(int fd, char *buffer, int count)
         printf("bytesRead: %d\n", bytesRead);
         printf("prevBufSize: %d\n", prevBufSize);
         fileOpen[fd].indexInDataLocation += 1;
-        fileOpen[fd].filePointer += bytesRead;                 // update the file pointer
+        fileOpen[fd].filePointer += bytesRead; // update the file pointer
         //fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
 
         // error handling here...  if read fails
@@ -571,34 +513,33 @@ int b_seek(int fd, off_t offset, int whence)
     printf("------------------------------\n");
     printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
     //reposition the file pointer
-    switch(whence)
-    { 
-        //SEEK_SET= file offset set to offset bytes
-        case SEEK_SET:
-            fileOpen[fd].filePointer = fileOpen[fd].dataLocation + offset; //reposition fp to dataLocation + offset
-            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
-             printf("------------------------------\n");
-            return fileOpen[fd].filePointer;                               //return fp
+    switch (whence)
+    {
+    //SEEK_SET= file offset set to offset bytes
+    case SEEK_SET:
+        fileOpen[fd].filePointer = fileOpen[fd].dataLocation + offset; //reposition fp to dataLocation + offset
+        printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+        printf("------------------------------\n");
+        return fileOpen[fd].filePointer; //return fp
 
-        //SEEK_CUR= file offset is set to its current location plus offset
-        case SEEK_CUR:
-            fileOpen[fd].filePointer += offset;                            //fp += offset
-            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
-             printf("------------------------------\n");
-            return fileOpen[fd].filePointer;                               //return fp;
+    //SEEK_CUR= file offset is set to its current location plus offset
+    case SEEK_CUR:
+        fileOpen[fd].filePointer += offset; //fp += offset
+        printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+        printf("------------------------------\n");
+        return fileOpen[fd].filePointer; //return fp;
 
-        //SEEK_END= file offset is set to the size of the file plus offset bytes
-        case SEEK_END:
-            fileOpen[fd].filePointer = fileOpen[fd].sizeOfFile + offset;   //position fp to the end of file
-            printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
-            printf("------------------------------\n");
-            //If the above line breaks: fp = dataLocation + sizeOfFile + offset
-            return fileOpen[fd].filePointer;//return fp;
-        default:
-            perror("Error: invalid value of whence for b_seek.\n");
-            printf("------------------------------\n");
-            return -1;
+    //SEEK_END= file offset is set to the size of the file plus offset bytes
+    case SEEK_END:
+        fileOpen[fd].filePointer = fileOpen[fd].sizeOfFile + offset; //position fp to the end of file
+        printf("filePointer set to: %ld\n", fileOpen[fd].filePointer);
+        printf("------------------------------\n");
+        //If the above line breaks: fp = dataLocation + sizeOfFile + offset
+        return fileOpen[fd].filePointer; //return fp;
+    default:
+        perror("Error: invalid value of whence for b_seek.\n");
+        printf("------------------------------\n");
+        return -1;
     }
     return 0;
 }
-
