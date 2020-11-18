@@ -711,9 +711,10 @@ int main(int argc, char *argv[])
 
 	while (1)
 	{
-		printf("\ncurr CWD: %s\n", fdDirCWD -> cwd_path); 
+		 
 		printf("\ncurr block: %ld\n", fdDirCWD -> directoryStartLocation);
-		cmdin = readline("Prompt > ");
+		printf("\nCWD: %s ", fdDirCWD -> cwd_path);
+		cmdin = readline(" > ");
 #ifdef COMMAND_DEBUG
 		printf("%s\n", cmdin);
 #endif

@@ -430,7 +430,7 @@ int fs_setcwd(char *buf)
     
     //resolve path, add ending slash if needed
     char * newPath = pathResolver(fdDirCWD->cwd_path);
-    strncpy(fdDirCWD->cwd_path, newPath, sizeof(newPath));
+    strncpy(fdDirCWD->cwd_path, newPath, sizeof(newPath) * sizeof(char*));
     _Bool isRoot = strcmp(fdDirCWD->cwd_path, "/") == 0; 
     _Bool lastIsSlash =  strcmp(&fdDirCWD->cwd_path[strlen(fdDirCWD->cwd_path) - 1], "/") == 0; 
     if (!isRoot && !lastIsSlash) {
