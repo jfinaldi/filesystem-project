@@ -49,6 +49,8 @@ typedef u_int32_t uint32_t;
 #include "bitMap.h"
 #include "MakeRemove.h"
 
+#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
+
 #define BLOCK_SIZE 512
 #define B_CHUNK_SIZE 512
 #define BUFSIZE 512
@@ -135,5 +137,6 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv);
 char *inttostr(int value, char *string, int base);
 void testOutput(dirEntry *rootDir);
 void outputFdDirCWD(fdDir *dirp);
+void processcommand(char *cmd);
 
 #endif

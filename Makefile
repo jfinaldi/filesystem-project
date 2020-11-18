@@ -44,7 +44,7 @@ CFLAGS= -g3 -Werror -I./include/
 SRCDIR=./src/
 LIBS =pthread
 DEPS = 
-ADDOBJ= fsLow/fsLow.o readWrite.o mbr.o misc.o bitMap.o initDirectory.o dirEntry.o MakeRemove.o fs_ORC.o
+ADDOBJ= fsLow/fsLow.o readWrite.o mbr.o misc.o bitMap.o initDirectory.o dirEntry.o MakeRemove.o fs_ORC.o main.o
 OBJ = $(addprefix $(SRCDIR), $(ROOTNAME)$(HW)$(FOPTION).o $(ADDOBJ))
 
 %.o: %.c $(DEPS)
