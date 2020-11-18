@@ -215,24 +215,35 @@ int fs_closedir(fdDir *dirp)
 {
     printf ("close dir\n"); 
     if (dirp == NULL) {
+        printf("ln 218\n");
         return 0; 
     }
+    printf("ln 220\n");
     //deallocate diriteminfo struct
+    /*
     if(dirp->dirItemInfo)
     {
-        free(dirp->dirItemInfo);
-        dirp->dirItemInfo = NULL;
+        printf("ln 224\n");
+        //free(dirp->dirItemInfo);
+        printf("ln 227\n");
+        //dirp->dirItemInfo = NULL;
+        printf("ln 229\n");
     }
+    printf("ln 231\n");
     if(dirp->dirItemInfo)
     {
+        printf("ln 230\n");
         printf("Error fs_closedir failed to deallocate dirp->dirItemInfo\n");
         return 1;
-    }
-
+    }*/
+    printf("ln 236\n");
     //free all memory
     if (dirp) {
+        printf("ln 239\n");
         free(dirp);
+        printf("ln 241\n");
         dirp = NULL;
+        printf("ln 243\n");
         if (dirp)
         {
             printf("Error MakeRemove.c, failed attempt to free dirp, ln 196\n");
@@ -455,7 +466,7 @@ int fs_setcwd(char *buf)
 //NOT RIGHT, TODO
 int fs_isDir(char *path)
 {
-    return 1;
+    //return 1;
     char *newName = malloc(256);
     char* ptr;
     int slash = '/';
@@ -514,15 +525,29 @@ int fs_stat(const char *path, struct fs_stat *buf)
     printf("path: %s\n", path);
     //navigate the path to the bottom directory and fill the fs_stat buffer with info
 
-    char* temp;
-    strcpy(temp, path);
-    int numTokens = 0;
-    char** tokens = tokenizePath(temp, &numTokens);
-    if(!tokens)
-    {
-        printf("Error: path is empty.\n");
+    char *dirName = malloc(256);
+    dirName = strrchr(path, '/');
+    if (dirName == NULL) {
+        dirName = malloc(256);
+        strcpy(dirName, path);
+    } else {
+        dirName++;
     }
-    printf("numTokens: %d\n", numTokens);
 
-
+    //set buffer and check if valid
+    dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+    int blocks = MBR_st->dirNumBlocks;
+    path = (char *) path;
+    fdDir *temp = tempDirectory(path, 1);
+    if (temp -> directoryStartLocation == 20000) {
+            printf("not a valid path or name"); 
+            return -1;
+    }
+    LBAread(entryBuffer, blocks, temp->directoryStartLocation);
+    buf -> st_size = 420;
+    buf -> st_blksize = MBR_st -> blockSize; /* blocksize for file system I/O */
+	buf -> st_blocks = MBR_st -> dirNumBlocks;	  /* number of 512B blocks allocated */
+	buf -> st_accesstime  = entryBuffer -> dateAccessed; /* time of last access */
+	buf  -> st_modtime	= entryBuffer -> dateModified;  /* time of last modification */
+	//buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
 }
