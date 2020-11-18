@@ -325,6 +325,10 @@ int fs_remove_helper(dirEntry *deToRemove)
     if (deToRemove -> type != 100) {
         free_mem(deToRemove->locationMetadata, 512 * 20);
     }
+    if (deToRemove->childLBA == fdDirCWD->directoryStartLocation) {
+        printf("can't delete, you are inside that directory"); 
+        return -1; 
+    }
     //check for child Directories to delete and recursively delete
     LBAread(entryBuff, blocks, deToRemove->childLBA);
     for (int i = 2; i < STARTING_NUM_DIR; i++) {
@@ -357,6 +361,10 @@ int fs_rmdir(const char *pathname)
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return -1;
+    }
+    if (temp -> directoryStartLocation == fdDirCWD->directoryStartLocation) {
+        printf("can't delete, you are inside that directory"); 
+        return -1; 
     }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
