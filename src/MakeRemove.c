@@ -388,7 +388,7 @@ char *fs_getcwd(char *buf, size_t size)
     char *path = malloc(256);
     strncpy(path, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
     strcat(path, "\0"); 
-    printf("path in get %s\n", path); 
+    //printf("path in get %s\n\n", path); 
     return path;
 }
 

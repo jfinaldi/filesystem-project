@@ -65,9 +65,13 @@ int main(int argc, char *argv[])
     while (1)
     {
 
-        printf("\ncurr block: %ld\n", fdDirCWD->directoryStartLocation);
-        printf("\nCWD: %s ", fdDirCWD->cwd_path);
-        cmdin = readline(" > ");
+        //printf("\ncurr block: %ld\n", fdDirCWD->directoryStartLocation);
+        printf("\n%s~", DEFAULT_USERNAME);
+        if(strcmp(fdDirCWD->cwd_path, "/") != 0) 
+        {        
+            printf("%s", fdDirCWD->cwd_path);
+        }
+        cmdin = readline("$ ");
 #ifdef COMMAND_DEBUG
         printf("%s\n", cmdin);
 #endif
