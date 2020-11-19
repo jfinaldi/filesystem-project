@@ -31,13 +31,15 @@ typedef struct DirectoryEntry
 	time_t dateModified;			// date the file was last modified
 	time_t dateAccessed;			// date the file was last accessed
 	unsigned long locationMetadata; // 512 file per directory
-	unsigned short extent[4][2];    // [LBA Block][number of blocks]
+	//unsigned short extent[4][2];    // [LBA Block][number of blocks]
+	unsigned long extents;          // an LBA location that stores array of 64 lBAs and sizes
+	unsigned short numExtents;      // tracks how many extents currently allocated
 	unsigned short isBeingUsed;		// tells whether this entry is currently in use or not
 	unsigned char type;				// f for file, d for directory
 } dirEntry;
 
 void initEntry(dirEntry *dE);
-void updateEntry(fd_struct* fd, dirEntry* dE);
+int updateEntry(int fd, dirEntry* dE);
 
 /*GETTERS*/
 unsigned long getLocationLBA(dirEntry *dE);
@@ -53,7 +55,7 @@ time_t getDateCreated(dirEntry *dE);
 time_t getDateModified(dirEntry *dE);
 time_t getDateAccessed(dirEntry *dE);
 unsigned long getLocationMetadata(dirEntry *dE);
-unsigned short* getExtent(dirEntry *dE); //question regarding returning arrays and pointers i cannot return arrays in c
+unsigned long getExtent(dirEntry *dE); //question regarding returning arrays and pointers i cannot return arrays in c
 unsigned short getIsBeingUsed(dirEntry *dE);
 unsigned char getType(dirEntry *dE);
 

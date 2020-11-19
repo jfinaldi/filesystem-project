@@ -13,9 +13,6 @@
 
 #include "mfs.h"
 
-#define EXTENT_ARRAY_ROWS 4
-#define EXTENT_STARTING_BLOCKS 20
-
 void initEntry(dirEntry *dE)
 {
 	//initialize location variables
@@ -38,14 +35,9 @@ void initEntry(dirEntry *dE)
 	time(&(dE->dateModified)); // date the file was last modified
 	time(&(dE->dateAccessed)); // date the file was last accessed
 
-	//initialize extent block numbers in cols, but not the LBAs
-	int extentBlocks = EXTENT_STARTING_BLOCKS;
-	for(int i = 0; i < EXTENT_ARRAY_ROWS; i++)
-	{
-		dE->extent[i][0] = DEFAULT_LBA;
-		dE->extent[i][1] = extentBlocks;
-		extentBlocks *= 2;
-	}
+	//initialize extent block 
+	dE->extents = DEFAULT_LBA;
+	dE->numExtents = DEFAULT_SIZE;
 
 	dE->locationMetadata = DEFAULT_LBA; //512 file per directory
 	dE->isBeingUsed = 0;		  //this file is currently not being used
@@ -56,29 +48,69 @@ void initEntry(dirEntry *dE)
 This function takes an fd_struct object, and a directory entry and updates
 certain information pertaining to the modification of file data.
 */
-void updateEntry(fd_struct* fd, dirEntry* dE)
+int updateEntry(int fd, dirEntry* dE)
 {
-    dE->numBlocks = fd->numBlocks;
-    dE->eofLBA = fd->eofLBA;
-    dE->eofOffset = fd->eofOffset;
+	printf("\nupdateEntry.....\n");
 
-    time(&(dE->dateModified)); // date the file was last modified
-    time(&(dE->dateAccessed)); // date the file was last accessed
+	//if we have a valid fd and dE
+	if((fd > -1) && dE) {
+		//copy info from fd to dE
+    	dE->numBlocks = fileOpen[fd].numBlocks;
+    	dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
+		dE->locationLBA = fileOpen[fd].locationLBA;  //location of this entry in logical block
+		dE->entryIndex = fileOpen[fd].entryIndex;	  //the position of this entry in the array of entries
+		dE->childLBA = fileOpen[fd].childLBA;
+		strcpy(dE->name, fileOpen[fd].name);
 
-	dE->sizeOfFile = (dE->numBlocks * MBR_st->blockSize) + dE->eofLBA;
+    	time(&(dE->dateModified)); // date the file was last modified
+    	time(&(dE->dateAccessed)); // date the file was last accessed
+
+		//calculate the new size of file
+
+		//add an extent?
+
+		//give back wasted extents
+
+		//write all updated entry info to disk
+
+		printf("entry successfully updated\n");
+		return 0;
+	}
+	printf("error: this entry is null. returning 1\n");
+	return 1;
+}
+
+// helper function to resolve a logical extent element into an LBA block
+unsigned long getExtentLBA(int indexPosition)
+{
+	printf("\ngetExtentLBA...\n");
+	//NOTE: all even indices of extents array = LBA locations,
+	//      all odd indices of extents array = #blocks for the prev element location
+	//create an unsigned long pointer to navigate bytes in extents LBA
+	//cycle through all elements in the extent array
+	//if indexPosition less than 
+	printf("error getting extent LBA. Returning %d", DEFAULT_LBA);
+	return DEFAULT_LBA;
 }
 
 int addAnExtent(dirEntry* dE)
 {
-	//find the first extent that doesn't have DEFAULT LOCATION in first col
-	//get free space, passing in the second col value for this row
-	//update extents allocated
+	printf("\naddAnExtent....\n");
+	if(!dE) {
+		printf("error, entry is null. returning 1\n");
+		return 1;
+	}
+
+
+
+
+
+
+
 	/*
 	Questions
 	the return type is an int do you want to return the index the start of the extents LBA block, or the number of blocks added to extent
 	
-	
-	*/
 	printf("\nIn dirEntry.c In AddAnExtent function line 84 before for loop\n");
 	for (int i = 0; i < 4; i++) { //looping through row 0 and colums 0-3 in for loop
 		if (dE->extent[0][i] == 20000) {
@@ -87,6 +119,7 @@ int addAnExtent(dirEntry* dE)
 				printf("\n in if statement Number of blocks allocated in extent column:%d, start position of extent blocks in LBA:%d", dE->extent[1][i], dE->extent[0][i] );
 		}
 	}
+	*/
 
 
 	return 0;
@@ -200,12 +233,12 @@ unsigned long getLocationMetadata(dirEntry *dE) {
 	return DEFAULT_LBA;
 }
 
-unsigned short* getExtent(dirEntry *dE) {
+unsigned long getExtent(dirEntry *dE) {
 	printf("\n in getExtent ln 166 this one might be buggy\n"); // compiler error ask about this tomorrow
 	if(dE)
-		return &dE->extent[0][0];
-	printf("error: this entry is null. returning NULL\n");
-	return NULL;
+		return dE->extents;
+	printf("error: this entry is null. returning %d\n", DEFAULT_LBA);
+	return DEFAULT_LBA;
 }
 
 unsigned short getIsBeingUsed(dirEntry *dE) {

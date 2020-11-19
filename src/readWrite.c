@@ -175,8 +175,8 @@ int b_open(char *filename, int flags)
                 strcpy(fileOpen[fd].name, ptrOpen[curr].name);
                 fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                 fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
-                time(&(fileOpen[fd].dateAccessedDirectory));
+                fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
+                time(&(fileOpen[fd].dateAccessed));
                 free(ptrOpen);
                 ptrOpen = NULL;
                 printf("found fd\n");
@@ -201,6 +201,8 @@ int b_open(char *filename, int flags)
                 printf("no space\n");
                 return -1;
             }
+
+            /**********I THINK ALL THIS COULD BE AN initEntry() CALL************/
             ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation; //location of this entry in logical block
             ptrOpen[freeIndex].entryIndex = freeIndex;
 
@@ -217,6 +219,8 @@ int b_open(char *filename, int flags)
             ptrOpen[freeIndex].locationMetadata = find_free_index(20); //512 file per directory
             ptrOpen[freeIndex].isBeingUsed = 1;                        //this file is currently not being used
             ptrOpen[freeIndex].type = 'f';
+            /*******************************************************************/
+
             LBAwrite(ptrOpen, blocks, temp->directoryStartLocation);
             fileOpen[fd].Fd = fd;
             fileOpen[fd].isAllocate = TRUE;
@@ -235,6 +239,8 @@ int b_open(char *filename, int flags)
                 free(ptrOpen);
                 return (-1);
             }
+
+            /*********CREATE HELPER copyToFD() ***************/
             fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
             fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
             fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
@@ -243,8 +249,9 @@ int b_open(char *filename, int flags)
             strcpy(fileOpen[fd].name, ptrOpen[curr].name);
             fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
             fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-            fileOpen[fd].dateModifiedDirectory = ptrOpen[curr].dateModified;
-            time(&(fileOpen[fd].dateAccessedDirectory));
+            fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
+            time(&(fileOpen[fd].dateAccessed));
+            /*************************************************/
             free(ptrOpen);
             ptrOpen = NULL;
             printf("found fd");
@@ -304,6 +311,8 @@ int b_write(int fd, char *buffer, int count)
 {
     int n = 0;
     int returnValue = 0;
+
+    //ADD CALL TO ADD EXTENT IF WE HAVE NONE, OR UPDATE IF WE'RE OUT
 
     if (fileOpen[fd].flag == O_RDWR || O_WRONLY || O_TRUNC)
     {

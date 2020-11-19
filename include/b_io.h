@@ -30,8 +30,9 @@ typedef struct fd_struct
     char name[256];
     uint64_t sizeOfFile;
     unsigned long numBlocks;
-    time_t dateModifiedDirectory;
-    time_t dateAccessedDirectory;
+    time_t dateCreated;
+    time_t dateModified;
+    time_t dateAccessed;
     unsigned long locationMetadata;
     unsigned short isBeingUsed;
     unsigned char type;
