@@ -515,7 +515,9 @@ int cmd_pwd(int argcnt, char *argvec[])
 	}
 	else
 	{
-		printf("%s\n", ptr);
+		printf("%s", ptr);
+		if(strcmp(ptr, "/") == 0) printf("home");
+		printf("\n");
 	}
 	free(dir_buf);
 	dir_buf = NULL;

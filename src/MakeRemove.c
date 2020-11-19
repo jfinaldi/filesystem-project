@@ -16,7 +16,7 @@ char** tokenizePath(char* path, int* i)
 {
     printf("[367]In tokenizePath...%s\n", path);
     char** result = (char**)malloc(strlen(path) * sizeof(char**));
-    printf("before loop"); 
+    printf("before loop\n"); 
     // loop through the string to extract all other tokens
     char* token = strtok(path, "/");
     (*i) = 0;
@@ -26,7 +26,7 @@ char** tokenizePath(char* path, int* i)
         (*i)++;
         token = strtok(NULL, "/");
     } 
-    printf ("end tokenize"); 
+    printf ("end tokenize\n\n"); 
     return result;
 }
 //removes . and .. and directories corresponding to .. from path
@@ -67,7 +67,7 @@ char * pathResolver(char *path) {
     }
     //re-concat path
     for (int i = 0; i < numTokens ; i++) {
-        printf ("tokens in reconcat: %s", tokens[i]); 
+        printf ("tokens in reconcat: %s\n", tokens[i]); 
         strcat(returnPath, tokens[i]);
         printf("making return path %s\n", returnPath); 
         if (strcmp(tokens[i], "\0") != 0 && i != numTokens - 1) {
@@ -107,7 +107,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
     char** tokens = tokenizePath(temp, &numTokens);
     int blocks = MBR_st->dirNumBlocks;
     int notFoundCount = 0; 
-     printf("numtokens in temp %d", numTokens);
+     printf("numtokens in temp %d\n", numTokens);
 
     //loop through tokens
     for (int k = 0; k < numTokens; k++) {
@@ -125,7 +125,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
                     curr = entryBuffer[i].locationMetadata; 
                 }
                 found = 0;
-                printf("found at %d", curr); 
+                printf("found at %d\n", curr); 
                 break;
             }
         }
@@ -134,7 +134,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
         }
         //if more than 1 tokens aren't found return not found 
         if (notFoundCount > 1) {
-            printf ("not found in temp"); 
+            printf ("not found in temp\n"); 
             resultDir-> directoryStartLocation = 20000;
             return resultDir; 
         }
@@ -153,7 +153,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
     } else {
         resultDir->directoryStartLocation = curr;
     }
-    printf("end temp"); 
+    printf("end temp\n"); 
     return resultDir;
 }
 
@@ -168,7 +168,7 @@ fdDir *fs_opendir(const char *name)
     fdDir *temp = (fdDir *)malloc(sizeof(fdDir));
     temp = tempDirectory(name, 0);
     if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name"); 
+            printf("not a valid path or name\n"); 
             return NULL;
     }
     temp->streamCount = 0;
@@ -180,14 +180,14 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     //malloc new item infp 
     struct fs_diriteminfo *result = (struct fs_diriteminfo *)malloc(sizeof(struct fs_diriteminfo));
     if (result == NULL) {
-        printf("malloc err");
+        printf("malloc err\n");
         return ((struct fs_diriteminfo *)-1);
     }
    
    //malloc and put dir in buffer
     dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     if (ptr == NULL) {
-        printf("malloc err");
+        printf("malloc err\n");
         return ((struct fs_diriteminfo *)-1);
     }
 
@@ -279,7 +279,7 @@ int fs_mkdir(const char *pathname, mode_t mode)
     //resolve pathname and load buffer with Dir
     fdDir *temp = tempDirectory(pathname, 0);
     if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name"); 
+            printf("not a valid path or name\n"); 
             return -1;
     }
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
@@ -326,7 +326,7 @@ int fs_remove_helper(dirEntry *deToRemove)
         free_mem(deToRemove->locationMetadata, 512 * 20);
     }
     if (deToRemove->childLBA == fdDirCWD->directoryStartLocation) {
-        printf("can't delete, you are inside that directory"); 
+        printf("can't delete, you are inside that directory\n"); 
         return -1; 
     }
     //check for child Directories to delete and recursively delete
@@ -359,11 +359,11 @@ int fs_rmdir(const char *pathname)
     pathname = (char *) pathname;
     fdDir *temp = tempDirectory(pathname, 1);
     if (temp -> directoryStartLocation == 20000) {
-            printf("not a valid path or name"); 
+            printf("not a valid path or name\n"); 
             return -1;
     }
     if (temp -> directoryStartLocation == fdDirCWD->directoryStartLocation) {
-        printf("can't delete, you are inside that directory"); 
+        printf("can't delete, you are inside that directory\n"); 
         return -1; 
     }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
@@ -400,7 +400,7 @@ int fs_setcwd(char *buf)
     int isAbsolute = strncmp(&buf[0], "/", 1) == 0; 
     strncpy(temp, fdDirCWD->cwd_path, sizeof(fdDirCWD->cwd_path));
     if (isAbsolute) {
-        printf("set is abs"); 
+        printf("set is abs\n"); 
         strncpy(temp, buf, sizeof(char*) * sizeof(buf));
     }
     else {
@@ -437,7 +437,7 @@ int fs_setcwd(char *buf)
 
     //set info 
     fdDirCWD->directoryStartLocation = curr;
-    printf ("NEW CURR %d", curr); 
+    printf ("NEW CURR %d\n", curr); 
     //if is absolute copy, if not concat
     if (isAbsolute) {
         strncpy(fdDirCWD->cwd_path, buf, sizeof(buf) * sizeof(char*));
@@ -502,7 +502,7 @@ int fs_isDir(char *path)
     int blocks = MBR_st -> dirNumBlocks;
     fdDir *temp = tempDirectory(path, 1);
     if (temp -> directoryStartLocation == 20000) {
-        printf("not a valid path or name"); 
+        printf("not a valid path or name\n"); 
         return -1;
     }
     LBAread(entryBuffer, blocks, temp -> directoryStartLocation);
