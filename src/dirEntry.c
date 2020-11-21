@@ -134,67 +134,98 @@ unsigned long getExtentLBA(dirEntry* dE, int indexPosition)
 
 int initExtents(dirEntry* dE)
 {
+	printf("\n initExtents....\n");
+	if(!dE) {
+		printf("error, entry is null. Returning 1\n");
+		return 1;
+	}
+
 	dE->extents = find_free_index(1); //assign one block for the extents array
 	unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
 
-	//fill all 512 with zeros
+	//initialize all 64 elements to zeros
 	for(int i = 0; i < EXTENT_MAX_ELEMENTS; i++)
 	{
 		ptr[i] = 0;
 	}
 
-	//test this while array
-	printf("\nTesting primary extents array\n");
-	printf("-----------------------------\n");
-	int count = 0;
-	for(int i = 0; i < EXTENT_MAX_ELEMENTS; i++)
-	{
-		printf("%ld ", ptr[i]);
-		count++;
+	//get free space of 20 blocks for the first extent
+	unsigned long firstExt = find_free_index(EXTENT_START_BLOCKS);
+	printf("firstExt: %ld\n", firstExt);
 
-		//every 8 numbers skip to new line
-		if(count % 8 == 0){
-			printf("\n");
-			count = 0;
-		}
-	}
-	
-	//assign the first 20 blocks to the extents LBA	
+    //and store the LBA in the first position of buffer
+	ptr[0] = firstExt;
+	ptr[1] = EXTENT_START_BLOCKS;
+    
+    //increment numExtents and numBlocks
+	dE->numExtents++;
+	dE->numBlocks++;
+    
+    //do an LBAwrite of the buffer, passing in buf, 1, dE->extents
+	LBAwrite(ptr, 1, dE->extents);
+    
+    return 0;
 }
 
-int addAnExtent(dirEntry* dE)
-{
-	printf("\naddAnExtent....\n");
-	if(!dE) {
-		printf("error, entry is null. returning 1\n");
+int addAnExtent(dirEntry* dE) {
+    printf("\naddAnExtent.....\n");
+    if(!dE) {
+        printf("error, entry is null. returning 1\n");
+        return 1;
+    }
+	if(dE->numExtents == (EXTENT_MAX_ELEMENTS / 2)) {
+		printf("error, extents are full for some insane reason.\n");
 		return 1;
 	}
+    
+    //if extent LBA location hasn't been started, then get one
+    if(dE->extents == DEFAULT_LBA)
+        initExtents(dE);
+    
+    //create a buffer and read in our extents LBA
+    unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
+    LBAread(ptr, 1, dE->extents);
+    
+    unsigned short lastElement = dE->numExtents * 2; // get the first avail element in LBA
+    
+    //calculate the number of blocks we're giving this extent
+    unsigned long prevExtBlocks = ptr[lastElement];
+    unsigned long newExtBlocks = prevExtBlocks * EXTENT_MULTIPLIER;
+    unsigned long newExtStartIndex = lastElement + 1;
+    unsigned long newExtBlocksIndex = lastElement + 2;
 
-	// if extent LBA location hasn't been started, then get one
-	if(dE->extents == DEFAULT_LBA)
-		initExtents(dE);
+	//output stuff
+	printf("prevExtBlocks: %ld\n", prevExtBlocks);
+	printf("newExtBlocks: %ld\n", newExtBlocks);
+	printf("newExtStartIndex: %ld\n", newExtStartIndex);
+	printf("newExtBlocksIndex: %ld\n", newExtBlocksIndex);
+    
+    //get free space for this extent
+    unsigned long newBlock = find_free_index(newExtBlocks);
+    
+    //write the newBlock number to newExtStartIndex
+    ptr[newExtStartIndex] = newBlock;
+    
+    //write the newBlocks number to newExtBlocksIndex
+    ptr[newExtBlocksIndex] = newExtBlocks;
 
+	//output stuff
+	printf("newBlock: %ld\n", newBlock);
+	printf("ptr[%ld]: %ld\n", newExtStartIndex, ptr[newExtStartIndex]);
+	printf("ptr[%ld]: %ld\n", newExtBlocksIndex, ptr[newExtBlocksIndex]);
+    
+    //increment counting variables for struct
+    dE->numExtents++;
+    dE->numBlocks += newExtBlocks;
 
-
-
-
-
-	/*
-	Questions
-	the return type is an int do you want to return the index the start of the extents LBA block, or the number of blocks added to extent
-	
-	printf("\nIn dirEntry.c In AddAnExtent function line 84 before for loop\n");
-	for (int i = 0; i < 4; i++) { //looping through row 0 and colums 0-3 in for loop
-		if (dE->extent[0][i] == 20000) {
-				dE->extent[0][i] = find_free_index(2*dE->extent[1][i-1]); // uses the second row i index column to multiply the #blocks of previous 
-				//extent by 2 so 20,40,80,160
-				printf("\n in if statement Number of blocks allocated in extent column:%d, start position of extent blocks in LBA:%d", dE->extent[1][i], dE->extent[0][i] );
-		}
-	}
-	*/
-
-
-	return 0;
+	//output stuff
+	printf("dE->numExtents: %d\n", dE->numExtents);
+	printf("dE->numBlocks: %ld\n", dE->numBlocks);
+    
+    //do an LBAwrite, passing in buffer, 1, dE->extents
+	LBAwrite(ptr, 1, dE->extents);
+    
+    return 0;
 }
 
 /*GETTERS IMPLEMENTED HERE*/

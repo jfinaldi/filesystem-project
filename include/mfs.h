@@ -60,7 +60,6 @@ typedef u_int32_t uint32_t;
 #define MAX_OPENFILE 20
 #define MAXFCBS 20
 #define MAX_DEEP 50
-#define MAX_NUM_EXTENTS 64
 #define EXTENT_MULTIPLIER 2
 #define EXTENT_START_BLOCKS 20
 #define EXTENT_MAX_ELEMENTS 64
