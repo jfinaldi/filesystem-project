@@ -54,6 +54,7 @@ int updateEntry(int fd, dirEntry* dE)
 
 	//if we have a valid fd and dE
 	if((fd > -1) && dE) {
+
 		//copy info from fd to dE
     	dE->numBlocks = fileOpen[fd].numBlocks;
     	dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
@@ -81,7 +82,7 @@ int updateEntry(int fd, dirEntry* dE)
 }
 
 // helper function to resolve a logical extent element into an LBA block
-unsigned long getExtentLBA(int indexPosition)
+unsigned long getExtentLBA(dirEntry* dE, int indexPosition)
 {
 	printf("\ngetExtentLBA...\n");
 	//NOTE: all even indices of extents array = LBA locations,
@@ -93,6 +94,36 @@ unsigned long getExtentLBA(int indexPosition)
 	return DEFAULT_LBA;
 }
 
+int initExtents(dirEntry* dE)
+{
+	dE->extents = find_free_index(1); //assign one block for the extents array
+	unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
+
+	//fill all 512 with zeros
+	for(int i = 0; i < EXTENT_MAX_ELEMENTS; i++)
+	{
+		ptr[i] = 0;
+	}
+
+	//test this while array
+	printf("\nTesting primary extents array\n");
+	printf("-----------------------------\n");
+	int count = 0;
+	for(int i = 0; i < EXTENT_MAX_ELEMENTS; i++)
+	{
+		printf("%ld ", ptr[i]);
+		count++;
+
+		//every 8 numbers skip to new line
+		if(count % 8 == 0){
+			printf("\n");
+			count = 0;
+		}
+	}
+	
+	//assign the first 20 blocks to the extents LBA	
+}
+
 int addAnExtent(dirEntry* dE)
 {
 	printf("\naddAnExtent....\n");
@@ -101,6 +132,9 @@ int addAnExtent(dirEntry* dE)
 		return 1;
 	}
 
+	// if extent LBA location hasn't been started, then get one
+	if(dE->extents == DEFAULT_LBA)
+		initExtents(dE);
 
 
 
@@ -233,13 +267,13 @@ unsigned long getLocationMetadata(dirEntry *dE) {
 	return DEFAULT_LBA;
 }
 
-unsigned long getExtent(dirEntry *dE) {
+/*unsigned long getExtent(dirEntry *dE) {
 	printf("\n in getExtent ln 166 this one might be buggy\n"); // compiler error ask about this tomorrow
 	if(dE)
 		return dE->extents;
 	printf("error: this entry is null. returning %d\n", DEFAULT_LBA);
 	return DEFAULT_LBA;
-}
+}*/
 
 unsigned short getIsBeingUsed(dirEntry *dE) {
 	printf("\n in getIsbeingUsed ln 171\n");

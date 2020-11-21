@@ -62,6 +62,8 @@ typedef u_int32_t uint32_t;
 #define MAX_DEEP 50
 #define MAX_NUM_EXTENTS 64
 #define EXTENT_MULTIPLIER 2
+#define EXTENT_START_BLOCKS 20
+#define EXTENT_MAX_ELEMENTS 64
 #define EXIT_FAILURE 1
 #define PRE_ALLOCATE_BLOCK 4
 #define DEFAULT_SIZE 0

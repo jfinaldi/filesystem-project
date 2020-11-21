@@ -55,9 +55,10 @@ time_t getDateCreated(dirEntry *dE);
 time_t getDateModified(dirEntry *dE);
 time_t getDateAccessed(dirEntry *dE);
 unsigned long getLocationMetadata(dirEntry *dE);
-unsigned long getExtent(dirEntry *dE); //question regarding returning arrays and pointers i cannot return arrays in c
+unsigned long getExtentLBA(dirEntry* dE, int indexPosition);
 unsigned short getIsBeingUsed(dirEntry *dE);
 unsigned char getType(dirEntry *dE);
+unsigned long getExtentLBA(dirEntry* dE, int indexPosition);
 
 /*SETTERS*/
 int setLocationLBA(dirEntry *dE, unsigned long newLocationLBA);
