@@ -89,7 +89,45 @@ unsigned long getExtentLBA(dirEntry* dE, int indexPosition)
 	//      all odd indices of extents array = #blocks for the prev element location
 	//create an unsigned long pointer to navigate bytes in extents LBA
 	//cycle through all elements in the extent array
-	//if indexPosition less than 
+	//if indexPosition less than
+
+
+	unsigned long* extentBuffer = (unsigned long*) malloc(512); //creating memory in main space for 512 bytes and partitioning it into chunks of 8 bytes
+
+	if (extentBuffer == NULL) {
+		printf("\n cannot allocate memory at ln 98 dirEntry.c\n");
+		return DEFAULT_LBA;
+	}
+
+
+	uint64_t test = LBAread(extentBuffer, 1, dE->extents);  //reading the LBA extents block where even indexes = LBA start, and odd = LBA extent size
+	/*
+	if (test != 0) {
+		printf("\n Something very bad happend in getExtentLBA Test:%d\n", test);
+	}
+	*/
+	printf("\n First Extent start comparison with for loop:%ld \n", extentBuffer[0]);
+	printf("\n First Extent size comparison with for loop:%ld \n", extentBuffer[1]);
+
+	//change to random number to check if they math like 8, 10, 17, or 25.
+	
+
+
+	for (int bufferIterator = 0; bufferIterator < EXTENT_MAX_ELEMENTS; bufferIterator =+ 2){
+		printf("\n In FOR LOOP ln 113 \n");
+		printf("\n Extent start location:%ld\n", extentBuffer[bufferIterator]); // test to get the proper locations
+		printf("extent Size value:%ld", extentBuffer[bufferIterator + 1]); // test to make sure it is 20,40,80.160, 320.
+		if (indexPosition < extentBuffer[bufferIterator + 1] ) {
+			unsigned long finalPosition =  extentBuffer[bufferIterator] + indexPosition;
+			printf("\n Final postion:%ld", finalPosition); //confirm this and test it
+			return finalPosition; 
+		}
+		else {
+			indexPosition = indexPosition - extentBuffer[bufferIterator + 1];
+		}
+		
+	}
+
 	printf("error getting extent LBA. Returning %d", DEFAULT_LBA);
 	return DEFAULT_LBA;
 }
