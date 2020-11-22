@@ -37,7 +37,7 @@
 ROOTNAME=hexdump
 HW=
 FOPTION=
-RUNOPTIONS= SampleVolume --count 6 --start 135
+RUNOPTIONS= SampleVolume --count 6 --start 36
 
 CC=gcc
 CFLAGS= -g -I.

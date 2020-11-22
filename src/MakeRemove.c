@@ -201,6 +201,7 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     //set info to return if being used, increment StreamCount
     if (!ptr[dirp->streamCount].isBeingUsed == 0) {
         result->fileType = ptr[dirp->streamCount].type;
+        printf("NAME IN READ, %s, INDEX %d", ptr[dirp->streamCount].name,  ptr[dirp->streamCount].entryIndex); 
         strcpy(result->d_name, ptr[dirp->streamCount].name);
         dirp->streamCount++;
         return result;

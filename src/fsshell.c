@@ -160,7 +160,7 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 		// 	}
 		// }
 		//temp
-		printf("%s\n", di->d_name);
+		printf("dirname: %s\n", di->d_name);
 		di = fs_readdir(dirp);
 	}
 	fs_closedir(dirp);
