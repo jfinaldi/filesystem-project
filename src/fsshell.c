@@ -98,7 +98,7 @@ struct fs_diriteminfo fsDi;
 #define CMDCP2L_ON 0
 #define CMDCP2FS_ON 0
 #define CMDCD_ON 1
-#define CMDPWD_ON 1
+#define CMDPWD_ON 0
 
 typedef struct dispatch_t
 {
@@ -107,17 +107,17 @@ typedef struct dispatch_t
 	char *description;
 } dispatch_t, *dispatch_p;
 
-int cmd_ls(int argcnt, char *argvec[]);
-int cmd_cp(int argcnt, char *argvec[]);
-int cmd_mv(int argcnt, char *argvec[]);
-int cmd_md(int argcnt, char *argvec[]);
-int cmd_rm(int argcnt, char *argvec[]);
-int cmd_cp2l(int argcnt, char *argvec[]);
-int cmd_cp2fs(int argcnt, char *argvec[]);
-int cmd_cd(int argcnt, char *argvec[]);
-int cmd_pwd(int argcnt, char *argvec[]);
-int cmd_history(int argcnt, char *argvec[]);
-int cmd_help(int argcnt, char *argvec[]);
+// int cmd_ls(int argcnt, char *argvec[]);
+// int cmd_cp(int argcnt, char *argvec[]);
+// int cmd_mv(int argcnt, char *argvec[]);
+// int cmd_md(int argcnt, char *argvec[]);
+// int cmd_rm(int argcnt, char *argvec[]);
+// int cmd_cp2l(int argcnt, char *argvec[]);
+// int cmd_cp2fs(int argcnt, char *argvec[]);
+// int cmd_cd(int argcnt, char *argvec[]);
+// int cmd_pwd(int argcnt, char *argvec[]);
+// int cmd_history(int argcnt, char *argvec[]);
+// int cmd_help(int argcnt, char *argvec[]);
 
 dispatch_t dispatchTable[] = {
 	{"ls", cmd_ls, "Lists the file in a directory"},
@@ -515,9 +515,7 @@ int cmd_pwd(int argcnt, char *argvec[])
 	}
 	else
 	{
-		printf("%s", ptr);
-		if(strcmp(ptr, "/") == 0) printf("home");
-		printf("\n");
+		printf("%s\n", ptr);
 	}
 	free(dir_buf);
 	dir_buf = NULL;

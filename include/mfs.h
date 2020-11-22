@@ -144,5 +144,16 @@ char *inttostr(int value, char *string, int base);
 void testOutput(dirEntry *rootDir);
 void outputFdDirCWD(fdDir *dirp);
 void processcommand(char *cmd);
+int cmd_ls(int argcnt, char *argvec[]);
+int cmd_cp(int argcnt, char *argvec[]);
+int cmd_mv(int argcnt, char *argvec[]);
+int cmd_md(int argcnt, char *argvec[]);
+int cmd_rm(int argcnt, char *argvec[]);
+int cmd_cp2l(int argcnt, char *argvec[]);
+int cmd_cp2fs(int argcnt, char *argvec[]);
+int cmd_cd(int argcnt, char *argvec[]);
+int cmd_pwd(int argcnt, char *argvec[]);
+int cmd_history(int argcnt, char *argvec[]);
+int cmd_help(int argcnt, char *argvec[]);
 
 #endif
