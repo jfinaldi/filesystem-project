@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     
     //START TESTS
     //SWITCH TO 0 AFTER HAVING INITIALIZED A SAMPLE VOLUME 
-    if (0) {
+    if (1) {
         printf("Starting test Initial Volume:\n"); 
         printf("initial root directry:\n"); 
         assert(strcmp(fdDirCWD->cwd_path, "/") == 0);
@@ -320,10 +320,17 @@ int main(int argc, char *argv[])
     //END TESTS
     while (1)
     {
-
+       //printf("\ncurr block: %ld\n", fdDirCWD->directoryStartLocation);
+        printf("\n%s~", DEFAULT_USERNAME);
+        if(strcmp(fdDirCWD->cwd_path, "/") != 0) 
+        {        
+            printf("%s", fdDirCWD->cwd_path);
+        }
+        cmdin = readline("$ ");
+        /*
         printf("\ncurr block: %ld\n", fdDirCWD->directoryStartLocation);
         printf("\nCWD: %s ", fdDirCWD->cwd_path);
-        cmdin = readline(" > ");
+        cmdin = readline(" > ");*/
 #ifdef COMMAND_DEBUG
         printf("%s\n", cmdin);
 #endif
