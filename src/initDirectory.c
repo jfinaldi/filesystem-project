@@ -85,11 +85,13 @@ long initDirectory(int parentLBA)
 	}
 	
 	//call LBA write to put this directory on disk
+	//dirEntry *ptr2 = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
 	LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
-	for (int i = 0; i < 3; i++)
-	{
-		testOutput(&ptr[i]);
-	}
+	// LBAread(ptr2, MBR_st -> dirNumBlocks, 38); 
+	// for (int i = 0; i < 3; i++)
+	// {
+	// 	testOutput(&ptr2[i]);
+	// }
 
 	free(ptr);
 

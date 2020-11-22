@@ -115,6 +115,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     printf("ln52\n");
         LBAread(entryBuffer, blocks, curr);
+        
         int found = -1;
         //check children for currToken, note if not found
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
@@ -201,7 +202,7 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     //set info to return if being used, increment StreamCount
     if (!ptr[dirp->streamCount].isBeingUsed == 0) {
         result->fileType = ptr[dirp->streamCount].type;
-        printf("NAME IN READ, %s, INDEX %d", ptr[dirp->streamCount].name,  ptr[dirp->streamCount].entryIndex); 
+        //printf("NAME IN READ, %s, INDEX %d", ptr[dirp->streamCount].name,  ptr[dirp->streamCount].entryIndex); 
         strcpy(result->d_name, ptr[dirp->streamCount].name);
         dirp->streamCount++;
         return result;
