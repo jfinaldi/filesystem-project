@@ -89,9 +89,9 @@ long initDirectory(int parentLBA)
 	LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
 	// LBAread(ptr2, MBR_st -> dirNumBlocks, 38); 
 	// for (int i = 0; i < 3; i++)
-	// {
-	// 	testOutput(&ptr2[i]);
-	// }
+	{
+		testOutput(&ptr[i]);
+	}
 
 	free(ptr);
 

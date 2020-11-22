@@ -96,7 +96,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
     int last = curr;
     fdDir *resultDir = (fdDir *)malloc(sizeof(fdDir));
     _Bool isRoot =  strcmp(path, "/") == 0;
-
+    strcpy(resultDir -> cwd_path, temp); 
     //early return for Root
     if (isRoot) {
         resultDir->directoryStartLocation = MBR_st->rootDirectoryPos;
@@ -327,10 +327,10 @@ int fs_remove_helper(dirEntry *deToRemove)
     if (deToRemove -> type != 100) {
         free_mem(deToRemove->locationMetadata, 512 * 20);
     }
-    if (deToRemove->childLBA == fdDirCWD->directoryStartLocation) {
-        printf("can't delete, you are inside that directory\n"); 
-        return -1; 
-    }
+    // if (deToRemove->childLBA == fdDirCWD->directoryStartLocation) {
+    //     printf("can't delete, you are inside that directory\n"); 
+    //     return -1; 
+    // }
     //check for child Directories to delete and recursively delete
     LBAread(entryBuff, blocks, deToRemove->childLBA);
     for (int i = 2; i < STARTING_NUM_DIR; i++) {
@@ -364,10 +364,15 @@ int fs_rmdir(const char *pathname)
             printf("not a valid path or name\n"); 
             return -1;
     }
-    if (temp -> directoryStartLocation == fdDirCWD->directoryStartLocation) {
-        printf("can't delete, you are inside that directory\n"); 
-        return -1; 
+    printf("IN DELETE %s, %s", temp -> cwd_path, fdDirCWD -> cwd_path);
+    if (strncmp(temp -> cwd_path, fdDirCWD -> cwd_path, strlen(temp -> cwd_path)) == 0) {
+        printf("CANT REMOVE"); 
+        return -1;
     }
+    // if (temp -> directoryStartLocation == fdDirCWD->directoryStartLocation) {
+    //     printf("can't delete, you are inside that directory\n"); 
+    //     return -1; 
+    // }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
     //find index to remove
@@ -560,4 +565,8 @@ int fs_stat(const char *path, struct fs_stat *buf)
 	buf -> st_accesstime  = entryBuffer -> dateAccessed; /* time of last access */
 	buf  -> st_modtime	= entryBuffer -> dateModified;  /* time of last modification */
 	//buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
+}
+
+int fs_mvdir(char *srcPath, char *destPath) {
+
 }
