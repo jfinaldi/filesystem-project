@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     
     //START TESTS
     //SWITCH TO 0 AFTER HAVING INITIALIZED A SAMPLE VOLUME 
-    if (1) {
+    if (0) {
         printf("Starting test Initial Volume:\n"); 
         printf("initial root directry:\n"); 
         assert(strcmp(fdDirCWD->cwd_path, "/") == 0);
@@ -208,8 +208,9 @@ int main(int argc, char *argv[])
         printf("%s\n", fdDirCWD->cwd_path); 
         assert(strcmp(fdDirCWD->cwd_path, "/absoluteTest/absoluteChild/relativeCousin/") == 0);
         printf("ok\n\n") ;
+        
     
-    } else {
+    } else if (0){
         printf("Starting test:\n"); 
         printf("initial root directry:\n"); 
         assert(strcmp(fdDirCWD->cwd_path, "/") == 0);

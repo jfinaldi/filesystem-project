@@ -132,6 +132,7 @@ int fs_isFile(char *path);	   //return 1 if file, 0 otherwise
 int fs_isDir(char *path);	   //return 1 if directory, 0 otherwise
 int fs_delete(char *filename); //removes a file
 int fs_stat(const char *path, struct fs_stat *buf);
+int fs_mvdir(char *src, char *dest); 
 
 int startPartitionSystem(char *filename, uint64_t *volSize, uint64_t *blockSize);
 int closePartitionSystem();

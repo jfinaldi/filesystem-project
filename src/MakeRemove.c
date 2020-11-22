@@ -110,6 +110,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
      printf("numtokens in temp %d\n", numTokens);
 
     //loop through tokens
+    int isFile = 0; 
     for (int k = 0; k < numTokens; k++) {
         printf("token in temp %s\n", tokens[k]); 
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
@@ -123,7 +124,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
                 if (entryBuffer[i].childLBA == 20000) {
-                    curr = entryBuffer[i].locationMetadata; 
+                    curr = last;
                 }
                 found = 0;
                 printf("found at %d\n", curr); 
@@ -327,10 +328,6 @@ int fs_remove_helper(dirEntry *deToRemove)
     if (deToRemove -> type != 100) {
         free_mem(deToRemove->locationMetadata, 512 * 20);
     }
-    // if (deToRemove->childLBA == fdDirCWD->directoryStartLocation) {
-    //     printf("can't delete, you are inside that directory\n"); 
-    //     return -1; 
-    // }
     //check for child Directories to delete and recursively delete
     LBAread(entryBuff, blocks, deToRemove->childLBA);
     for (int i = 2; i < STARTING_NUM_DIR; i++) {
@@ -369,10 +366,6 @@ int fs_rmdir(const char *pathname)
         printf("CANT REMOVE"); 
         return -1;
     }
-    // if (temp -> directoryStartLocation == fdDirCWD->directoryStartLocation) {
-    //     printf("can't delete, you are inside that directory\n"); 
-    //     return -1; 
-    // }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
 
     //find index to remove
@@ -568,5 +561,96 @@ int fs_stat(const char *path, struct fs_stat *buf)
 }
 
 int fs_mvdir(char *srcPath, char *destPath) {
+    char *destName = malloc(256);
+    char* ptr;
+    int slash = '/';
+    ptr = strrchr(destPath, slash); //find the last slash
 
+    //path name has no slashes at all
+    if (ptr == NULL)
+        strcpy(destName, destPath);
+
+    //we found a last slash
+    else
+    {
+        ptr++;
+        strcpy(destName, ptr);
+    }
+    printf("dest name %s\n", destName);
+    
+    char *srcName = malloc(256);
+    char* ptr2;
+    ptr2 = strrchr(srcPath, slash); //find the last slash
+
+    //path name has no slashes at all
+    if (ptr2 == NULL)
+        strcpy(srcName, srcPath);
+
+    //we found a last slash
+    else
+    {
+        ptr2++;
+        strcpy(srcName, ptr2);
+    }
+    printf("src name %s\n", srcName);
+
+    dirEntry *entryBufferSrc = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+    dirEntry *entryBufferDest = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+    int blocks = MBR_st->dirNumBlocks;
+    fdDir *tempSrc = tempDirectory(srcPath, 1);
+    fdDir *tempDest = tempDirectory(destPath, 1);
+    if (tempSrc -> directoryStartLocation == 20000) {
+            printf("not a valid source path or name"); 
+            return -1;
+    }
+    LBAread(entryBufferSrc, blocks, tempSrc->directoryStartLocation);
+    if (tempDest -> directoryStartLocation == 20000) {
+            printf("not a valid dest path or name"); 
+            return -1;
+    }
+    LBAread(entryBufferDest, blocks, tempDest->directoryStartLocation);
+    int src_index = -1;
+    for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        if (strcmp(entryBufferSrc[i].name, srcName) == 0)
+        {
+            src_index = i;
+            break;
+        }
+    }
+    if (src_index == -1 ) {
+        printf("no such file or directory exists as source");
+    }
+    int dest_index = -1;
+    for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        if (strcmp(entryBufferDest[i].name, destName) == 0)
+        {
+            dest_index = i;
+            break;
+        }
+    }
+    if (dest_index == -1 ) {
+        printf("no such file or directory--must make new");
+         int free_index = -1;
+        for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (entryBufferDest[i].isBeingUsed == 0)
+            {
+                free_index = i;
+                break;
+            }
+        } 
+        if (free_index == -1) {
+            printf("out of space"); 
+            return -1;
+        }
+        strcpy(entryBufferDest[src_index].name, destName);
+        entryBufferDest[free_index] = entryBufferSrc[src_index]; 
+
+    } else if (entryBufferDest[dest_index].type = atoi("d")) {
+
+    } else {
+
+    }
+    
+    LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
+    fs_rmdir(srcPath); 
 }
