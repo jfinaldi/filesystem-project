@@ -65,8 +65,10 @@ typedef u_int32_t uint32_t;
 #define EXTENT_MAX_ELEMENTS 64
 #define EXIT_FAILURE 1
 #define PRE_ALLOCATE_BLOCK 4
+#define DEFAULT_INDEX 0
 #define DEFAULT_SIZE 0
 #define DEFAULT_LBA 20000
+#define DEFAULT_FILETYPE 'z'
 #define DEFAULT_USERNAME "BobsAirPods@sfsu-DreamTeamFS:"
 
 // flags for b_open

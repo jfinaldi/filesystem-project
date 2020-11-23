@@ -21,12 +21,14 @@ typedef struct fd_struct
 {
     int Fd;
     int isAllocate;
+    int flag; //stores read/write permissions
+    _Bool flaggedForClose; //true when file is about to close
+
+    //dirEntry variable clones
     unsigned long locationLBA;
-    int lenBuffer;
     unsigned long childLBA;
     short entryIndex;
     unsigned long dataLocation;
-    unsigned long indexInDataLocation;
     char name[256];
     uint64_t sizeOfFile;
     unsigned long numBlocks;
@@ -34,19 +36,22 @@ typedef struct fd_struct
     time_t dateModified;
     time_t dateAccessed;
     unsigned long locationMetadata;
-    unsigned short isBeingUsed;
+    unsigned long extents;
+    unsigned short numExtents;
+    unsigned short numExtentBlocks;
+    //unsigned short isBeingUsed;
     unsigned char type;
-    char *writeBuffer;
-    int flag; //stores read/write permissions
 
+
+    //buffer and tracking variables
     unsigned long filePointer; //file pointer tracks the current byte in the file
-    char *buffer;              // For b_read and b_write
-    short bufIndex;            //tracks where in the buffer we are
-    short buflen;              //tracks how much of buffer is being used
-
-    //Read/write variables
-    unsigned long eofLBA;       //last LBA block of our file data
-    short eofOffset;            //offset in byes from the start of eofLBA
+    char *buffer;              // For b_read 
+    char *writeBuffer;         // for b_write
+    short bufIndex;            //tracks where in the buffer we are. used in b_read
+    short buflen;              //tracks how much of buffer is being used, used in b_read
+    int lenBuffer;             //used in b_write
+    unsigned long LBAInDataLocation; //LBA block in file blob. Will need to be adjusted
+                                     //to utilize extents
     short offsetInDataLocation; //tracks bytes read in an LBA block
 } fd_struct;
 extern fd_struct *fileOpen;

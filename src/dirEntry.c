@@ -20,8 +20,8 @@ void initEntry(dirEntry *dE)
 	dE->locationLBA = DEFAULT_LBA;  //location of this entry in logical block
 	dE->entryIndex = -1;	  //the position of this entry in the array of entries
 	dE->childLBA = DEFAULT_LBA;
-	dE->eofLBA = DEFAULT_LBA;
-	dE->eofOffset = DEFAULT_SIZE;
+	//dE->eofLBA = DEFAULT_LBA;
+	//dE->eofOffset = DEFAULT_SIZE;
 
 	//initialize a default name for this child
 	dE->name[0] = '%';
@@ -38,6 +38,7 @@ void initEntry(dirEntry *dE)
 	//initialize extent block 
 	dE->extents = DEFAULT_LBA;
 	dE->numExtents = DEFAULT_SIZE;
+	dE->numExtentBlocks = DEFAULT_SIZE;
 
 	dE->locationMetadata = DEFAULT_LBA; //512 file per directory
 	dE->isBeingUsed = 0;		  //this file is currently not being used
@@ -48,12 +49,19 @@ void initEntry(dirEntry *dE)
 This function takes an fd_struct object, and a directory entry and updates
 certain information pertaining to the modification of file data.
 */
-int updateEntry(int fd, dirEntry* dE)
+int updateEntry(int fd, dirEntry* dE, _Bool flaggedForClose)
 {
 	printf("\nupdateEntry.....\n");
 
 	//if we have a valid fd and dE
 	if((fd > -1) && dE) {
+		//create a buffer for directory with dE in it
+		dirEntry* buf = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
+		if(!buf){
+			printf("Malloc failed ln61. returning 1\n");
+			return 1;
+		}
+		LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA);
 
 		//copy info from fd to dE
     	dE->numBlocks = fileOpen[fd].numBlocks;
@@ -68,9 +76,13 @@ int updateEntry(int fd, dirEntry* dE)
 
 		//calculate the new size of file
 
-		//add an extent?
-
-		//give back wasted extents
+		//if fd is about to be closed
+		if(flaggedForClose) {
+			//give back wasted extents
+		}
+		else { //otherwise, do we need another extent?
+			//add an extent
+		}
 
 		//write all updated entry info to disk
 
@@ -159,7 +171,7 @@ int initExtents(dirEntry* dE)
     
     //increment numExtents and numBlocks
 	dE->numExtents++;
-	dE->numBlocks++;
+	//dE->numBlocks++;
     
     //do an LBAwrite of the buffer, passing in buf, 1, dE->extents
 	LBAwrite(ptr, 1, dE->extents);
@@ -202,6 +214,12 @@ int addAnExtent(dirEntry* dE) {
     
     //get free space for this extent
     unsigned long newBlock = find_free_index(newExtBlocks);
+
+	//check to see if this newBlock is right after the end of the previous extent
+	//if so, call function to merge these extents
+	//We merge these extents by:
+		//not writing this extent stuff to the array
+		//instead, incrementing the previous extent size by newExtBlocks
     
     //write the newBlock number to newExtStartIndex
     ptr[newExtStartIndex] = newBlock;
@@ -216,11 +234,12 @@ int addAnExtent(dirEntry* dE) {
     
     //increment counting variables for struct
     dE->numExtents++;
-    dE->numBlocks += newExtBlocks;
+    //dE->numBlocks += newExtBlocks; NUMBLOCKS SHOULD ONLY INCREMENT ONCE A FULL BLOCK ATUALLY WRITTEN
 
 	//output stuff
 	printf("dE->numExtents: %d\n", dE->numExtents);
 	printf("dE->numBlocks: %ld\n", dE->numBlocks);
+
     
     //do an LBAwrite, passing in buffer, 1, dE->extents
 	LBAwrite(ptr, 1, dE->extents);
@@ -264,7 +283,7 @@ unsigned long getDataLocation(dirEntry *dE) {
 	return DEFAULT_LBA;
 }
 
-unsigned long getEofLBA(dirEntry *dE) {
+/*unsigned long getEofLBA(dirEntry *dE) {
 	printf("\n in getEofLBA ln 121\n");
 	if(dE)
 		return dE->eofLBA;
@@ -278,7 +297,7 @@ short getEofOffset(dirEntry *dE) {
 		return dE->eofOffset;
 	printf("error: this entry is null. returning %d\n", DEFAULT_SIZE);
 	return DEFAULT_SIZE;
-}
+}*/
 
 char* getName(dirEntry *dE) {
 	printf("\n in getName ln 131 returning pointer to name, this might be buggy\n");
@@ -336,13 +355,29 @@ unsigned long getLocationMetadata(dirEntry *dE) {
 	return DEFAULT_LBA;
 }
 
-/*unsigned long getExtent(dirEntry *dE) {
-	printf("\n in getExtent ln 166 this one might be buggy\n"); // compiler error ask about this tomorrow
+unsigned long getExtents(dirEntry *dE) {
+	printf("\n in getExtents ln 359\n"); // compiler error ask about this tomorrow
 	if(dE)
 		return dE->extents;
 	printf("error: this entry is null. returning %d\n", DEFAULT_LBA);
 	return DEFAULT_LBA;
-}*/
+}
+
+unsigned short getNumExtents(dirEntry *dE) {
+	printf("\n in getNumExtents.....\n"); // compiler error ask about this tomorrow
+	if(dE)
+		return dE->numExtents;
+	printf("error: this entry is null. returning %d\n", DEFAULT_SIZE);
+	return DEFAULT_SIZE;
+}
+
+unsigned short getNumExtentBlocks(dirEntry *dE) {
+	printf("\n in getNumExtentBlocks.....\n"); // compiler error ask about this tomorrow
+	if(dE)
+		return dE->numExtentBlocks;
+	printf("error: this entry is null. returning %d\n", DEFAULT_SIZE);
+	return DEFAULT_SIZE;
+}
 
 unsigned short getIsBeingUsed(dirEntry *dE) {
 	printf("\n in getIsbeingUsed ln 171\n");
@@ -417,7 +452,7 @@ int setDataLocation(dirEntry *dE, unsigned long newDataLocation) {
 	}
 }
 
-int setEofLBA(dirEntry *dE, unsigned long newEofLBA) {
+/*int setEofLBA(dirEntry *dE, unsigned long newEofLBA) {
 	printf("\n in setEofLBA ln 238\n");
 	if (dE == NULL) {
 		printf("\ndE struct pointer is null returning 1\n");
@@ -441,7 +476,7 @@ int setEofOffset(dirEntry *dE, short newEofOffset) {
 		dE->eofOffset = newEofOffset;
 		return 1;
 	}
-}
+}*/
 
 int setName(dirEntry *dE, char newName[256]) {
 	printf("\n in setName ln 264\n");
