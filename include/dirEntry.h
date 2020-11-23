@@ -41,6 +41,8 @@ typedef struct DirectoryEntry
 
 void initEntry(dirEntry *dE);
 int updateEntry(int fd, dirEntry* dE);
+unsigned long initExtents(dirEntry* dE);
+unsigned long addAnExtent(dirEntry* dE);
 
 /*GETTERS*/
 unsigned long getLocationLBA(dirEntry *dE);
@@ -49,17 +51,16 @@ short getEntryIndex(dirEntry *dE);
 unsigned long getDataLocation(dirEntry *dE);
 //unsigned long getEofLBA(dirEntry *dE);
 //short getEofOffset(dirEntry *dE);
-char* getName(dirEntry *dE); 
+char* getName(dirEntry *dE); // cannot return an array can return a pointer to array
 uint64_t getSizeOfFile(dirEntry *dE);
 unsigned long getNumBlocks(dirEntry *dE);
 time_t getDateCreated(dirEntry *dE);
 time_t getDateModified(dirEntry *dE);
 time_t getDateAccessed(dirEntry *dE);
 unsigned long getLocationMetadata(dirEntry *dE);
-unsigned long getExtentLBA(dirEntry* dE, int indexPosition);
 unsigned short getIsBeingUsed(dirEntry *dE);
 unsigned char getType(dirEntry *dE);
-unsigned long getExtentLBA(dirEntry* dE, int indexPosition);
+unsigned long getExtentLBA(int fd, _Bool isForWrite);
 unsigned long getExtents(dirEntry* dE);
 unsigned short getNumExtents(dirEntry *dE);
 unsigned short getNumExtentBlocks(dirEntry* dE);

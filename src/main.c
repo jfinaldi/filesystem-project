@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     
     //START TESTS
     //SWITCH TO 0 AFTER HAVING INITIALIZED A SAMPLE VOLUME 
-    if (0) {
+    if (1) {
         printf("Starting test Initial Volume:\n"); 
         printf("initial root directry:\n"); 
         assert(strcmp(fdDirCWD->cwd_path, "/") == 0);

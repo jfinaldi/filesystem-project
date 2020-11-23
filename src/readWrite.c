@@ -47,6 +47,8 @@ void b_init()
         fileOpen[i].lenBuffer = DEFAULT_SIZE;
         fileOpen[i].LBAInDataLocation = DEFAULT_LBA;
         fileOpen[i].offsetInDataLocation = DEFAULT_LBA;
+        fileOpen[i].extentArrayPtrWrite = DEFAULT_INDEX;
+        fileOpen[i].extentArrayPtrRead = DEFAULT_INDEX;
     }
 }
 
@@ -342,6 +344,11 @@ void b_close(int fd)
         //find the entry and call update
         dirEntry* entry = &ptr[fileOpen[fd].entryIndex];
         updateEntry(fd, entry);
+
+        if(ptr) {
+            free(ptr);
+            ptr = NULL;
+        }
     }
 
     if (fileOpen[fd].isAllocate == FALSE)

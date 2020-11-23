@@ -52,7 +52,9 @@ typedef struct fd_struct
     int lenBuffer;             //used in b_write
     unsigned long LBAInDataLocation; //LBA block in file blob. Will need to be adjusted
                                      //to utilize extents
-    short offsetInDataLocation; //tracks bytes read in an LBA block
+    short offsetInDataLocation;//tracks bytes read in an LBA block
+    int extentArrayPtrRead;    //tracks the logical index in extents array for read
+    int extentArrayPtrWrite;   //tracks the logical index in extents array for write
 } fd_struct;
 extern fd_struct *fileOpen;
 
