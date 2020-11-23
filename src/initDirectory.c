@@ -88,7 +88,7 @@ long initDirectory(int parentLBA)
 	//dirEntry *ptr2 = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
 	LBAwrite(ptr, MBR_st->dirNumBlocks, startingBlock);
 	// LBAread(ptr2, MBR_st -> dirNumBlocks, 38); 
-	// for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		testOutput(&ptr[i]);
 	}
@@ -107,8 +107,6 @@ void testOutput(dirEntry *rootDir)
 	printf("Name: %s\n", rootDir->name);
 	printf("Location of Self: %ld\n", rootDir->locationLBA);
 	printf("Data Location: %ld\n", rootDir->dataLocation);
-	printf("EOF LBA:  %ld\n", rootDir->eofLBA);
-	printf("EOF Offset (bytes): %d\n", rootDir->eofOffset);
 	printf("Child Location: %ld\n", rootDir->childLBA);
 	printf("Index: %d\n", rootDir->entryIndex);
 	printf("Size of File: %ld\n", rootDir->sizeOfFile);

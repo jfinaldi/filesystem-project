@@ -53,6 +53,11 @@ void b_init()
 //helper function to copy data over to fd_struct from dirEntry
 int entryToFd(dirEntry* dE, int fd)
 {
+    if((!dE) || (fd == -1))
+    {
+        printf("Error entryToFd, invalid input\n");
+        return 1;
+    }
     fileOpen[fd].locationLBA = getLocationLBA(dE);
     fileOpen[fd].childLBA = getChildLBA(dE);
     fileOpen[fd].entryIndex = getEntryIndex(dE);
@@ -68,6 +73,8 @@ int entryToFd(dirEntry* dE, int fd)
     fileOpen[fd].numExtents = getNumExtents(dE);
     fileOpen[fd].numExtentBlocks = getNumExtentBlocks(dE);
     fileOpen[fd].type = getType(dE);
+
+    return 0;
 }
 
 int b_open(char *filename, int flags)
@@ -195,7 +202,7 @@ int b_open(char *filename, int flags)
                     free(ptrOpen);
                     return (-1);
                 }
-                fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
+                /*fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
                 fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
                 fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
                 fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
@@ -204,7 +211,13 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
                 fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
                 fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
-                time(&(fileOpen[fd].dateAccessed));
+                time(&(fileOpen[fd].dateAccessed));*/
+
+                //copy data from dirEntry to fd_struct
+                if(entryToFd(&ptrOpen[curr], fd) != 0){
+                    printf("ERROR copying entry data in b_open ln209\n");
+                    return -1;
+                }
                 free(ptrOpen);
                 ptrOpen = NULL;
                 printf("found fd\n");
@@ -269,17 +282,25 @@ int b_open(char *filename, int flags)
             }
 
             /*********CREATE HELPER copyToFD() ***************/
+            /*
             fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
             fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
             fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
             fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-            //fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
+            fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
             strcpy(fileOpen[fd].name, ptrOpen[curr].name);
             fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
             fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
             fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
-            time(&(fileOpen[fd].dateAccessed));
+            time(&(fileOpen[fd].dateAccessed));*/
             /*************************************************/
+
+            //copy data from dirEntry to fd_struct
+            if(entryToFd(&ptrOpen[curr], fd) != 0){
+                printf("ERROR copying entry data in b_open ln209\n");
+                return -1;
+            }
+
             free(ptrOpen);
             ptrOpen = NULL;
             printf("found fd");
@@ -298,6 +319,31 @@ int b_open(char *filename, int flags)
 // Interface to Close the file
 void b_close(int fd)
 {
+    //flag this fd for close
+    fileOpen[fd].flaggedForClose = TRUE;
+
+    //if this fd was written to, update the entry
+    if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
+        || fileOpen[fd].flag == O_CREAT)
+    {
+        //create a dirEntry pointer, malloc dirBUfMallocSize bytes
+        dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+        if (ptr == NULL)
+        {
+            printf("Error with malloc ln96.\n");
+            return;
+        }
+        else
+            printf("Malloc succeeded\n\n");
+
+        //fill ptr buffer
+        LBAread(ptr, MBR_st->dirNumBlocks, fileOpen[fd].locationLBA);
+
+        //find the entry and call update
+        dirEntry* entry = &ptr[fileOpen[fd].entryIndex];
+        updateEntry(fd, entry);
+    }
+
     if (fileOpen[fd].isAllocate == FALSE)
     {
         printf("This fd is already free\n");
@@ -310,28 +356,6 @@ void b_close(int fd)
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
     }
-
-    //if this fd was written to, update the entry
-    //if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
-    //    || fileOpen[fd].flag == O_CREAT)
-    //{
-    /* //create a dirEntry pointer, malloc dirBUfMallocSize bytes
-        dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-        if (ptr == NULL)
-        {
-            printf("Error with malloc ln96.\n");
-            return ((fdDir *)-1);
-        }
-        else
-            printf("Malloc succeeded\n\n");
-
-        //fill ptr buffer
-        LBAread(ptr, MBR_st->dirNumBlocks, fileOpen[fd].directoryStartLocation);
-
-        //find the entry and call update
-        dirEntry* entry = ptr[fileOpen[fd].entryIndex];
-        updateEntry(fileOpen[fd], entry);*/
-    //}
 }
 
 int b_write(int fd, char *buffer, int count)

@@ -40,7 +40,7 @@ typedef struct DirectoryEntry
 } dirEntry;
 
 void initEntry(dirEntry *dE);
-int updateEntry(int fd, dirEntry* dE, _Bool flaggedForClose);
+int updateEntry(int fd, dirEntry* dE);
 
 /*GETTERS*/
 unsigned long getLocationLBA(dirEntry *dE);

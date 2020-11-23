@@ -49,7 +49,7 @@ void initEntry(dirEntry *dE)
 This function takes an fd_struct object, and a directory entry and updates
 certain information pertaining to the modification of file data.
 */
-int updateEntry(int fd, dirEntry* dE, _Bool flaggedForClose)
+int updateEntry(int fd, dirEntry* dE)
 {
 	printf("\nupdateEntry.....\n");
 
@@ -77,7 +77,7 @@ int updateEntry(int fd, dirEntry* dE, _Bool flaggedForClose)
 		//calculate the new size of file
 
 		//if fd is about to be closed
-		if(flaggedForClose) {
+		if(fileOpen[fd].flaggedForClose) {
 			//give back wasted extents
 		}
 		else { //otherwise, do we need another extent?
