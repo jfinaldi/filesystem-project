@@ -292,9 +292,12 @@ int fs_mkdir(const char *pathname, mode_t mode)
     int freeIndex = -1;
     //find free index
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        if (strcmp(entryBuffer[i].name, newName) == 0) {
+            printf("File with that name already exists, please use a different name"); 
+            return -1;
+        }
         if (entryBuffer[i].isBeingUsed == 0) {
             freeIndex = i;
-            break;
         }
     }
     if (freeIndex == -1){
@@ -363,7 +366,7 @@ int fs_rmdir(const char *pathname)
     }
     printf("IN DELETE %s, %s", temp -> cwd_path, fdDirCWD -> cwd_path);
     if (strncmp(temp -> cwd_path, fdDirCWD -> cwd_path, strlen(temp -> cwd_path)) == 0) {
-        printf("CANT REMOVE"); 
+        printf("CANT REMOVE, YOU ARE IN THAT DIRECTORY!"); 
         return -1;
     }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
@@ -552,11 +555,13 @@ int fs_stat(const char *path, struct fs_stat *buf)
             return -1;
     }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
-    buf -> st_size = 420;
-    buf -> st_blksize = MBR_st -> blockSize; /* blocksize for file system I/O */
-	buf -> st_blocks = MBR_st -> dirNumBlocks;	  /* number of 512B blocks allocated */
-	buf -> st_accesstime  = entryBuffer -> dateAccessed; /* time of last access */
-	buf  -> st_modtime	= entryBuffer -> dateModified;  /* time of last modification */
+    
+    buf -> st_size = MBR_st -> dirBufMallocSize; //needs to be changed for file type
+    buf -> st_blksize = MBR_st -> blockSize; 
+	buf -> st_blocks = MBR_st -> dirNumBlocks;	  
+	buf -> st_accesstime  = entryBuffer -> dateAccessed; 
+	buf  -> st_modtime	= entryBuffer -> dateModified;  
+    buf -> type = entryBuffer -> type;
 	//buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
 }
 
@@ -594,11 +599,16 @@ int fs_mvdir(char *srcPath, char *destPath) {
     }
     printf("src name %s\n", srcName);
 
+    
     dirEntry *entryBufferSrc = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     dirEntry *entryBufferDest = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     fdDir *tempSrc = tempDirectory(srcPath, 1);
     fdDir *tempDest = tempDirectory(destPath, 1);
+    if (strncmp(tempSrc -> cwd_path, fdDirCWD -> cwd_path, strlen(tempSrc -> cwd_path)) == 0) {
+        printf("CANT MOVE, YOU ARE IN THAT DIRECTORY!"); 
+        return -1;
+    }
     if (tempSrc -> directoryStartLocation == 20000) {
             printf("not a valid source path or name"); 
             return -1;
@@ -628,29 +638,55 @@ int fs_mvdir(char *srcPath, char *destPath) {
             break;
         }
     }
+    int free_index = -1;
     if (dest_index == -1 ) {
         printf("no such file or directory--must make new");
-         int free_index = -1;
+         
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
             if (entryBufferDest[i].isBeingUsed == 0)
             {
                 free_index = i;
-                break;
+            }
+            if (strcmp(entryBufferDest[i].name, destName) == 0) {
+            printf("File with that name already exists, please use a different name"); 
+            return -1;
             }
         } 
         if (free_index == -1) {
             printf("out of space"); 
             return -1;
         }
-        strcpy(entryBufferDest[src_index].name, destName);
+        strcpy(entryBufferDest[free_index].name, destName);
         entryBufferDest[free_index] = entryBufferSrc[src_index]; 
+        LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
 
-    } else if (entryBufferDest[dest_index].type = atoi("d")) {
-
+    } else if (entryBufferDest[dest_index].type == atoi("d")) {
+        printf("putting in directory!!"); 
+        dirEntry *entryBufferFinal = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
+        LBAread(entryBufferFinal, blocks, entryBufferDest[dest_index].childLBA);
+        for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (strcmp(entryBufferFinal[i].name, destName) == 0) {
+                printf("File with that name already exists, please use a different name"); 
+                return -1;
+            }
+            if (entryBufferFinal[i].isBeingUsed == 0)
+            {
+                free_index = i;
+               
+            }
+        } 
+        if (free_index == -1) {
+            printf("out of space"); 
+            return -1;
+        }
+        entryBufferFinal[free_index] = entryBufferSrc[src_index];
+        LBAwrite(entryBufferFinal, blocks, entryBufferDest[dest_index].childLBA);
     } else {
-
+        strcpy(entryBufferDest[dest_index].name, destName);
+        entryBufferDest[dest_index] = entryBufferSrc[src_index];
+        LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
     }
     
-    LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
+    
     fs_rmdir(srcPath); 
 }
