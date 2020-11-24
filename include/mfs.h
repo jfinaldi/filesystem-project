@@ -117,6 +117,7 @@ struct fs_stat
 	time_t st_accesstime; /* time of last access */
 	time_t st_modtime;	  /* time of last modification */
 	time_t st_createtime; /* time of last status change */
+	unsigned char type;
 
 	/* add additional attributes here for your file system */
 };
