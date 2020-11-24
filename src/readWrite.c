@@ -324,6 +324,8 @@ void b_close(int fd)
     //flag this fd for close
     fileOpen[fd].flaggedForClose = TRUE;
 
+    //TO-DO: We will need to write out whatever is left in our buffer
+
     //if this fd was written to, update the entry
     if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
         || fileOpen[fd].flag == O_CREAT)
@@ -415,7 +417,8 @@ int b_write(int fd, char *buffer, int count)
 
             LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
             //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
-            //fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
+            fileOpen[fd].numBlocks++;
+            fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
             returnValue = returnValue + fileOpen[fd].lenBuffer;
             fileOpen[fd].lenBuffer = 0;
             memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);
@@ -430,8 +433,12 @@ int b_write(int fd, char *buffer, int count)
                         count--;
                         n++;
                     }
-                    // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
-                    LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].dataLocation);
+                   
+                    unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
+                    fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
+                    LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
+                    fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
+                    fileOpen[fd].numBlocks++;
                     // IS dataLocation the correct variable(where the data begin) ?
                     // IS THE 1 a corect varrible ?
                     //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
@@ -490,6 +497,7 @@ int b_read(int fd, char *buffer, int count)
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
     int prevBufSize = 0;     // caches the previous size of buffer to calculate bytesRead
+    unsigned long LBA;       // variable that stores the next LBA position to read from
 
     if (startup == 0)
         b_init(); //Initialize our system
@@ -533,30 +541,31 @@ int b_read(int fd, char *buffer, int count)
         if (part2 > BUFSIZE)
         {
             int blocks = part2 / BUFSIZE; // calculate number of blocks they want
-            //bytesRead = read(fcbArray[fd].linuxFd, buffer + part1, blocks * BUFSIZE);
-            LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].LBAInDataLocation);
+            LBA = getExtentLBA(fd, FALSE);
+            fileOpen[fd].extentArrayPtrRead++;
+            LBAread(fileOpen[fd].buffer, 1, LBA);
             printf("prevBufSize: %d\n", prevBufSize);
             bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; //subtract prev buf size to get what we just read
             prevBufSize += bytesRead;                              //update the new previous buffer size for next time
             printf("bytesRead: %d\n", bytesRead);
             printf("prevBufSize: %d\n", prevBufSize);
-            fileOpen[fd].LBAInDataLocation += 1; //increment data location by 1 LBA block
             fileOpen[fd].filePointer += bytesRead; //add the length of this buffer to fp
-            //fileOpen[fd].bufIndex += bytesRead; //update bufIndex
+            fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
             part3 = bytesRead;
             part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
         }
 
         //try to read BUFSIZE bytes into our buffer
-        LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].bufIndex);
+        LBA = getExtentLBA(fd, FALSE);
+        fileOpen[fd].extentArrayPtrRead++;
+        LBAread(fileOpen[fd].buffer, 1, LBA);
         printf("prevBufSize: %d\n", prevBufSize);
         bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; // cur size of buffer - what it used to be
         prevBufSize += bytesRead;                              // update the new previous buffer size for next time
         printf("bytesRead: %d\n", bytesRead);
         printf("prevBufSize: %d\n", prevBufSize);
-        fileOpen[fd].LBAInDataLocation += 1;
         fileOpen[fd].filePointer += bytesRead; // update the file pointer
-        //fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
+        fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
 
         // error handling here...  if read fails
 

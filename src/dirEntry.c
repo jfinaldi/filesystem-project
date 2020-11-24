@@ -104,6 +104,43 @@ int updateEntry(int fd, dirEntry* dE)
 
 int returnWastedExtents(dirEntry* dE)
 {
+	printf("returnWastedExtents...\n");
+	//create a buffer for our extents array
+	unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
+	if(!ptr) {
+		printf("Malloc failed!\n");
+		return 1;
+	}
+	dirEntry* buf = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
+	if(!buf) {
+		printf("Malloc failed!\n");
+		return 1;
+	}
+	LBAread(ptr, 1, dE->extents); //read the extents blob to buffer
+	LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA); //read a directory to buffer
+
+	unsigned long blocksToReturn = dE->numExtentBlocks - dE->numBlocks;
+
+	//find last element in our extents array blob
+	unsigned long lastElem = (dE->numExtentBlocks * 2) - 1;
+
+	//find the actual LBA block start that we're going to free
+	unsigned long lbaToReturn = ptr[lastElem - 1];
+	lbaToReturn += (ptr[lastElem] - blocksToReturn);
+	free_mem(lbaToReturn, blocksToReturn); //free the blocksToReturn
+	ptr[lastElem] -= blocksToReturn; //decrement the last element in our extents blob by blocksToReturn
+	dE->numExtentBlocks -= blocksToReturn; //decrement numExtentBlocks
+	LBAwrite(ptr, 1, dE->extents); //do LBAwrite of file blob to save changes
+	LBAwrite(buf, MBR_st->dirNumBlocks, dE->locationLBA); //do LBAwrite of directory to save new entry changes
+
+	if(ptr){
+		free(ptr);
+		ptr = NULL;
+	}
+	if(buf) {
+		free(buf);
+		buf = NULL;
+	}
 	return 0;
 }
 
@@ -133,6 +170,8 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 	else indexPosition = fileOpen[fd].extentArrayPtrRead;
 	if(indexPosition == -1) {
 		printf("Error getting correct index position. Returning %d\n", DEFAULT_LBA);
+		free(buf);
+		buf = NULL;
 		return DEFAULT_LBA;
 	}
 
@@ -140,6 +179,8 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 
 	if (extentBuffer == NULL) {
 		printf("\n cannot allocate memory at ln 98 dirEntry.c\n");
+		free(buf);
+		buf = NULL;
 		return DEFAULT_LBA;
 	}
 
@@ -277,7 +318,7 @@ unsigned long addAnExtent(dirEntry* dE)
     unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
     LBAread(ptr, 1, dE->extents);
     
-    unsigned short lastElement = dE->numExtents * 2; // get the first avail element in LBA
+    unsigned short lastElement = (dE->numExtents * 2) - 1; // get the first avail element in LBA
     
     //calculate the number of blocks we're giving this extent
     unsigned long prevExtBlocks = ptr[lastElement];
