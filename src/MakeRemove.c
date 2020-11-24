@@ -150,7 +150,7 @@ fdDir *tempDirectory(const char *path, int needLast) {
         }
 
     }
-    if (needLast == 1){
+    if (needLast == 1 || (needLast == 0 && notFoundCount == 0)){
         resultDir->directoryStartLocation = last;
     } else {
         resultDir->directoryStartLocation = curr;
