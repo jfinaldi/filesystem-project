@@ -133,7 +133,7 @@ int defrag(int start)
                 int index2 = fragStart; 
                 while (index2 <= fragEnd)
                 {
-                    bitmap[index2] = bitmap[index2 + fragSize];
+                    bitmap[index2] = bitmap[index2 + fragSize - 1];
                     index2++; 
                 }
                 
@@ -141,22 +141,22 @@ int defrag(int start)
             }
         }
         if (fragStart > 0) {
-            bitmap[index] = bitmap[index + fragSize]; 
+            bitmap[index] = bitmap[index + fragSize - 1]; 
         }
         index++;
     }
-    while (index < bitmap_size_in_bytes)
-    {
-        bitmap[index] = 0; 
-        index++;
-    }
+    // while (index < bitmap_size_in_bytes)
+    // {
+    //     bitmap[index] = 0; 
+    //     index++;
+    // }
     if (fragEnd < 0) {
         printf("DONE DEFRAGGING"); 
         return 0; 
     }
     printf("START END, %d, %d", fragStart, fragEnd); 
     defrag_helper(NULL, fragSize - 1, fragStart);
-    int toMove = MBR_st -> totalBlockLBA - fragEnd;
+    int toMove = bitmap_size_in_bytes - fragEnd;
     printf("TO MOVE %d", toMove);  
     void *moveBuffer = malloc(toMove * MBR_st -> blockSize);
     if (moveBuffer == NULL) {
