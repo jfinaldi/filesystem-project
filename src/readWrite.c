@@ -371,6 +371,7 @@ int b_write(int fd, char *buffer, int count)
     int returnValue = 0;
 
     //ADD CALL TO ADD EXTENT IF WE HAVE NONE, OR UPDATE IF WE'RE OUT
+        //^this will happen inside the helper function to get lba block
 
     if (fileOpen[fd].flag == O_RDWR || O_WRONLY || O_TRUNC)
     {
@@ -409,9 +410,12 @@ int b_write(int fd, char *buffer, int count)
                 n++;
             }
             // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
-            LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].dataLocation);
-            // IS dataLocation the correct variable(where the data begin) ?
+            unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
+            fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
+
+            LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
             //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
+            //fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
             returnValue = returnValue + fileOpen[fd].lenBuffer;
             fileOpen[fd].lenBuffer = 0;
             memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);

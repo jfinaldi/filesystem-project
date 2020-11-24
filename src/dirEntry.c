@@ -64,33 +64,47 @@ int updateEntry(int fd, dirEntry* dE)
 		LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA);
 
 		//copy info from fd to dE
-    	dE->numBlocks = fileOpen[fd].numBlocks;
-    	dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
-		dE->locationLBA = fileOpen[fd].locationLBA;  //location of this entry in logical block
-		dE->entryIndex = fileOpen[fd].entryIndex;	  //the position of this entry in the array of entries
+		dE->locationLBA = fileOpen[fd].locationLBA;
 		dE->childLBA = fileOpen[fd].childLBA;
+		dE->entryIndex = fileOpen[fd].entryIndex;	  //the position of this entry in the array of entries
+		dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
 		strcpy(dE->name, fileOpen[fd].name);
+		dE->sizeOfFile = fileOpen[fd].sizeOfFile;
+		dE->numBlocks = fileOpen[fd].numBlocks;
 
     	time(&(dE->dateModified)); // date the file was last modified
     	time(&(dE->dateAccessed)); // date the file was last accessed
 
-		//calculate the new size of file
-
 		//if fd is about to be closed
 		if(fileOpen[fd].flaggedForClose) {
-			//give back wasted extents
+			if(dE->numBlocks < dE->numExtentBlocks)
+				returnWastedExtents(dE); //give back wasted extents
 		}
-		else { //otherwise, do we need another extent?
-			//add an extent
+		else { 
+			//otherwise, do we need another extent?
+			if(dE->numBlocks == dE->numExtentBlocks)
+				addAnExtent(dE); //add an extent
 		}
 
 		//write all updated entry info to disk
+		LBAwrite(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+
+		//free
+		if(buf){
+			free(buf);
+			buf = NULL;
+		}
 
 		printf("entry successfully updated\n");
 		return 0;
 	}
 	printf("error: this entry is null. returning 1\n");
 	return 1;
+}
+
+int returnWastedExtents(dirEntry* dE)
+{
+	return 0;
 }
 
 // helper function to resolve a logical extent element into an LBA block
@@ -281,25 +295,29 @@ unsigned long addAnExtent(dirEntry* dE)
     unsigned long newBlock = find_free_index(newExtBlocks);
 
 	//check to see if this newBlock is right after the end of the previous extent
-	//if so, call function to merge these extents
-	//We merge these extents by:
-		//not writing this extent stuff to the array
+	unsigned long prevExtBlock = ptr[lastElement - 1];
+	unsigned long lastLBAOfPrevExtent = prevExtBlock + prevExtBlocks;
+	if((lastLBAOfPrevExtent + 1) == newBlock)
+	{
 		//instead, incrementing the previous extent size by newExtBlocks
-    
-    //write the newBlock number to newExtStartIndex
-    ptr[newExtStartIndex] = newBlock;
-    
-    //write the newBlocks number to newExtBlocksIndex
-    ptr[newExtBlocksIndex] = newExtBlocks;
+		ptr[lastElement] += newExtBlocks;
+		//do a write
+		//free memory
+		//return
+	}
+    else {
+    	//write the newBlock number to newExtStartIndex
+    	ptr[newExtStartIndex] = newBlock; 		//write the newBlock number to newExtStartIndex
+    	ptr[newExtBlocksIndex] = newExtBlocks;  //write the newBlocks number to newExtBlocksIndex
+		dE->numExtents++; 						//increment the number of extents by 1
+	}
 
 	//output stuff
 	printf("newBlock: %ld\n", newBlock);
 	printf("ptr[%ld]: %ld\n", newExtStartIndex, ptr[newExtStartIndex]);
 	printf("ptr[%ld]: %ld\n", newExtBlocksIndex, ptr[newExtBlocksIndex]);
     
-    //increment counting variables for struct
-    dE->numExtents++;
-	dE->numExtentBlocks += newExtBlocks;
+	dE->numExtentBlocks += newExtBlocks; 		//increment the number of extent blocks total
 
 	//output stuff
 	printf("dE->numExtents: %d\n", dE->numExtents);
@@ -314,7 +332,7 @@ unsigned long addAnExtent(dirEntry* dE)
 		ptr = NULL;
 	}
     
-    return 0;
+    return newBlock;
 }
 
 /*GETTERS IMPLEMENTED HERE*/

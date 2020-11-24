@@ -31,7 +31,6 @@ typedef struct DirectoryEntry
 	time_t dateModified;			// date the file was last modified
 	time_t dateAccessed;			// date the file was last accessed
 	unsigned long locationMetadata; // 512 file per directory
-	//unsigned short extent[4][2];    // [LBA Block][number of blocks]
 	unsigned long extents;          // an LBA location that stores array of 64 lBAs and sizes
 	unsigned short numExtents;      // tracks how many extents currently allocated
 	unsigned short numExtentBlocks; // the number of blocks reserved in all extents
@@ -43,6 +42,7 @@ void initEntry(dirEntry *dE);
 int updateEntry(int fd, dirEntry* dE);
 unsigned long initExtents(dirEntry* dE);
 unsigned long addAnExtent(dirEntry* dE);
+int returnWastedExtents(dirEntry* dE);
 
 /*GETTERS*/
 unsigned long getLocationLBA(dirEntry *dE);
