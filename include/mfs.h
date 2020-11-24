@@ -127,7 +127,7 @@ int fs_rmdir(const char *pathname);
 fdDir *fs_opendir(const char *name);
 struct fs_diriteminfo *fs_readdir(fdDir *dirp);
 int fs_closedir(fdDir *dirp);
-fdDir *tempDirectory(const char *path, int needLast);
+fdDir *tempDirectory(const char *path, int needLast, char *name);
 
 char *fs_getcwd(char *buf, size_t size);
 int fs_setcwd(char *buf);	   //linux chdir

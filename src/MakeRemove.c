@@ -77,7 +77,7 @@ char * pathResolver(char *path) {
     } 
     return returnPath; 
 }
-fdDir *tempDirectory(const char *path, int needLast) {
+fdDir *tempDirectory(const char *path, int needLast, char *name) {
 
     //printf("start temp with path %s\n", path); 
     char temp[256];
@@ -120,6 +120,11 @@ fdDir *tempDirectory(const char *path, int needLast) {
         int found = -1;
         //check children for currToken, note if not found
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
+            if (strcmp(entryBuffer[i].name, name) == 0) {
+                printf ("name already exists, please try again\n"); 
+                resultDir-> directoryStartLocation = 20000;
+                return resultDir;
+            }
             if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
@@ -127,9 +132,9 @@ fdDir *tempDirectory(const char *path, int needLast) {
                     curr = last;
                 }
                 found = 0;
-                printf("found at %d\n", curr); 
-                break;
+                printf("found at %d\n", curr);
             }
+            
         }
         if (found == -1) {
             notFoundCount ++; 
@@ -169,7 +174,7 @@ fdDir *fs_opendir(const char *name)
         return ((fdDir *)-1);
     }
     fdDir *temp = (fdDir *)malloc(sizeof(fdDir));
-    temp = tempDirectory(name, 0);
+    temp = tempDirectory(name, 0, NULL);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name\n"); 
             return NULL;
@@ -281,7 +286,7 @@ int fs_mkdir(const char *pathname, mode_t mode)
     printf("new name %s\n", newName);
 
     //resolve pathname and load buffer with Dir
-    fdDir *temp = tempDirectory(pathname, 0);
+    fdDir *temp = tempDirectory(pathname, 0, newName);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name\n"); 
             return -1;
@@ -361,7 +366,7 @@ int fs_rmdir(const char *pathname)
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     pathname = (char *) pathname;
-    fdDir *temp = tempDirectory(pathname, 1);
+    fdDir *temp = tempDirectory(pathname, 1, NULL);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name\n"); 
             return -1;
@@ -507,7 +512,7 @@ int fs_isDir(char *path)
     }
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st -> dirBufMallocSize);
     int blocks = MBR_st -> dirNumBlocks;
-    fdDir *temp = tempDirectory(path, 1);
+    fdDir *temp = tempDirectory(path, 1, NULL);
     if (temp -> directoryStartLocation == 20000) {
         printf("not a valid path or name\n"); 
         return -1;
@@ -553,7 +558,7 @@ int fs_stat(const char *path, struct fs_stat *buf)
     dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     path = (char *) path;
-    fdDir *temp = tempDirectory(path, 1);
+    fdDir *temp = tempDirectory(path, 1, NULL);
     if (temp -> directoryStartLocation == 20000) {
             printf("not a valid path or name"); 
             return -1;
@@ -607,8 +612,8 @@ int fs_mvdir(char *srcPath, char *destPath) {
     dirEntry *entryBufferSrc = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     dirEntry *entryBufferDest = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
-    fdDir *tempSrc = tempDirectory(srcPath, 1);
-    fdDir *tempDest = tempDirectory(destPath, 1);
+    fdDir *tempSrc = tempDirectory(srcPath, 1, NULL);
+    fdDir *tempDest = tempDirectory(destPath, 1, destName);
     if (strncmp(tempSrc -> cwd_path, fdDirCWD -> cwd_path, strlen(tempSrc -> cwd_path)) == 0) {
         printf("CANT MOVE, YOU ARE IN THAT DIRECTORY!"); 
         return -1;
