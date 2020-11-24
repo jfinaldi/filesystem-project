@@ -114,17 +114,20 @@ fdDir *tempDirectory(const char *path, int needLast, char *name) {
     for (int k = 0; k < numTokens; k++) {
         printf("token in temp %s\n", tokens[k]); 
         dirEntry *entryBuffer = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
-    printf("ln52\n");
+        printf("ln52\n");
         LBAread(entryBuffer, blocks, curr);
         
         int found = -1;
         //check children for currToken, note if not found
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
-            if (strcmp(entryBuffer[i].name, name) == 0) {
-                printf ("name already exists, please try again\n"); 
-                resultDir-> directoryStartLocation = 20000;
-                return resultDir;
+            if (name != NULL) {
+                if (strcmp(entryBuffer[i].name, name) == 0) {   
+                    printf ("name already exists, please try again\n"); 
+                    resultDir-> directoryStartLocation = 20000;
+                    return resultDir;
+                }
             }
+            
             if (strcmp(entryBuffer[i].name, tokens[k]) == 0) {
                 last = curr;
                 curr = entryBuffer[i].childLBA;
@@ -613,7 +616,7 @@ int fs_mvdir(char *srcPath, char *destPath) {
     dirEntry *entryBufferDest = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     fdDir *tempSrc = tempDirectory(srcPath, 1, NULL);
-    fdDir *tempDest = tempDirectory(destPath, 1, destName);
+    fdDir *tempDest = tempDirectory(destPath, 1, NULL);
     if (strncmp(tempSrc -> cwd_path, fdDirCWD -> cwd_path, strlen(tempSrc -> cwd_path)) == 0) {
         printf("CANT MOVE, YOU ARE IN THAT DIRECTORY!"); 
         return -1;
@@ -649,7 +652,7 @@ int fs_mvdir(char *srcPath, char *destPath) {
     }
     int free_index = -1;
     if (dest_index == -1 ) {
-        printf("no such file or directory--must make new");
+        printf("\nno such file or directory--must make new");
          
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
             if (entryBufferDest[i].isBeingUsed == 0)
