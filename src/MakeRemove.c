@@ -150,7 +150,8 @@ fdDir *tempDirectory(const char *path, int needLast) {
         }
 
     }
-    if (needLast == 1 || (needLast == 0 && notFoundCount == 0)){
+    // || (needLast == 0 && notFoundCount == 0)
+    if (needLast == 1){
         resultDir->directoryStartLocation = last;
     } else {
         resultDir->directoryStartLocation = curr;
@@ -385,6 +386,8 @@ int fs_rmdir(const char *pathname)
     //start recurisve removal and then write
     fs_remove_helper(&entryBuffer[remove_index]);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
+    printf("BEFORE DEGRAG"); 
+    defrag(MBR_st -> rootDirectoryPos); 
 }
 
 char *fs_getcwd(char *buf, size_t size)

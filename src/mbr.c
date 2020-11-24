@@ -29,7 +29,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         MBR_st->volumeSize = my_getnbr(argv[2]);
         MBR_st->blockSize = blockSize;
         MBR_st->idCounter = 100000; //this will be the very first ID for an entry struct
-        numberBlock = volumeSize / blockSize;
+        numberBlock = (volumeSize / blockSize) + 1;
         MBR_st->totalBlockLBA = numberBlock;
         strcpy(MBR_st->fsType, "DreamTeamFS");
         strcpy(MBR_st->magicNumber[0], "DIR");
