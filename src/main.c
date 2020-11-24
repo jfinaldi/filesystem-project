@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
     MBRinit(volumeSize, blockSize, argv);
     // b_open("/foo/dir/test.txt", O_WRONLY | O_RDONLY);
     // exit(0);
-    // int okay = b_open("/beep/helloFile", O_CREAT); 
-	// int okay2 = b_open("/beep/helloFile2", O_RDONLY); 
-	// int check1 = b_open("/beep/helloFile", O_RDONLY); 
-	// int check2 = b_open("/beep/helloFile2", O_RDONLY);
-	//  printf("check1 %d, check2 %d", check1, check2);
+    int okay = b_open("/beep/helloFile", O_CREAT); 
+	int okay2 = b_open("/beep/helloFile2", O_RDONLY); 
+	int check1 = b_open("/beep/helloFile", O_RDONLY); 
+	int check2 = b_open("/beep/helloFile2", O_RDONLY);
+	 printf("check1 %d, check2 %d", check1, check2);
     char *cmdin;
     char *cmd;
     HIST_ENTRY *he;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     
     //START TESTS
     //SWITCH TO 0 AFTER HAVING INITIALIZED A SAMPLE VOLUME 
-    if (1) {
+    if (0) {
         printf("Starting test Initial Volume:\n"); 
         printf("initial root directry:\n"); 
         assert(strcmp(fdDirCWD->cwd_path, "/") == 0);

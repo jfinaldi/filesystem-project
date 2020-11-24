@@ -292,8 +292,9 @@ int fs_mkdir(const char *pathname, mode_t mode)
     int freeIndex = -1;
     //find free index
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
+        printf("%s, %s", entryBuffer[i].name, newName); 
         if (strcmp(entryBuffer[i].name, newName) == 0) {
-            printf("File with that name already exists, please use a different name"); 
+            printf("File or directory with that name already exists, please use a different name"); 
             return -1;
         }
         if (entryBuffer[i].isBeingUsed == 0) {
@@ -682,7 +683,6 @@ int fs_mvdir(char *srcPath, char *destPath) {
         entryBufferFinal[free_index] = entryBufferSrc[src_index];
         LBAwrite(entryBufferFinal, blocks, entryBufferDest[dest_index].childLBA);
     } else {
-        strcpy(entryBufferDest[dest_index].name, destName);
         entryBufferDest[dest_index] = entryBufferSrc[src_index];
         LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
     }
