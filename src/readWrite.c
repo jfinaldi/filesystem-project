@@ -325,6 +325,8 @@ void b_close(int fd)
     fileOpen[fd].flaggedForClose = TRUE;
 
     //TO-DO: We will need to write out whatever is left in our buffer
+    unsigned long LBA = getExtentLBA(fd, TRUE);
+    LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
 
     //if this fd was written to, update the entry
     if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
@@ -403,8 +405,8 @@ int b_write(int fd, char *buffer, int count)
             printf("I just finished printing the buffer\n");
             for (int nbr = 0; nbr != count;)
             {
-                printf("[406]nbr: %d\n", nbr);
-                printf("[407]buffer[nbr]: %c\n", buffer[nbr]);
+                //printf("[406]nbr: %d\n", nbr);
+                //printf("[407]buffer[nbr]: %c\n", buffer[nbr]);
                 fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[nbr];
                 fileOpen[fd].lenBuffer++;
                 nbr++;
@@ -427,6 +429,7 @@ int b_write(int fd, char *buffer, int count)
             printf("[427]LBA: %ld\n", LBA);
             fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
             printf("[429]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
+            printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
             LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
             //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
             fileOpen[fd].numBlocks++;
@@ -451,6 +454,7 @@ int b_write(int fd, char *buffer, int count)
                     printf("[442]LBA: %ld\n", LBA);
                     fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
                     printf("[444]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
+                    printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
                     LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
                     fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
                     fileOpen[fd].numBlocks++;
