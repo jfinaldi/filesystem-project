@@ -401,7 +401,7 @@ int b_write(int fd, char *buffer, int count)
         {
             printf("lenBuffer: %d\n", fileOpen[fd].lenBuffer);
             printf("length of buffer: %ld\n", strlen(fileOpen[fd].writeBuffer));
-            printf("buffer: %s\n", fileOpen[fd].writeBuffer);
+            //printf("buffer: %s\n", fileOpen[fd].writeBuffer);
             printf("I just finished printing the buffer\n");
             for (int nbr = 0; nbr != count;)
             {
@@ -414,22 +414,22 @@ int b_write(int fd, char *buffer, int count)
         }
         else if (fileOpen[fd].lenBuffer + count >= BUFSIZE) // NOT ENOUGHT PLACE IN THE WriteBuffer
         {
-            printf("[415]lenBuffer+count is >= BUFSIZE\n");
+            //printf("[415]lenBuffer+count is >= BUFSIZE\n");
             for (n = 0; fileOpen[fd].lenBuffer != BUFSIZE;)
             {
-                printf("[418]buffer[n]: %c\n", buffer[n]);
+                //printf("[418]buffer[n]: %c\n", buffer[n]);
                 fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[n];
                 fileOpen[fd].lenBuffer++;
                 count--;
                 n++;
             }
             // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
-            printf("[425]right before getExtentLBA call...\n");
+            //printf("[425]right before getExtentLBA call...\n");
             unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
             printf("[427]LBA: %ld\n", LBA);
             fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
             printf("[429]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
-            printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
+            //printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
             LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
             //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
             fileOpen[fd].numBlocks++;
@@ -439,7 +439,7 @@ int b_write(int fd, char *buffer, int count)
             memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);
             if (fileOpen[fd].lenBuffer + count >= BUFSIZE)
             {
-                printf("[439]lenBuffer+count >= BUFSIZE\n");
+                //printf("[439]lenBuffer+count >= BUFSIZE\n");
                 for (; count >= BUFSIZE;)
                 {
                     for (; fileOpen[fd].lenBuffer != BUFSIZE;)
@@ -449,12 +449,12 @@ int b_write(int fd, char *buffer, int count)
                         count--;
                         n++;
                     }
-                    printf("[440]right before getExtentLBA call...\n");
+                    //printf("[440]right before getExtentLBA call...\n");
                     unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
                     printf("[442]LBA: %ld\n", LBA);
                     fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
-                    printf("[444]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
-                    printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
+                    //printf("[444]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
+                    //printf("writeBuffer: %s\n", fileOpen[fd].writeBuffer);
                     LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
                     fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
                     fileOpen[fd].numBlocks++;

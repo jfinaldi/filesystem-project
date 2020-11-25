@@ -193,7 +193,7 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 
 	//change to random number to check if they math like 8, 10, 17, or 25.
 	
-	for (int bufferIterator = 0; bufferIterator < EXTENT_MAX_ELEMENTS; bufferIterator =+ 2){
+	for (int bufferIterator = 0; bufferIterator < EXTENT_MAX_ELEMENTS; bufferIterator += 2){
 		printf("\n In FOR LOOP ln 113 \n");
 		printf("\n Extent start location:%ld\n", extentBuffer[bufferIterator]); // test to get the proper locations
 		printf("extent Size value:%ld", extentBuffer[bufferIterator + 1]); // test to make sure it is 20,40,80.160, 320.
@@ -205,6 +205,7 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 			//if isForWrite, we will add an extent
 			if(isForWrite) {
 				result = addAnExtent(dE);
+				LBAwrite(buf, MBR_st->dirNumBlocks, fileOpen[fd].locationLBA);
 			}
 			//otherwise we are just trying to read, so return a dummy number to caller
 			else {
@@ -339,20 +340,20 @@ unsigned long addAnExtent(dirEntry* dE)
 	//check to see if this newBlock is right after the end of the previous extent
 	unsigned long prevExtBlock = ptr[lastElement - 1];
 	unsigned long lastLBAOfPrevExtent = prevExtBlock + prevExtBlocks;
-	if((lastLBAOfPrevExtent + 1) == newBlock)
-	{
-		//instead, incrementing the previous extent size by newExtBlocks
-		ptr[lastElement] += newExtBlocks;
-		//do a write
-		//free memory
-		//return
-	}
-    else {
-    	//write the newBlock number to newExtStartIndex
+	// if((lastLBAOfPrevExtent + 1) == newBlock)
+	// {
+	// 	//instead, incrementing the previous extent size by newExtBlocks
+	// 	ptr[lastElement] += newExtBlocks;
+	// 	//do a write
+	// 	//free memory
+	// 	//return
+	// }
+    // else {
+    // 	//write the newBlock number to newExtStartIndex
     	ptr[newExtStartIndex] = newBlock; 		//write the newBlock number to newExtStartIndex
     	ptr[newExtBlocksIndex] = newExtBlocks;  //write the newBlocks number to newExtBlocksIndex
 		dE->numExtents++; 						//increment the number of extents by 1
-	}
+	//}
 
 	//output stuff
 	printf("newBlock: %ld\n", newBlock);
