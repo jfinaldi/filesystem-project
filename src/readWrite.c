@@ -172,7 +172,7 @@ int b_open(char *filename, int flags)
         /**********************************/
 
         printf("new name %s\n", newName);
-        fdDir *temp = tempDirectory(filename, 0);
+        fdDir *temp = tempDirectory(filename, 0, NULL);
         if (temp->directoryStartLocation == 20000)
         {
             printf("not a valid path or name\n");
@@ -369,6 +369,7 @@ void b_close(int fd)
 
 int b_write(int fd, char *buffer, int count)
 {
+    printf("I am in b_write...\n");
     int n = 0;
     int returnValue = 0;
 
@@ -377,6 +378,7 @@ int b_write(int fd, char *buffer, int count)
 
     if (fileOpen[fd].flag == O_RDWR || O_WRONLY || O_TRUNC)
     {
+        printf("we have a flag: %d\n", fileOpen[fd].flag);
         // check that fd is between 0 and (MAXFCBS-1)
         if ((fd < 0) || (fd >= MAXFCBS))
         {
@@ -395,8 +397,14 @@ int b_write(int fd, char *buffer, int count)
 
         if (fileOpen[fd].lenBuffer + count <= BUFSIZE) // STILL HAVE PLACE IN THE WriteBuffer
         {
+            printf("lenBuffer: %d\n", fileOpen[fd].lenBuffer);
+            printf("length of buffer: %ld\n", strlen(fileOpen[fd].writeBuffer));
+            printf("buffer: %s\n", fileOpen[fd].writeBuffer);
+            printf("I just finished printing the buffer\n");
             for (int nbr = 0; nbr != count;)
             {
+                printf("[406]nbr: %d\n", nbr);
+                printf("[407]buffer[nbr]: %c\n", buffer[nbr]);
                 fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[nbr];
                 fileOpen[fd].lenBuffer++;
                 nbr++;
@@ -404,17 +412,21 @@ int b_write(int fd, char *buffer, int count)
         }
         else if (fileOpen[fd].lenBuffer + count >= BUFSIZE) // NOT ENOUGHT PLACE IN THE WriteBuffer
         {
+            printf("[415]lenBuffer+count is >= BUFSIZE\n");
             for (n = 0; fileOpen[fd].lenBuffer != BUFSIZE;)
             {
+                printf("[418]buffer[n]: %c\n", buffer[n]);
                 fileOpen[fd].writeBuffer[fileOpen[fd].lenBuffer] = buffer[n];
                 fileOpen[fd].lenBuffer++;
                 count--;
                 n++;
             }
             // write(fileOpen[fd].Fd, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
+            printf("[425]right before getExtentLBA call...\n");
             unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
+            printf("[427]LBA: %ld\n", LBA);
             fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
-
+            printf("[429]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
             LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
             //TODO ALLOCATE THE BLOCK AND WRITE THE DATA WITH LBAWRITE WHEN EXEED THE DEFAULT PREALLOCATE BLOCK FOR THE FILE
             fileOpen[fd].numBlocks++;
@@ -424,6 +436,7 @@ int b_write(int fd, char *buffer, int count)
             memset(fileOpen[fd].writeBuffer, '\0', BUFSIZE);
             if (fileOpen[fd].lenBuffer + count >= BUFSIZE)
             {
+                printf("[439]lenBuffer+count >= BUFSIZE\n");
                 for (; count >= BUFSIZE;)
                 {
                     for (; fileOpen[fd].lenBuffer != BUFSIZE;)
@@ -433,9 +446,11 @@ int b_write(int fd, char *buffer, int count)
                         count--;
                         n++;
                     }
-                   
+                    printf("[440]right before getExtentLBA call...\n");
                     unsigned long LBA = getExtentLBA(fd, TRUE); //get the next available LBA block to write to
+                    printf("[442]LBA: %ld\n", LBA);
                     fileOpen[fd].extentArrayPtrWrite++; //increment the extent array index
+                    printf("[444]extentArrayPtrWrite: %d\n", fileOpen[fd].extentArrayPtrWrite);
                     LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
                     fileOpen[fd].sizeOfFile += BUFSIZE; //increment the size of file
                     fileOpen[fd].numBlocks++;
