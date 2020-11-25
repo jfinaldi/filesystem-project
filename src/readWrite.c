@@ -642,3 +642,117 @@ int b_seek(int fd, off_t offset, int whence)
     }
     return 0;
 }
+int b_read_backup(int fd, char *buffer, int count) {
+    int endFlag = 0; 
+    int originalCount = count; 
+    if (fileOpen[fd]. locationMetadata == DEFAULT_LBA) { 
+        printf("this file is empty \n"); 
+    }
+    if (fileOpen[fd].offsetInDataLocation == DEFAULT_LBA) {
+        fileOpen[fd].offsetInDataLocation = fileOpen[fd].locationMetadata; 
+    }
+    LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].offsetInDataLocation); 
+    int toRead = 512 - fileOpen[fd].bufIndex; 
+    int placeInputBuffer = 0; 
+    if (count < toRead) {
+        strcpy(buffer, &fileOpen[fd].buffer[fileOpen[fd].bufIndex] );
+        fileOpen[fd].bufIndex += count;   
+        count = 0; 
+    } else {
+        strcpy(buffer, &fileOpen[fd].buffer[fileOpen[fd].bufIndex]);
+        fileOpen[fd].bufIndex = 0; 
+        count -= toRead; 
+        placeInputBuffer += toRead; 
+    }
+    while (count >= 512) {
+        fileOpen[fd].offsetInDataLocation++;
+        if (fileOpen[fd].sizeOfFile / 512 + fileOpen[fd]. locationMetadata < fileOpen[fd].offsetInDataLocation) {
+            printf("Last bit of file");
+            endFlag = 1; 
+            break; 
+        } 
+        LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].offsetInDataLocation);
+        strcpy(&buffer[placeInputBuffer], fileOpen[fd].buffer );
+        fileOpen[fd].bufIndex = 0; 
+        count -= 512; 
+        placeInputBuffer += 512; 
+    }
+    if (count > 0 && !endFlag) {
+        fileOpen[fd].offsetInDataLocation++;
+        if (fileOpen[fd].sizeOfFile / 512 + fileOpen[fd]. locationMetadata < fileOpen[fd].offsetInDataLocation) {
+            printf("Last bit of file");
+            endFlag = 1; 
+        } 
+        LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].offsetInDataLocation);
+        strcpy(&buffer[placeInputBuffer], fileOpen[fd].buffer );
+        fileOpen[fd].bufIndex = count; 
+    }
+    if (endFlag) {
+        int toRead = fileOpen[fd].sizeOfFile % 512; 
+        LBAread(fileOpen[fd].buffer, 1, fileOpen[fd].offsetInDataLocation);
+        strcpy(&buffer[placeInputBuffer], fileOpen[fd].buffer);
+        fileOpen[fd].bufIndex = toRead;
+        return originalCount - count + toRead; 
+    }
+    
+    return originalCount; 
+
+}
+
+
+int b_write_backup(int fd, char *buffer, int count) {
+    printf("BUUFFFER %s \n", buffer); 
+    if (fileOpen[fd]. locationMetadata == DEFAULT_LBA) {
+        fileOpen[fd].locationMetadata = find_free_index(1); 
+        fileOpen[fd].offsetInDataLocation = fileOpen[fd].locationMetadata; 
+        printf("OFFSET!!, %d \n", fileOpen[fd].offsetInDataLocation); 
+    } else if (fileOpen[fd].offsetInDataLocation == DEFAULT_LBA) {
+        fileOpen[fd].offsetInDataLocation = fileOpen[fd].locationMetadata; 
+    }
+    LBAread(fileOpen[fd].writeBuffer, 1, fileOpen[fd].offsetInDataLocation); 
+    int toFill = 512 - fileOpen[fd].bufIndex; 
+    int placeInputBuffer = 0; 
+    if (count < toFill) {
+        strcpy(&fileOpen[fd].writeBuffer[fileOpen[fd].bufIndex], buffer);
+        fileOpen[fd].bufIndex += count; 
+        fileOpen[fd].sizeOfFile += count; 
+        LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].offsetInDataLocation);  
+        count = 0; 
+    } else {
+        strcpy(&fileOpen[fd].writeBuffer[fileOpen[fd].bufIndex], buffer);
+        fileOpen[fd].bufIndex = 0; 
+        count -= toFill; 
+        placeInputBuffer += toFill; 
+        fileOpen[fd].sizeOfFile += toFill; 
+        LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].offsetInDataLocation); 
+    }
+    while (count >= 512) {
+        int temp = find_free_index(1); 
+        if (temp != fileOpen[fd].offsetInDataLocation + 1) {
+            printf("error in write"); 
+            return -1; 
+        }
+        fileOpen[fd].offsetInDataLocation++;
+        printf("OFFSET!!, %d \n", fileOpen[fd].offsetInDataLocation);  
+        strcpy(fileOpen[fd].writeBuffer, &buffer[placeInputBuffer]);
+        fileOpen[fd].bufIndex = 0; 
+        count -= 512; 
+        placeInputBuffer += 512; 
+        fileOpen[fd].sizeOfFile += 512; 
+        LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].offsetInDataLocation);
+    }
+    if (count > 0) {
+        int temp = find_free_index(1); 
+        if (temp != fileOpen[fd].offsetInDataLocation + 1) {
+            printf("error in write"); 
+            return -1; 
+        }
+        fileOpen[fd].offsetInDataLocation++; 
+        strcpy(fileOpen[fd].writeBuffer, &buffer[placeInputBuffer]);
+        fileOpen[fd].bufIndex = count; 
+        fileOpen[fd].sizeOfFile += count; 
+        LBAwrite(fileOpen[fd].writeBuffer, 1, fileOpen[fd].offsetInDataLocation);
+    }
+    return 0; 
+
+}

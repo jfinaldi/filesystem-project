@@ -157,6 +157,7 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 	//if this is from the very first write, extents needs initializing
 	if(isForWrite && (dE->extents == DEFAULT_LBA)) {
 		unsigned long result = initExtents(dE);
+		LBAwrite(buf, MBR_st->dirNumBlocks, fileOpen[fd].locationLBA);
 		printf("initialized first extent to LBA: %ld\n", result);
 		free(buf);
 		buf = NULL;
