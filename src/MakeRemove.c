@@ -395,7 +395,7 @@ int fs_rmdir(const char *pathname)
     fs_remove_helper(&entryBuffer[remove_index]);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
     printf("BEFORE DEGRAG"); 
-    defrag(MBR_st -> rootDirectoryPos); 
+    //defrag(MBR_st -> rootDirectoryPos); 
 }
 
 char *fs_getcwd(char *buf, size_t size)
