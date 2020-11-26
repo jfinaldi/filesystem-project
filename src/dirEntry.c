@@ -323,7 +323,7 @@ unsigned long addAnExtent(dirEntry* dE)
     
     //create a buffer and read in our extents LBA
 	printf("about to create an extents buffer\n");
-    unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
+    unsigned long* ptr = malloc(BLOCK_SIZE);
     LBAread(ptr, 1, dE->extents);
 	printf("i have created an read into my extents buffer.\n");
     

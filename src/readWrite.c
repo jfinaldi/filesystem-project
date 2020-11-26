@@ -506,7 +506,7 @@ int b_read(int fd, char *buffer, int count)
 {
     printf("b_read:\n");
     printf("------------------------------\n");
-    if (!(fileOpen[fd].flag & O_RDONLY) && !(fileOpen[fd].flag & O_RDWR))
+    if (!(fileOpen[fd].flag == O_RDONLY||O_RDWR))
     {
         printf("------------------------------\n");
         perror("Error: We do not have read permissions.\n");
@@ -551,6 +551,7 @@ int b_read(int fd, char *buffer, int count)
     if (part1 > 0) // memcpy part 1
     {
         memcpy(buffer, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part1);
+        printf("buffer: %s\n", fileOpen[fd].buffer);
         fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part1;
     }
 
@@ -597,6 +598,7 @@ int b_read(int fd, char *buffer, int count)
         if (part2 > 0) // memcpy bytesRead
         {
             memcpy(buffer + part1 + part3, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part2);
+             printf("buffer: %s\n", fileOpen[fd].buffer);
             fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part2;
         }
     }

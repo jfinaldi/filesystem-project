@@ -95,7 +95,7 @@ struct fs_diriteminfo fsDi;
 #define CMDMV_ON 1
 #define CMDMD_ON 1
 #define CMDRM_ON 1
-#define CMDCP2L_ON 0
+#define CMDCP2L_ON 1
 #define CMDCP2FS_ON 1
 #define CMDCD_ON 1
 #define CMDPWD_ON 0
