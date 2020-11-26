@@ -49,27 +49,29 @@ typedef u_int32_t uint32_t;
 #include "bitMap.h"
 #include "MakeRemove.h"
 
-#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
+//#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
 
-#define BLOCK_SIZE 512
-#define B_CHUNK_SIZE 512
-#define BUFSIZE 512
-#define MAX_PATH_LENGTH 512
-#define TRUE 1
-#define FALSE 0
-#define MAX_OPENFILE 20
-#define MAXFCBS 20
-#define MAX_DEEP 50
-#define EXTENT_MULTIPLIER 2
-#define EXTENT_START_BLOCKS 20
-#define EXTENT_MAX_ELEMENTS 64
-#define EXIT_FAILURE 1
-#define PRE_ALLOCATE_BLOCK 4
-#define DEFAULT_INDEX 0
-#define DEFAULT_SIZE 0
-#define DEFAULT_LBA 20000
-#define DEFAULT_FILETYPE 'z'
-#define DEFAULT_USERNAME "BobsAirPods@sfsu-DreamTeamFS:"
+extern int BLOCK_SIZE;
+extern int B_CHUNK_SIZE;
+extern int BUFSIZE;
+extern int MAX_PATH_LENGTH;
+extern int TRUE;
+extern int FALSE;
+extern int MAX_OPENFILE;
+extern int MAXFCBS;
+extern int MAX_DEEP;
+extern int EXTENT_MULTIPLIER;
+extern int EXTENT_START_BLOCKS;
+extern int EXTENT_MAX_ELEMENTS;
+//extern int EXIT_FAILURE;
+extern int PRE_ALLOCATE_BLOCK;
+extern int DEFAULT_INDEX;
+extern int DEFAULT_SIZE;
+extern int DEFAULT_LBA;
+extern char DEFAULT_FILETYPE;
+extern char* DEFAULT_USERNAME;
+
+extern void initGlobals();
 
 // flags for b_open
 // O_CREAT O_RDWR O_WRONLY O_TRUNC O_RDONLY

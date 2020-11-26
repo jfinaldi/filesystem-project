@@ -136,10 +136,12 @@ int returnWastedExtents(dirEntry* dE)
 	if(ptr){
 		free(ptr);
 		ptr = NULL;
+		printf("I just freed ptr.\n");
 	}
 	if(buf) {
 		free(buf);
 		buf = NULL;
+		printf("I just freed buf.\n");
 	}
 	return 0;
 }
@@ -188,18 +190,20 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 
 	LBAread(extentBuffer, 1, dE->extents);  //reading the LBA extents block where even indexes = LBA start, and odd = LBA extent size
 	
-	printf("\n First Extent start comparison with for loop:%ld \n", extentBuffer[0]);
-	printf("\n First Extent size comparison with for loop:%ld \n", extentBuffer[1]);
+	//printf("\n First Extent start comparison with for loop:%ld \n", extentBuffer[0]);
+	//printf("\n First Extent size comparison with for loop:%ld \n", extentBuffer[1]);
 
 	//change to random number to check if they math like 8, 10, 17, or 25.
 	
 	for (int bufferIterator = 0; bufferIterator < EXTENT_MAX_ELEMENTS; bufferIterator += 2){
-		printf("\n In FOR LOOP ln 113 \n");
-		printf("\n Extent start location:%ld\n", extentBuffer[bufferIterator]); // test to get the proper locations
-		printf("extent Size value:%ld", extentBuffer[bufferIterator + 1]); // test to make sure it is 20,40,80.160, 320.
+		printf("\n----------------------\n");
+		printf("In FOR LOOP ln 113 \n");
+		printf("LBA: %ld\n", extentBuffer[bufferIterator]); // test to get the proper locations
+		printf("#blocks: %ld\n", extentBuffer[bufferIterator + 1]); // test to make sure it is 20,40,80.160, 320.
 		
 		//check to see if this element has zero in it. If so, it is unused
 		if(extentBuffer[bufferIterator] == DEFAULT_SIZE) {
+			printf("End of allocated extents.\n");
 			unsigned long result = DEFAULT_LBA;
 			
 			//if isForWrite, we will add an extent
@@ -225,7 +229,8 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 		
 		if (indexPosition < extentBuffer[bufferIterator + 1] ) {
 			unsigned long finalPosition =  extentBuffer[bufferIterator] + indexPosition;
-			printf("\n Final postion:%ld", finalPosition); //confirm this and test it
+			printf("Returning extent block: %ld\n", finalPosition); //confirm this and test it
+			printf("---------------------------\n\n");
 
 			if(buf) {
 				free(buf);
@@ -317,8 +322,10 @@ unsigned long addAnExtent(dirEntry* dE)
 	}
     
     //create a buffer and read in our extents LBA
+	printf("about to create an extents buffer\n");
     unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
     LBAread(ptr, 1, dE->extents);
+	printf("i have created an read into my extents buffer.\n");
     
     unsigned short lastElement = (dE->numExtents * 2) - 1; // get the first avail element in LBA
     

@@ -321,6 +321,7 @@ int b_open(char *filename, int flags)
 // Interface to Close the file
 void b_close(int fd)
 {
+    printf("b_close...\n");
     //flag this fd for close
     fileOpen[fd].flaggedForClose = TRUE;
 
@@ -329,8 +330,7 @@ void b_close(int fd)
     LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
 
     //if this fd was written to, update the entry
-    if(fileOpen[fd].flag == O_WRONLY || fileOpen[fd].flag == O_RDWR
-        || fileOpen[fd].flag == O_CREAT)
+    if(fileOpen[fd].flag == O_WRONLY || O_RDWR || O_CREAT)
     {
         //create a dirEntry pointer, malloc dirBUfMallocSize bytes
         dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);

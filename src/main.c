@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
         printf("ERROR: malloc main\n");
         return (1);
     }
-
+    initGlobals();
     startPartitionSystem(argv[1], &volumeSize, &blockSize);
     MBRinit(volumeSize, blockSize, argv);
     // b_open("/foo/dir/test.txt", O_WRONLY | O_RDONLY);

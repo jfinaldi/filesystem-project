@@ -17,7 +17,7 @@
 #include "mfs.h"
 
 #define STARTING_NUM_DIR 50 //starting number of directories for array
-#define BLOCK_SIZE 512      //the block size
+//#define BLOCK_SIZE 512      //the block size
 
 void testOutput(dirEntry *rootDir);
 long initDirectory(int parentLBA);
