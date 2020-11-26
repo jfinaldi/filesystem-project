@@ -395,7 +395,7 @@ int fs_rmdir(const char *pathname)
     fs_remove_helper(&entryBuffer[remove_index]);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
     printf("BEFORE DEGRAG"); 
-    //defrag(MBR_st -> rootDirectoryPos); 
+    defrag(MBR_st -> rootDirectoryPos); 
 }
 
 char *fs_getcwd(char *buf, size_t size)
@@ -531,6 +531,8 @@ int fs_isDir(char *path)
            }
         }
     }
+    printf("nothing found in isDir"); 
+    return 0;
 }
 
 int fs_isFile(char *path)
@@ -616,7 +618,14 @@ int fs_mvdir(char *srcPath, char *destPath) {
     dirEntry *entryBufferDest = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     int blocks = MBR_st->dirNumBlocks;
     fdDir *tempSrc = tempDirectory(srcPath, 1, NULL);
-    fdDir *tempDest = tempDirectory(destPath, 1, NULL);
+    fdDir *tempDest = NULL;
+    if (fs_isDir(destPath)) {
+        printf("IT IS DIR"); 
+        tempDest = tempDirectory(destPath, 1, NULL);
+    }  else {
+        printf("NOT DIR"); 
+        tempDest = tempDirectory(destPath, 0, NULL);
+    }
     if (strncmp(tempSrc -> cwd_path, fdDirCWD -> cwd_path, strlen(tempSrc -> cwd_path)) == 0) {
         printf("CANT MOVE, YOU ARE IN THAT DIRECTORY!"); 
         return -1;
@@ -668,8 +677,9 @@ int fs_mvdir(char *srcPath, char *destPath) {
             printf("out of space"); 
             return -1;
         }
-        strcpy(entryBufferDest[free_index].name, destName);
+        
         entryBufferDest[free_index] = entryBufferSrc[src_index]; 
+        strcpy(entryBufferDest[free_index].name, destName);
         LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
 
     } else if (entryBufferDest[dest_index].type == atoi("d")) {
@@ -697,7 +707,6 @@ int fs_mvdir(char *srcPath, char *destPath) {
         entryBufferDest[dest_index] = entryBufferSrc[src_index];
         LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
     }
-    
-    
-    fs_rmdir(srcPath); 
+    entryBufferSrc[src_index].isBeingUsed = 0; 
+    LBAwrite(entryBufferSrc, blocks, tempSrc -> directoryStartLocation);
 }

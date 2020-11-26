@@ -165,7 +165,7 @@ int defrag(int start)
     LBAread(moveBuffer, toMove, fragEnd); 
     LBAwrite(moveBuffer, toMove, fragStart); 
     LBAwrite(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);
-    //defrag(fragStart); 
+    defrag(fragStart); 
 }
 
 int defrag_helper(dirEntry *startdE, int offset, int fragStart)
