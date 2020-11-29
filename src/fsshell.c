@@ -147,20 +147,22 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 	printf("\n");
 	while (di != NULL)
 	{
-		// if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
-		// {
-		// 	if (fllong)
-		// 	{
-		// 		fs_stat(di->d_name, &statbuf);
-		// 		printf("%s    %9ld   %s\n", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
-		// 	}
-		// 	else
-		// 	{
-		// 		printf("%s\n", di->d_name);
-		// 	}
-		// }
+		if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
+		{
+			if (fllong)
+			{
+				fs_stat(di->d_name, &statbuf);
+				printf("%s    %9ld   %s", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
+				struct tm* timeInfo = localtime(&(statbuf.st_createtime));
+				printf(" %s\n", asctime(timeInfo));
+			}
+			else
+			{
+				printf("%s\n", di->d_name);
+			}
+		}
 		//temp
-		printf("dirname: %s\n", di->d_name);
+		//printf("dirname: %s\n", di->d_name);
 		di = fs_readdir(dirp);
 	}
 	fs_closedir(dirp);

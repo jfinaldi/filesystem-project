@@ -576,7 +576,7 @@ int fs_stat(const char *path, struct fs_stat *buf)
 	buf -> st_accesstime  = entryBuffer -> dateAccessed; 
 	buf  -> st_modtime	= entryBuffer -> dateModified;  
     buf -> type = entryBuffer -> type;
-	//buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
+	buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
 }
 
 int fs_mvdir(char *srcPath, char *destPath) {
