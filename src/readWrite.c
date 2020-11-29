@@ -524,7 +524,7 @@ int b_read(int fd, char *buffer, int count)
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
     int prevBufSize = 0;     // caches the previous size of buffer to calculate bytesRead
-    unsigned long LBA;       // variable that stores the next LBA position to read from
+    unsigned long LBA = 0;   // variable that stores the next LBA position to read from
 
     if (startup == 0)
         b_init(); //Initialize our system
@@ -577,7 +577,7 @@ int b_read(int fd, char *buffer, int count)
             prevBufSize += bytesRead;                              //update the new previous buffer size for next time
             printf("bytesRead: %d\n", bytesRead);
             printf("prevBufSize: %d\n", prevBufSize);
-            fileOpen[fd].filePointer += bytesRead; //add the length of this buffer to fp
+            fileOpen[fd].filePointer += bytesRead;                 //add the length of this buffer to fp
             fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
             part3 = bytesRead;
             part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted

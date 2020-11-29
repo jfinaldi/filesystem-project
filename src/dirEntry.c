@@ -103,6 +103,58 @@ int updateEntry(int fd, dirEntry* dE)
 	return 1;
 }
 
+int wipeExtents(dirEntry* dE)
+{
+	//create extents buffer
+	unsigned long* ptr = (unsigned long*)malloc(BLOCK_SIZE);
+	if(!ptr)
+	{
+		printf("error with malloc\n");
+		return 1;
+	}
+	LBAread(ptr, 1, dE->extents);
+
+	//create directory buffer
+	dirEntry* buf = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
+	if(!buf){
+		printf("error with mallopc\n");
+		free(ptr);
+		ptr = NULL;
+		return 1;
+	}
+	LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+
+	//loop through all extents, freeing and setting all to 0
+	for(int i = 0; i < EXTENT_MAX_ELEMENTS; i += 2)
+	{
+		if(ptr[i] == DEFAULT_SIZE) break; //if the extents were not full
+		free_mem(ptr[i], ptr[i+1]); //give this extent back to free space
+		ptr[i] = DEFAULT_SIZE; //reset the LBA start location of extent
+		ptr[i+1] = DEFAULT_SIZE; //reset the number of blocks of extent
+	}
+
+	//save the extents blob
+	LBAwrite(ptr, 1, dE->extents);
+
+	//set extents to default lba
+	dE->extents = DEFAULT_LBA;
+
+	//save directory
+	LBAwrite(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+
+	//free
+	if(ptr) {
+		free(ptr);
+		ptr = NULL;
+	}
+	if(buf) {
+		free(buf);
+		buf = NULL;
+	}
+
+	return 0;
+}
+
 int returnWastedExtents(dirEntry* dE)
 {
 	printf("returnWastedExtents...\n");
