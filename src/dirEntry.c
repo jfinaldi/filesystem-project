@@ -6,7 +6,7 @@
 *
 * File: dirEntry.c
 *
-* Description: This function implements functions in dirEntry.h
+* Description: This file implements functions in dirEntry.h
 *        Creates and modifies a directory entry
 *
 **************************************************************/
@@ -77,8 +77,9 @@ int updateEntry(int fd, dirEntry* dE)
 
 		//if fd is about to be closed
 		if(fileOpen[fd].flaggedForClose) {
-			if(dE->numBlocks < dE->numExtentBlocks)
-				returnWastedExtents(dE); //give back wasted extents
+			if(dE->numBlocks < dE->numExtentBlocks) {
+				//returnWastedExtents(dE); //give back wasted extents
+			}
 		}
 		else { 
 			//otherwise, do we need another extent?

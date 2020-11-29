@@ -322,16 +322,24 @@ int b_open(char *filename, int flags)
 void b_close(int fd)
 {
     printf("b_close...\n");
+    unsigned long LBA = 1;
+    
     //flag this fd for close
     fileOpen[fd].flaggedForClose = TRUE;
 
-    //TO-DO: We will need to write out whatever is left in our buffer
-    unsigned long LBA = getExtentLBA(fd, TRUE);
-    LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
-
-    //if this fd was written to, update the entry
-    if(fileOpen[fd].flag == O_WRONLY || O_RDWR || O_CREAT)
+    //File was open for read
+   /* if(fileOpen[fd].flag == O_RDONLY || O_RDWR || O_CREAT)
     {
+        LBA = getExtentLBA(fd, FALSE);
+        LBAwrite(fileOpen[fd].buffer, 1, LBA);
+    } */
+
+    //File was open for write
+    if(fileOpen[fd].flag == O_WRONLY || O_RDWR || O_CREAT)
+    { 
+        LBA = getExtentLBA(fd, TRUE);
+        LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
+
         //create a dirEntry pointer, malloc dirBUfMallocSize bytes
         dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
         if (ptr == NULL)

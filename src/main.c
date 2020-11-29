@@ -320,7 +320,7 @@ int main(int argc, char *argv[])
     //END TESTS
     while (1)
     {
-        printf("\ncurr block: %ld\n", fdDirCWD->directoryStartLocation);
+        printf("\ncurr block: %ld", fdDirCWD->directoryStartLocation);
         printf("\n%s~", DEFAULT_USERNAME);
         if(strcmp(fdDirCWD->cwd_path, "/") != 0) 
         {        
