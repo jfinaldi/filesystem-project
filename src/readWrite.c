@@ -338,7 +338,15 @@ void b_close(int fd)
     if(fileOpen[fd].flag == O_WRONLY || O_RDWR || O_CREAT)
     { 
         LBA = getExtentLBA(fd, TRUE);
-        LBAwrite(fileOpen[fd].writeBuffer, 1, LBA);
+        unsigned long blocksWritten = LBAwrite(fileOpen[fd].writeBuffer, 1, LBA); 
+        printf("blocksWritten: %ld\n", blocksWritten);
+        printf("sizeOfFile: %ld\n", fileOpen[fd].sizeOfFile);
+        printf("len write buffer: %ld\n", strlen(fileOpen[fd].writeBuffer));
+        fileOpen[fd].sizeOfFile += strlen(fileOpen[fd].writeBuffer); 
+        fileOpen[fd].numBlocks++;
+
+        printf("sizeOfFile: %ld\n", fileOpen[fd].sizeOfFile);
+        printf("numBlocks: %ld\n", fileOpen[fd].numBlocks);
 
         //create a dirEntry pointer, malloc dirBUfMallocSize bytes
         dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
