@@ -76,6 +76,9 @@ int entryToFd(dirEntry* dE, int fd)
     fileOpen[fd].numExtentBlocks = getNumExtentBlocks(dE);
     fileOpen[fd].type = getType(dE);
 
+    printf("entryToFd.....fileOpen[fd].numBlocks = %ld\n", fileOpen[fd].numBlocks);
+    printf("entryToFd.....dE->numBlocks: %ld\n", dE->numBlocks);
+
     return 0;
 }
 
@@ -153,7 +156,7 @@ int b_open(char *filename, int flags)
 
     printf("NbArgument = %d\n", nbArgument);
 
-    if (1)
+    if (1) //THIS WILL ALWAYS EXECUTE. Why?
     { //Absolute path
 
         /*****FIX THIS MEMORY LEAK*********/
@@ -191,6 +194,7 @@ int b_open(char *filename, int flags)
                 fileOpen[fd].Fd = fd;
                 fileOpen[fd].isAllocate = TRUE;
                 fileOpen[fd].flag = flags;
+                fileOpen[fd].entryIndex = i;
                 fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
                 if (fileOpen[fd].buffer == NULL)
                 {
@@ -204,22 +208,25 @@ int b_open(char *filename, int flags)
                     free(ptrOpen);
                     return (-1);
                 }
-                /*fileOpen[fd].locationLBA = ptrOpen[curr].locationLBA;
-                fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
-                fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
-                fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-                fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
-                strcpy(fileOpen[fd].name, ptrOpen[curr].name);
-                fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
-                fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
-                fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
-                time(&(fileOpen[fd].dateAccessed));*/
+                fileOpen[fd].locationLBA = ptrOpen[i].locationLBA;
+                fileOpen[fd].childLBA = ptrOpen[i].childLBA;
+                fileOpen[fd].entryIndex = ptrOpen[i].entryIndex;
+                fileOpen[fd].dataLocation = ptrOpen[i].dataLocation;
+                //fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
+                strcpy(fileOpen[fd].name, ptrOpen[i].name);
+                fileOpen[fd].sizeOfFile = ptrOpen[i].sizeOfFile;
+                fileOpen[fd].numBlocks = ptrOpen[i].numBlocks;
+                fileOpen[fd].extents = ptrOpen[i].extents;
+                fileOpen[fd].dateModified = ptrOpen[i].dateModified;
+                time(&(fileOpen[fd].dateAccessed));
+
+                printf("b_open....ptrOpen[curr].numBlocks: %ld\n", ptrOpen[curr].numBlocks);
 
                 //copy data from dirEntry to fd_struct
-                if(entryToFd(&ptrOpen[curr], fd) != 0){
+                /*if(entryToFd(&ptrOpen[curr], fd) != 0){
                     printf("ERROR copying entry data in b_open ln209\n");
                     return -1;
-                }
+                }*/
                 free(ptrOpen);
                 ptrOpen = NULL;
                 printf("found fd\n");
@@ -246,28 +253,35 @@ int b_open(char *filename, int flags)
             }
 
             /**********I THINK ALL THIS COULD BE AN initEntry() CALL************/
+            initEntry(&ptrOpen[freeIndex]);
             ptrOpen[freeIndex].locationLBA = temp->directoryStartLocation; //location of this entry in logical block
             ptrOpen[freeIndex].entryIndex = freeIndex;
 
             //initialize a default name for this child
+            printf("newName: %s\n", newName);
             strcpy(ptrOpen[freeIndex].name, newName);
+            printf("ptrOpen[freeIndex].name: %s\n", ptrOpen[freeIndex].name);
 
-            ptrOpen[freeIndex].sizeOfFile = 20 * 512; // the number of bytes of the file data
-            ptrOpen[freeIndex].numBlocks = 20;        // the number of blocks occupied by the file
+            //ptrOpen[freeIndex].sizeOfFile = 20 * 512; // the number of bytes of the file data
+            //ptrOpen[freeIndex].numBlocks = 20;        // the number of blocks occupied by the file
             //ptrOpen[freeIndex].id = -1; //the id number for the entry
 
-            time(&(ptrOpen[freeIndex].dateModified)); // date the file was last modified
-            time(&(ptrOpen[freeIndex].dateAccessed)); // date the file was last accessed
+            //time(&(ptrOpen[freeIndex].dateModified)); // date the file was last modified
+            //time(&(ptrOpen[freeIndex].dateAccessed)); // date the file was last accessed
 
             //ptrOpen[freeIndex].locationMetadata = find_free_index(20); //512 file per directory
             ptrOpen[freeIndex].isBeingUsed = 1;                        //this file is currently not being used
             ptrOpen[freeIndex].type = 'f';
+            printf("Calling testOutput...\n");
+            testOutput(&ptrOpen[freeIndex]);
             /*******************************************************************/
 
             LBAwrite(ptrOpen, blocks, temp->directoryStartLocation);
+            //LBAwrite(ptrOpen, blocks, ptrOpen[freeIndex].locationLBA);
             fileOpen[fd].Fd = fd;
             fileOpen[fd].isAllocate = TRUE;
             fileOpen[fd].flag = flags;
+            fileOpen[fd].entryIndex = freeIndex;
             fileOpen[fd].buffer = malloc(B_CHUNK_SIZE);
             if (fileOpen[fd].buffer == NULL)
             {
@@ -289,28 +303,29 @@ int b_open(char *filename, int flags)
             fileOpen[fd].childLBA = ptrOpen[curr].childLBA;
             fileOpen[fd].entryIndex = ptrOpen[curr].entryIndex;
             fileOpen[fd].dataLocation = ptrOpen[curr].dataLocation;
-            fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
+            //fileOpen[fd].LBAInDataLocation = ptrOpen[curr].dataLocation;
             strcpy(fileOpen[fd].name, ptrOpen[curr].name);
             fileOpen[fd].sizeOfFile = ptrOpen[curr].sizeOfFile;
             fileOpen[fd].numBlocks = ptrOpen[curr].numBlocks;
+            fileOpen[fd].extents = ptrOpen[curr].extents;
             fileOpen[fd].dateModified = ptrOpen[curr].dateModified;
-            time(&(fileOpen[fd].dateAccessed));*/
+            time(&(fileOpen[fd].dateAccessed));
             /*************************************************/
-
+            printf("b_open....ptrOpen[curr].numBlocks: %ld\n", ptrOpen[curr].numBlocks);
             //copy data from dirEntry to fd_struct
-            if(entryToFd(&ptrOpen[curr], fd) != 0){
+            /*if(entryToFd(&ptrOpen[curr], fd) != 0){
                 printf("ERROR copying entry data in b_open ln209\n");
                 return -1;
-            }
+            }*/
 
             free(ptrOpen);
             ptrOpen = NULL;
-            printf("found fd");
+            printf("found fd\n");
             return fd;
         }
         else
         {
-            printf("file not found");
+            printf("file not found\n");
             free(ptrOpen);
             ptrOpen = NULL;
             return -1;
@@ -339,6 +354,7 @@ void b_close(int fd)
     { 
         LBA = getExtentLBA(fd, TRUE);
         unsigned long blocksWritten = LBAwrite(fileOpen[fd].writeBuffer, 1, LBA); 
+        printf("b_close...\n");
         printf("blocksWritten: %ld\n", blocksWritten);
         printf("sizeOfFile: %ld\n", fileOpen[fd].sizeOfFile);
         printf("len write buffer: %ld\n", strlen(fileOpen[fd].writeBuffer));
@@ -362,7 +378,9 @@ void b_close(int fd)
         LBAread(ptr, MBR_st->dirNumBlocks, fileOpen[fd].locationLBA);
 
         //find the entry and call update
+        printf("fileOpne[fd].entryIndex: %d\n", fileOpen[fd].entryIndex);
         dirEntry* entry = &ptr[fileOpen[fd].entryIndex];
+        //dirEntry* entry = &ptr[2];
         updateEntry(fd, entry);
 
         if(ptr) {
@@ -377,7 +395,6 @@ void b_close(int fd)
     }
     else
     {
-        //TODO Write what is left inside the buffer of FD struct
         free(fileOpen[fd].buffer);
         free(fileOpen[fd].buffer);
         fileOpen[fd].Fd = -1;
@@ -531,8 +548,17 @@ int b_read(int fd, char *buffer, int count)
     int bytesRead;           // for our reads
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
-    int prevBufSize = 0;     // caches the previous size of buffer to calculate bytesRead
+    unsigned long totalBytesFromBlocks = fileOpen[fd].numBlocks * BLOCK_SIZE;
+    unsigned long bytesInLastBlock = totalBytesFromBlocks - fileOpen[fd].sizeOfFile;
     unsigned long LBA = 0;   // variable that stores the next LBA position to read from
+
+        printf("BLOCK_SIZE: %d\n", BLOCK_SIZE);
+        printf("filePointer: %ld\n", fileOpen[fd].filePointer);
+        printf("numBlocks: %ld\n", fileOpen[fd].numBlocks);
+        printf("second to last block: %ld\n", (fileOpen[fd].numBlocks - 1));
+        printf("total bytes from blocks: %ld\n", totalBytesFromBlocks);
+        printf("bytes in last block: %ld\n", bytesInLastBlock);
+
 
     if (startup == 0)
         b_init(); //Initialize our system
@@ -580,11 +606,12 @@ int b_read(int fd, char *buffer, int count)
             LBA = getExtentLBA(fd, FALSE);
             fileOpen[fd].extentArrayPtrRead++;
             LBAread(fileOpen[fd].buffer, 1, LBA);
-            printf("prevBufSize: %d\n", prevBufSize);
-            bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; //subtract prev buf size to get what we just read
-            prevBufSize += bytesRead;                              //update the new previous buffer size for next time
-            printf("bytesRead: %d\n", bytesRead);
-            printf("prevBufSize: %d\n", prevBufSize);
+            //assign bytesRead
+            if((fileOpen[fd].filePointer) == (fileOpen[fd].numBlocks - 1)) //we left off at the end of the second to last block
+            {
+                bytesRead = BLOCK_SIZE - ((fileOpen[fd].numBlocks * BLOCK_SIZE) - fileOpen[fd].sizeOfFile);
+            }
+
             fileOpen[fd].filePointer += bytesRead;                 //add the length of this buffer to fp
             fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
             part3 = bytesRead;
@@ -593,13 +620,18 @@ int b_read(int fd, char *buffer, int count)
 
         //try to read BUFSIZE bytes into our buffer
         LBA = getExtentLBA(fd, FALSE);
+        if(LBA == DEFAULT_LBA) return 0;
         fileOpen[fd].extentArrayPtrRead++;
         LBAread(fileOpen[fd].buffer, 1, LBA);
-        printf("prevBufSize: %d\n", prevBufSize);
-        bytesRead = strlen(fileOpen[fd].buffer) - prevBufSize; // cur size of buffer - what it used to be
-        prevBufSize += bytesRead;                              // update the new previous buffer size for next time
-        printf("bytesRead: %d\n", bytesRead);
-        printf("prevBufSize: %d\n", prevBufSize);
+        printf("filePointer: %ld\n", fileOpen[fd].filePointer);
+        printf("second to last block: %ld\n", (fileOpen[fd].numBlocks - 1));
+        printf("total bytes from blocks: %ld\n", (fileOpen[fd].numBlocks * BLOCK_SIZE));
+        printf("bytes in last block: %ld\n", BLOCK_SIZE - ((fileOpen[fd].numBlocks * BLOCK_SIZE) - fileOpen[fd].sizeOfFile));
+        if((fileOpen[fd].filePointer) == (fileOpen[fd].numBlocks - 1)) //we left off at the end of the second to last block
+        {
+            bytesRead = fileOpen[fd].sizeOfFile % BLOCK_SIZE;
+        }
+        else bytesRead = BLOCK_SIZE;
         fileOpen[fd].filePointer += bytesRead; // update the file pointer
         fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
 

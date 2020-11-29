@@ -53,6 +53,10 @@ int updateEntry(int fd, dirEntry* dE)
 {
 	printf("\nupdateEntry.....\n");
 
+	short entryIndex = dE->entryIndex;
+	printf("dE->entryIndex = %d\n", entryIndex);
+	printf("fd->entryIndex = %d\n", fileOpen[fd].entryIndex);
+
 	//if we have a valid fd and dE
 	if((fd > -1) && dE) {
 		//create a buffer for directory with dE in it
@@ -61,22 +65,37 @@ int updateEntry(int fd, dirEntry* dE)
 			printf("Malloc failed ln61. returning 1\n");
 			return 1;
 		}
+		//output
+		printf("sizeOfFile: %ld\n", dE->sizeOfFile);
+		printf("numBlocked: %ld\n", dE->numBlocks);
 		LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA);
 
+		//output
+		printf("sizeOfFile: %ld\n", dE->sizeOfFile);
+		printf("numBlocked: %ld\n", dE->numBlocks);
+
 		//copy info from fd to dE
-		dE->locationLBA = fileOpen[fd].locationLBA;
-		dE->childLBA = fileOpen[fd].childLBA;
-		dE->entryIndex = fileOpen[fd].entryIndex;	  //the position of this entry in the array of entries
-		dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
-		strcpy(dE->name, fileOpen[fd].name);
+		//dE->locationLBA = fileOpen[fd].locationLBA;
+		//dE->childLBA = fileOpen[fd].childLBA;
+		//dE->entryIndex = fileOpen[fd].entryIndex;	  //the position of this entry in the array of entries
+		//dE->dataLocation = fileOpen[fd].dataLocation; //valid data location will be between block 0-19531
+		
+		/*strcpy(dE->name, fileOpen[fd].name);
 		dE->sizeOfFile = fileOpen[fd].sizeOfFile;
-		dE->numBlocks = fileOpen[fd].numBlocks;
+		dE->numBlocks = fileOpen[fd].numBlocks;*/
+		//strcpy(buf[entryIndex].name, fileOpen[fd].name);
+		buf[entryIndex].sizeOfFile = fileOpen[fd].sizeOfFile;
+		buf[entryIndex].numBlocks = fileOpen[fd].numBlocks;
+
+		//output
+		printf("sizeOfFile: %ld\n", buf[entryIndex].sizeOfFile);
+		printf("numBlocked: %ld\n", buf[entryIndex].numBlocks);
 
     	time(&(dE->dateModified)); // date the file was last modified
     	time(&(dE->dateAccessed)); // date the file was last accessed
 
 		//if fd is about to be closed
-		if(fileOpen[fd].flaggedForClose) {
+		/*if(fileOpen[fd].flaggedForClose) {
 			if(dE->numBlocks < dE->numExtentBlocks) {
 				//returnWastedExtents(dE); //give back wasted extents
 			}
@@ -85,10 +104,17 @@ int updateEntry(int fd, dirEntry* dE)
 			//otherwise, do we need another extent?
 			if(dE->numBlocks == dE->numExtentBlocks)
 				addAnExtent(dE); //add an extent
-		}
+		}*/
 
 		//write all updated entry info to disk
-		LBAwrite(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+		printf("about to LBAwrite starting at block: %ld\n", dE->locationLBA);
+		unsigned long written = LBAwrite(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+		printf("I just wrote %ld blocks\n", written);
+
+		//testt the write
+		LBAread(buf, MBR_st->dirNumBlocks, dE->locationLBA);
+		printf("printing entryIndex: %d\n", buf[2].entryIndex);
+		printf("numBlocks after write: %ld\n", buf[2].numBlocks);
 
 		//free
 		if(buf){
@@ -508,8 +534,10 @@ uint64_t getSizeOfFile(dirEntry *dE) {
 
 unsigned long getNumBlocks(dirEntry *dE) {
 	printf("\n in getNumBlocks ln 141\n");
-	if(dE)
+	if(dE) {
+		printf("returning %ld from getNumBlocks.\n", dE->numBlocks);
 		return dE->numBlocks;
+	}
 	printf("error: this entry is null. returning %d\n", DEFAULT_SIZE);
 	return DEFAULT_SIZE;
 }
