@@ -45,6 +45,7 @@ typedef struct fd_struct
 
     //buffer and tracking variables
     unsigned long filePointer; //file pointer tracks the current byte in the file
+    unsigned long blockPointer;
     char *buffer;              // For b_read 
     char *writeBuffer;         // for b_write
     short bufIndex;            //tracks where in the buffer we are. used in b_read

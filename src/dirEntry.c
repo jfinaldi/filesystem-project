@@ -95,7 +95,7 @@ int updateEntry(int fd, dirEntry* dE)
     	time(&(dE->dateAccessed)); // date the file was last accessed
 
 		//if fd is about to be closed
-		/*if(fileOpen[fd].flaggedForClose) {
+		if(fileOpen[fd].flaggedForClose) {
 			if(dE->numBlocks < dE->numExtentBlocks) {
 				//returnWastedExtents(dE); //give back wasted extents
 			}
@@ -104,7 +104,7 @@ int updateEntry(int fd, dirEntry* dE)
 			//otherwise, do we need another extent?
 			if(dE->numBlocks == dE->numExtentBlocks)
 				addAnExtent(dE); //add an extent
-		}*/
+		}
 
 		//write all updated entry info to disk
 		printf("about to LBAwrite starting at block: %ld\n", dE->locationLBA);
@@ -232,7 +232,10 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 
 	//get a directory Entry from fd
 	dirEntry* buf = (dirEntry*)malloc(MBR_st->dirBufMallocSize);
+	printf("fileopen[fd].locationlba: %ld\n", fileOpen[fd].locationLBA);
+	printf("about to LBAread..\n");
 	LBAread(buf, MBR_st->dirNumBlocks, fileOpen[fd].locationLBA);
+	printf("i just LBAread\n");
 	dirEntry* dE = &(buf[fileOpen[fd].entryIndex]);
 
 	//if this is from the very first write, extents needs initializing
@@ -257,7 +260,7 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 		return DEFAULT_LBA;
 	}
 
-	unsigned long* extentBuffer = (unsigned long*) malloc(512); //creating memory in main space for 512 bytes and partitioning it into chunks of 8 bytes
+	unsigned long* extentBuffer = (unsigned long*) malloc(BLOCK_SIZE); //creating memory in main space for 512 bytes and partitioning it into chunks of 8 bytes
 
 	if (extentBuffer == NULL) {
 		printf("\n cannot allocate memory at ln 98 dirEntry.c\n");
@@ -292,6 +295,7 @@ unsigned long getExtentLBA(int fd, _Bool isForWrite)
 			}
 			//otherwise we are just trying to read, so return a dummy number to caller
 			else {
+				result = DEFAULT_LBA;
 				printf("ERROR: end of extents. Returning %ld\n", result);
 			}
 			//free memory
