@@ -43,6 +43,7 @@ int updateEntry(int fd, dirEntry* dE);
 unsigned long initExtents(dirEntry* dE);
 unsigned long addAnExtent(dirEntry* dE);
 int returnWastedExtents(dirEntry* dE);
+int wipeExtents(dirEntry* dE); 
 
 /*GETTERS*/
 unsigned long getLocationLBA(dirEntry *dE);

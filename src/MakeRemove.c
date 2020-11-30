@@ -340,17 +340,21 @@ int fs_remove_helper(dirEntry *deToRemove)
     //100 ASCII for "d", remove metaData if File
     if (deToRemove -> type != 100) {
         free_mem(deToRemove->locationMetadata, 512 * 20);
+        wipeExtents(deToRemove); 
+    } else {
+        LBAread(entryBuff, blocks, deToRemove->childLBA);
+        for (int i = 2; i < STARTING_NUM_DIR; i++) {
+            if (entryBuff[i].isBeingUsed == 1) {
+                fs_remove_helper(&entryBuff[i]);
+            }
+        }
+        LBAwrite(entryBuff, blocks, deToRemove->childLBA);
+        free_mem(deToRemove->childLBA, blocks);
     }
     //check for child Directories to delete and recursively delete
-    LBAread(entryBuff, blocks, deToRemove->childLBA);
-    for (int i = 2; i < STARTING_NUM_DIR; i++) {
-        if (entryBuff[i].isBeingUsed == 1) {
-            fs_remove_helper(&entryBuff[i]);
-        }
-    }
+    
     //rewrite and free mem
-    LBAwrite(entryBuff, blocks, deToRemove->childLBA);
-    free_mem(deToRemove->childLBA, blocks);
+    
 }
 
 int fs_rmdir(const char *pathname)
@@ -395,7 +399,7 @@ int fs_rmdir(const char *pathname)
     fs_remove_helper(&entryBuffer[remove_index]);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
     printf("BEFORE DEGRAG"); 
-    defrag(MBR_st -> rootDirectoryPos); 
+    //defrag(MBR_st -> rootDirectoryPos); 
 }
 
 char *fs_getcwd(char *buf, size_t size)
@@ -635,11 +639,7 @@ int fs_mvdir(char *srcPath, char *destPath) {
             return -1;
     }
     LBAread(entryBufferSrc, blocks, tempSrc->directoryStartLocation);
-    if (tempDest -> directoryStartLocation == 20000) {
-            printf("not a valid dest path or name"); 
-            return -1;
-    }
-    LBAread(entryBufferDest, blocks, tempDest->directoryStartLocation);
+
     int src_index = -1;
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBufferSrc[i].name, srcName) == 0)
@@ -651,6 +651,15 @@ int fs_mvdir(char *srcPath, char *destPath) {
     if (src_index == -1 ) {
         printf("no such file or directory exists as source");
     }
+    entryBufferSrc[src_index].isBeingUsed = 0; 
+    LBAwrite(entryBufferSrc, blocks, tempSrc -> directoryStartLocation);
+    if (tempDest -> directoryStartLocation == 20000) {
+            printf("not a valid dest path or name"); 
+            return -1;
+    }
+    LBAread(entryBufferDest, blocks, tempDest->directoryStartLocation);
+    
+    
     int dest_index = -1;
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBufferDest[i].name, destName) == 0)
@@ -660,12 +669,14 @@ int fs_mvdir(char *srcPath, char *destPath) {
         }
     }
     int free_index = -1;
+   
     if (dest_index == -1 ) {
         printf("\nno such file or directory--must make new");
          
         for (int i = 0; i < STARTING_NUM_DIR; i++) {
             if (entryBufferDest[i].isBeingUsed == 0)
             {
+                printf("FREEINDEX %d", i); 
                 free_index = i;
             }
             if (strcmp(entryBufferDest[i].name, destName) == 0) {
@@ -677,9 +688,10 @@ int fs_mvdir(char *srcPath, char *destPath) {
             printf("out of space"); 
             return -1;
         }
-        
+        printf("SRC INDEX %d", src_index); 
         entryBufferDest[free_index] = entryBufferSrc[src_index]; 
         strcpy(entryBufferDest[free_index].name, destName);
+        entryBufferDest[free_index].isBeingUsed = 1; 
         LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
 
     } else if (entryBufferDest[dest_index].type == atoi("d")) {
@@ -702,11 +714,12 @@ int fs_mvdir(char *srcPath, char *destPath) {
             return -1;
         }
         entryBufferFinal[free_index] = entryBufferSrc[src_index];
+        entryBufferFinal[free_index].isBeingUsed = 1;
         LBAwrite(entryBufferFinal, blocks, entryBufferDest[dest_index].childLBA);
     } else {
         entryBufferDest[dest_index] = entryBufferSrc[src_index];
+        entryBufferDest[dest_index].isBeingUsed = 1;
         LBAwrite(entryBufferDest, blocks, tempDest -> directoryStartLocation);
     }
-    entryBufferSrc[src_index].isBeingUsed = 0; 
-    LBAwrite(entryBufferSrc, blocks, tempSrc -> directoryStartLocation);
+    
 }
