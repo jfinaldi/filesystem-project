@@ -152,9 +152,9 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 			if (fllong)
 			{
 				fs_stat(di->d_name, &statbuf);
-				printf("%s    %9ld   %s", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
+				printf("%s    %4ld   %7s", fs_isDir(di->d_name) ? "D" : "-", statbuf.st_size, di->d_name);
 				struct tm* timeInfo = localtime(&(statbuf.st_createtime));
-				printf(" %s\n", asctime(timeInfo));
+				printf(" %9s", asctime(timeInfo));
 			}
 			else
 			{
