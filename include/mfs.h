@@ -96,6 +96,8 @@ struct fs_diriteminfo
 {
 	unsigned short d_reclen; /* length of this record */
 	unsigned char fileType;
+	off_t d_size;
+	time_t d_createtime;
 	char d_name[256]; /* filename max filename is 255 characters */
 };
 

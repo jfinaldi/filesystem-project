@@ -192,17 +192,17 @@ fdDir *fs_opendir(const char *name)
 
 struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     
-    //malloc new item infp 
+    //malloc new item info 
     struct fs_diriteminfo *result = (struct fs_diriteminfo *)malloc(sizeof(struct fs_diriteminfo));
     if (result == NULL) {
-        //printf("malloc err\n");
+        printf("malloc err\n");
         return ((struct fs_diriteminfo *)-1);
     }
    
    //malloc and put dir in buffer
     dirEntry *ptr = (dirEntry *)malloc(MBR_st->dirBufMallocSize);
     if (ptr == NULL) {
-        //printf("malloc err\n");
+        printf("malloc err\n");
         return ((struct fs_diriteminfo *)-1);
     }
 
@@ -216,6 +216,9 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
     //set info to return if being used, increment StreamCount
     if (!ptr[dirp->streamCount].isBeingUsed == 0) {
         result->fileType = ptr[dirp->streamCount].type;
+        if(ptr[dirp->streamCount].type == 'D') result->d_size = MBR_st->dirBufMallocSize;
+        else result->d_size = ptr[dirp->streamCount].sizeOfFile;
+        result->d_createtime = ptr[dirp->streamCount].dateCreated;
         ////printf("NAME IN READ, %s, INDEX %d", ptr[dirp->streamCount].name,  ptr[dirp->streamCount].entryIndex); 
         strcpy(result->d_name, ptr[dirp->streamCount].name);
         dirp->streamCount++;
@@ -324,7 +327,7 @@ int fs_mkdir(const char *pathname, mode_t mode)
     strcpy(entryBuffer[freeIndex].name, newName);
     //printf("entryBuffer[freeIndex].name = %s\n", entryBuffer[freeIndex].name);
     //we don't need to append a null terminator to a char* string
-    entryBuffer[freeIndex].type = atoi("d");
+    entryBuffer[freeIndex].type = 'D';
     entryBuffer[freeIndex].childLBA = initDirectory(temp->directoryStartLocation);
     LBAwrite(entryBuffer, blocks, temp->directoryStartLocation);
 
@@ -520,7 +523,7 @@ int fs_isDir(char *path)
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (strcmp(entryBuffer[i].name, newName) == 0)
         { 
-           if(entryBuffer[i].type == atoi("d")) {
+           if(entryBuffer[i].type == 'D') {
                return 1;
            } else {
                return 0;
@@ -566,11 +569,16 @@ int fs_stat(const char *path, struct fs_stat *buf)
     }
     LBAread(entryBuffer, blocks, temp->directoryStartLocation);
     
+    if(entryBuffer->type != 'd') {
+        buf->st_size = entryBuffer->sizeOfFile;
+        
+    }
     buf -> st_size = MBR_st -> dirBufMallocSize; //needs to be changed for file type
     buf -> st_blksize = MBR_st -> blockSize; 
 	buf -> st_blocks = MBR_st -> dirNumBlocks;	  
 	buf -> st_accesstime  = entryBuffer -> dateAccessed; 
-	buf  -> st_modtime	= entryBuffer -> dateModified;  
+	buf  -> st_modtime	= entryBuffer -> dateModified; 
+    buf -> st_blksize = MBR_st -> blockSize;  
     buf -> type = entryBuffer -> type;
 	buf -> st_createtime = entryBuffer -> dateCreated;/* time of last status change */
 }
