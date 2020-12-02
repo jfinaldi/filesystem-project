@@ -7,6 +7,8 @@
 * File: dirEntry.h
 *
 * Description: Header file for a directory entry structure
+*			including prototypes for all directory related
+*			functions.
 *
 **************************************************************/
 
@@ -48,9 +50,7 @@ unsigned long getLocationLBA(dirEntry *dE);
 unsigned long getChildLBA(dirEntry *dE);
 short getEntryIndex(dirEntry *dE);
 unsigned long getDataLocation(dirEntry *dE);
-//unsigned long getEofLBA(dirEntry *dE);
-//short getEofOffset(dirEntry *dE);
-char* getName(dirEntry *dE); // cannot return an array can return a pointer to array
+char* getName(dirEntry *dE); 
 uint64_t getSizeOfFile(dirEntry *dE);
 unsigned long getNumBlocks(dirEntry *dE);
 time_t getDateCreated(dirEntry *dE);
@@ -69,8 +69,6 @@ int setLocationLBA(dirEntry *dE, unsigned long newLocationLBA);
 int setChildLBA(dirEntry *dE, unsigned long newChildLBA);
 int setEntryIndex(dirEntry *dE, short newEntryIndex);
 int setDataLocation(dirEntry *dE, unsigned long newDataLocation);
-//int setEofLBA(dirEntry *dE, unsigned long newEofLBA);
-//int setEofOffset(dirEntry *dE, short newEofOffset);
 int setName(dirEntry *dE, char newName[256]);
 int setSizeOfFile(dirEntry *dE, uint64_t newSize);
 int setNumBlocks(dirEntry *dE, unsigned long newNumBlocks);

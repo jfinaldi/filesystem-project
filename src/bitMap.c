@@ -1,13 +1,17 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
+* Class:  CSC-415.02
+* Name: Lauren Wong (Dreamteam)
 * Student ID: N/A
 * Project: Basic File System
 *
 * File: bitMap.c
 *
-* Description: 
-*	This is the header file for initDirectory
+* Description: This file deals with the free space creation
+*           and management, utilizing functions to initialize
+*	        the free space, fetch a free contiguous set of
+*           blocks, and to return a set of contiguous blocks.
+*           It also includes a function  that will defrag-
+*           ment the freespace by rearranging directories.
 *
 **************************************************************/
 
@@ -45,7 +49,7 @@ int find_free_index(int blocks_needed)
     {
         return -1;
     }
-    printf("FREESPACE POS %ld", MBR_st->blockSize);
+   
     LBAread(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);
     int free_blocks = 0;
     int index = 0;
@@ -74,7 +78,7 @@ int find_free_index(int blocks_needed)
         index++;
     }
 
-    printf("Out of space");
+    printf("Out of space/n");
     return (-1);
 }
 int free_mem(int index, int count)
@@ -91,11 +95,11 @@ int free_mem(int index, int count)
     LBAread(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);
     for (int i = index; i <= index + count; i++)
     {
-        //printf("HLEELEO?");
         bitmap[i] = 0;
     }
     LBAwrite(bitmap, bitmap_size_in_blocks, MBR_st->freeSpacePos);
 }
+
 int defrag(int start)
 {
 

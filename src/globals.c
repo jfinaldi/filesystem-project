@@ -1,6 +1,6 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Dreamteam
+* Class:  CSC-415.02
+* Name: Jennifer Finaldi (Dreamteam)
 * Student ID: N/A
 * Project: Basic File System
 *
@@ -25,7 +25,6 @@ int MAX_DEEP;
 int EXTENT_MULTIPLIER;
 int EXTENT_START_BLOCKS;
 int EXTENT_MAX_ELEMENTS;
-//int EXIT_FAILURE;
 int PRE_ALLOCATE_BLOCK;
 int DEFAULT_INDEX;
 int DEFAULT_SIZE;
@@ -47,7 +46,6 @@ void initGlobals()
     EXTENT_MULTIPLIER = 2;
     EXTENT_START_BLOCKS = 20;
     EXTENT_MAX_ELEMENTS = 64;
-    //EXIT_FAILURE = 1;
     PRE_ALLOCATE_BLOCK = 4;
     DEFAULT_INDEX = 0;
     DEFAULT_SIZE = 0;

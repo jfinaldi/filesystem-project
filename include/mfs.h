@@ -49,8 +49,6 @@ typedef u_int32_t uint32_t;
 #include "bitMap.h"
 #include "MakeRemove.h"
 
-//#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
-
 extern int BLOCK_SIZE;
 extern int B_CHUNK_SIZE;
 extern int BUFSIZE;
@@ -63,7 +61,6 @@ extern int MAX_DEEP;
 extern int EXTENT_MULTIPLIER;
 extern int EXTENT_START_BLOCKS;
 extern int EXTENT_MAX_ELEMENTS;
-//extern int EXIT_FAILURE;
 extern int PRE_ALLOCATE_BLOCK;
 extern int DEFAULT_INDEX;
 extern int DEFAULT_SIZE;
@@ -72,9 +69,6 @@ extern char DEFAULT_FILETYPE;
 extern char* DEFAULT_USERNAME;
 
 extern void initGlobals();
-
-// flags for b_open
-// O_CREAT O_RDWR O_WRONLY O_TRUNC O_RDONLY
 
 typedef struct MBRstruct
 {

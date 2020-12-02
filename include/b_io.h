@@ -1,12 +1,14 @@
 /**************************************************************
-* Class:  CSC-415-0# 
-* Name:
+* Class:  CSC-415-02 
+* Name: Lilian Gouzeot/Jennifer Finaldi(DreamTeam)
 * Student ID:
 * Project: File System Project
 *
 * File: b_io.h
 *
-* Description: Interface of basic I/O functions
+* Description: Header for readwrite.c struct definition for
+*           a structure that stores information about an
+*           open file.
 *
 **************************************************************/
 
@@ -39,7 +41,6 @@ typedef struct fd_struct
     unsigned long extents;
     unsigned short numExtents;
     unsigned short numExtentBlocks;
-    //unsigned short isBeingUsed;
     unsigned char type;
 
 

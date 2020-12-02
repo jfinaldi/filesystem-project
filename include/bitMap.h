@@ -1,13 +1,14 @@
 /**************************************************************
 * Class:  CSC-415
-* Name: Professor Bierman
+* Name: Lauren Wong (DreamTeam)
 * Student ID: N/A
 * Project: Basic File System
 *
 * File: bitMap.h
 *
 * Description: 
-*	This is the header file for initDirectory
+*	This is the header file for bitmap.c that deals with
+*   The free space memory management
 *
 **************************************************************/
 

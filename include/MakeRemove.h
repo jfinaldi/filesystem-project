@@ -1,12 +1,13 @@
 /**************************************************************
-* Class:  CSC-415-0# 
-* Name:
+* Class:  CSC-415-02 
+* Name: (DreamTeam)
 * Student ID:
 * Project: File System Project
 *
 * File: MakeRemove.h
 *
-* Description: Interface with shell fonction
+* Description: Prototypes for makeremove.c which deals with
+*               directory services
 *
 **************************************************************/
 

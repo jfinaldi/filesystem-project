@@ -1,12 +1,15 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
+* Class:  CSC-415.02 Fall2020
+* Name: Lilian Gouzeot (DreamTeam)
 * Student ID: N/A
 * Project: Basic File System
 *
 * File: mbr.c
 *
-* Description: mbr.c
+* Description: Master Boot Record
+*             Creates a brand new master boot record, storing
+*             on the Volume, or just initializes current 
+*             working directory if MBR already exists
 *
 **************************************************************/
 
@@ -21,7 +24,7 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
 
     if (strcmp(MBR_st->fsType, "DreamTeamFS") == 0)
     {
-        printf("The Disk Is Already Format to a DreamTeamFS (The best file system of all time)\n");
+        printf("The Disk Is Already Format to a DreamTeamFS (The best file system of all time) ಠ_ಠ\n");
     }
     else
     {
@@ -44,14 +47,15 @@ int MBRinit(uint64_t volumeSize, uint64_t blockSize, char **argv)
         MBR_st->dirBufMallocSize = blockSize * MBR_st->dirNumBlocks;
 
         int locationRootDir = initDirectory(0); //initialize the root directory
-        printf("back in mbr.c ln47\n");
         MBR_st->rootDirectoryPos = locationRootDir;
-        printf("mbr root %ld", MBR_st->rootDirectoryPos);
 
         LBAwrite(MBR_st, 1, 0);
+
+        printf("MBR successfully initialized.\n");
     }
+
+    //initialize current working directory info
     strcpy(fdDirCWD->cwd_path, "/\0");
-    //strcpy(fdDirCWD -> cwd_path[1], "\0");
     fdDirCWD->d_reclen = 0;
     fdDirCWD->directoryStartLocation = MBR_st->rootDirectoryPos;
     fdDirCWD->dirItemInfo = (struct fs_diriteminfo *)malloc(sizeof(struct fs_diriteminfo));

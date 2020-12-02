@@ -15,72 +15,70 @@
 
 #include "mfs.h"
 
-// MBRstruct *MBR_st = NULL;
-// fdDir *fdDirCWD = NULL;
-
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
-#if (TEMP_LINUX == 0)
+#define TEMP_LINUX 0 //MUST be ZERO for working with your file system
+#if (TEMP_LINUX == 1)
 // All the following it TEMPORARY ONLY - It allows testing the shell in linux
 // but using the test files system function calls
 // This must be off for testing your file system
 
-//#define fs_mkdir mkdir
-//#define fs_getcwd getcwd
-//#define fs_setcwd chdir
-//#define fs_rmdir rmdir
+#define fs_mkdir mkdir
+#define fs_getcwd getcwd
+#define fs_setcwd chdir
+#define fs_rmdir rmdir
 #define fs_delete unlink
 
-// fdDir *fs_opendir(const char *name)
-// {
-// 	DIR *dir;
-// 	dir = opendir(name);
-// 	return ((fdDir *)dir);
-// }
+ fdDir *fs_opendir(const char *name)
+ {
+ 	DIR *dir;
+ 	dir = opendir(name);
+ 	return ((fdDir *)dir);
+ }
 
 struct fs_diriteminfo fsDi;
-// struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-// {
-// 	DIR *dir;
-// 	dir = (DIR *)dirp;
-// 	struct dirent *de;
-// 	de = readdir(dir);
-// 	if (de == NULL)
-// 		return (NULL);
+struct fs_diriteminfo *fs_readdir(fdDir *dirp)
+{
+	DIR *dir;
+	dir = (DIR *)dirp;
+ 	struct dirent *de;
+ 	de = readdir(dir);
+ 	if (de == NULL)
+ 		return (NULL);
 
-// 	fsDi.d_reclen = (unsigned short)sizeof(fsDi);
-// 	fsDi.fileType = de->d_type;
-// 	strcpy(fsDi.d_name, de->d_name);
-// 	return (&fsDi);
-// }
+ 	fsDi.d_reclen = (unsigned short)sizeof(fsDi);
+ 	fsDi.fileType = de->d_type;
+ 	strcpy(fsDi.d_name, de->d_name);
+ 	return (&fsDi);
+}
 
-// int fs_closedir(fdDir *dirp)
-// {
-// 	DIR *dir;
-// 	dir = (DIR *)dirp;
-// 	return (closedir(dir));
-// }
+int fs_closedir(fdDir *dirp)
+{
+ 	DIR *dir;
+ 	dir = (DIR *)dirp;
+ 	return (closedir(dir));
+ }
 
-// int fs_stat(const char *path, struct fs_stat *buf)
-// {
-// 	struct stat *path_stat;
-//	path_stat = (struct stat *)buf;
-//	return (stat(path, path_stat));
-// }
+int fs_stat(const char *path, struct fs_stat *buf)
+{
+ 	struct stat *path_stat;
+	path_stat = (struct stat *)buf;
+	return (stat(path, path_stat));
+}
 
-// int fs_isFile(char *path)
-// {
-// 	struct stat path_stat;
-// 	stat(path, &path_stat);
-// 	return S_ISREG(path_stat.st_mode);
-// }
+int fs_isFile(char *path)
+{
+ 	struct stat path_stat;
+	stat(path, &path_stat);
+ 	return S_ISREG(path_stat.st_mode);
+}
 
-// int fs_isDir(char *path)
-// {
-// 	struct stat path_stat;
-// 	if (stat(path, &path_stat) != 0)
-// 		return 0;
-// 	return S_ISDIR(path_stat.st_mode);
-// }
+int fs_isDir(char *path)
+{
+	struct stat path_stat;
+	if (stat(path, &path_stat) != 0)
+ 		return 0;
+ 	return S_ISDIR(path_stat.st_mode);
+}
 #endif
 /***************  END LINUX TESTING CODE FOR SHELL ***************/
 
@@ -91,14 +89,14 @@ struct fs_diriteminfo fsDi;
 
 /****   SET THESE TO 1 WHEN READY TO TEST THAT COMMAND ****/
 #define CMDLS_ON 1
-#define CMDCP_ON 0
+#define CMDCP_ON 1
 #define CMDMV_ON 1
 #define CMDMD_ON 1
 #define CMDRM_ON 1
 #define CMDCP2L_ON 1
 #define CMDCP2FS_ON 1
 #define CMDCD_ON 1
-#define CMDPWD_ON 0
+#define CMDPWD_ON 1
 
 typedef struct dispatch_t
 {
@@ -152,7 +150,7 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 			if (fllong)
 			{
 				fs_stat(di->d_name, &statbuf);
-				printf("%s    %4ld   %7s", fs_isDir(di->d_name) ? "D" : "F", di->d_size, di->d_name);
+				printf("%s    %7ld   %7s", fs_isDir(di->d_name) ? "D" : "F", di->d_size, di->d_name);
 				struct tm* timeInfo = localtime(&(di->d_createtime));
 				printf(" %9s", asctime(timeInfo));
 			}
@@ -161,8 +159,6 @@ int displayFiles(fdDir *dirp, int flall, int fllong)
 				printf("%s\n", di->d_name);
 			}
 		}
-		//temp
-		//printf("dirname: %s\n", di->d_name);
 		di = fs_readdir(dirp);
 	}
 	fs_closedir(dirp);
@@ -315,6 +311,7 @@ int cmd_cp(int argcnt, char *argvec[])
 	} while (readcnt == BUFFERLEN);
 	b_close(testfs_src_fd);
 	b_close(testfs_dest_fd);
+	printf("Copy complete...\n");
 	return 0;
 #endif
 }
@@ -335,7 +332,6 @@ int cmd_mv(int argcnt, char *argvec[])
 		printf("trying to move from %s to %s\n", argvec[1], argvec[2]);
 		return (fs_mvdir(argvec[1], argvec[2]));
 	}
-	// **** TODO ****  For you to implement
 #endif
 }
 
@@ -345,9 +341,7 @@ int cmd_mv(int argcnt, char *argvec[])
 // Make Directory
 int cmd_md(int argcnt, char *argvec[])
 {
-	//printf("ahhh");
 #if (CMDMD_ON == 1)
-	printf("fsshell ln 341\n");
 	if (argcnt != 2)
 	{
 		printf("Usage: md pathname\n");
@@ -355,7 +349,6 @@ int cmd_md(int argcnt, char *argvec[])
 	}
 	else
 	{
-		printf("trying to make %s\n", argvec[1]);
 		return (fs_mkdir(argvec[1], 0777));
 	}
 #endif
@@ -376,15 +369,14 @@ int cmd_rm(int argcnt, char *argvec[])
 	char *path = argvec[1];
 
 	//must determine if file or directory
-	//change back to fs_isDir(path)
-	if (fs_isDir)
+	if (fs_isDir(path))
 	{
-		printf("is dir");
+		printf("Removing directory...\n");
 		return (fs_rmdir(path));
 	}
 	if (fs_isFile(path))
 	{
-		printf("is file");
+		printf("Removing file...\n");
 		return (fs_delete(path));
 	}
 
@@ -432,6 +424,7 @@ int cmd_cp2l(int argcnt, char *argvec[])
 	} while (readcnt == BUFFERLEN);
 	b_close(testfs_fd);
 	close(linux_fd);
+	printf("Copy to Linux complete\n");
 	return 0;
 #endif
 }
@@ -475,6 +468,7 @@ int cmd_cp2fs(int argcnt, char *argvec[])
 	} while (readcnt == BUFFERLEN);
 	b_close(testfs_fd);
 	close(linux_fd);
+	printf("Copy to filesystem complete\n");
 	return 0;
 #endif
 }

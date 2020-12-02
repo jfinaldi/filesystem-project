@@ -1,6 +1,6 @@
 /**************************************************************
 * Class:  CSC-415
-* Name: Professor Bierman
+* Name: Jennifer Finaldi (Dreamteam)
 * Student ID: N/A
 * Project: Basic File System
 *
@@ -17,7 +17,6 @@
 #include "mfs.h"
 
 #define STARTING_NUM_DIR 50 //starting number of directories for array
-//#define BLOCK_SIZE 512      //the block size
 
 void testOutput(dirEntry *rootDir);
 long initDirectory(int parentLBA);
