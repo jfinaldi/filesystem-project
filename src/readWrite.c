@@ -297,7 +297,6 @@ void b_close(int fd)
         LBA = getExtentLBA(fd, TRUE);
         char* temp = malloc(fileOpen[fd].lenBuffer + 2); //create a temp buffer to prep with correct bytes
         memcpy(temp, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
-        memset(temp +  fileOpen[fd].lenBuffer, '\0', 1);
         unsigned long blocksWritten = LBAwrite(temp, 1, LBA);
         fileOpen[fd].sizeOfFile += fileOpen[fd].lenBuffer;
         fileOpen[fd].numBlocks++;
