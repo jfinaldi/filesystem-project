@@ -295,9 +295,8 @@ void b_close(int fd)
     else
     { 
         LBA = getExtentLBA(fd, TRUE);
-        char* temp = malloc(fileOpen[fd].lenBuffer + 2); //create a temp buffer to prep with correct bytes
+        char* temp = calloc(512, sizeof(char*)); //create a temp buffer to prep with correct bytes
         memcpy(temp, fileOpen[fd].writeBuffer, fileOpen[fd].lenBuffer);
-        memset(temp +  fileOpen[fd].lenBuffer, '\0', 1);
         unsigned long blocksWritten = LBAwrite(temp, 1, LBA);
         fileOpen[fd].sizeOfFile += fileOpen[fd].lenBuffer;
         fileOpen[fd].numBlocks++;
@@ -429,6 +428,7 @@ int b_write(int fd, char *buffer, int count)
 // Interface to read a buffer
 int b_read(int fd, char *buffer, int count)
 {
+    printf("in read"); 
     if (!(fileOpen[fd].flag == O_RDONLY||O_RDWR))
     {
         //printf("------------------------------\n");
@@ -439,6 +439,7 @@ int b_read(int fd, char *buffer, int count)
     int bytesReturned;       // what we will return
     int part1, part2, part3; // holds the three potential copy lengths
     unsigned long LBA = 0;   // variable that stores the next LBA position to read from
+
 
     if (startup == 0)
         b_init(); //Initialize our system
@@ -453,10 +454,26 @@ int b_read(int fd, char *buffer, int count)
     {
         return -1;
     }
-
+    
     // number of bytes available to copy from buffer
     int remain = fileOpen[fd].buflen - fileOpen[fd].bufIndex;
-    part3 = 0;           //only used if count > BUFSIZE
+    part3 = 0;
+    if(fileOpen[fd].blockPointer >= (fileOpen[fd].numBlocks )) //we left off at the end of the second to last block
+    {
+        //printf("should be here"); 
+        int lastChunk = fileOpen[fd].sizeOfFile % BLOCK_SIZE;
+        lastChunk = lastChunk - fileOpen[fd].bufIndex;
+        if (count < lastChunk) { 
+            memcpy(buffer, fileOpen[fd].buffer + (fileOpen[fd].bufIndex % BLOCK_SIZE) , count);
+            fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + count;
+            return count; 
+        } else { 
+            //printf("LAST CHUNK??? %d\n", lastChunk); 
+            memcpy(buffer, fileOpen[fd].buffer + (int) (fileOpen[fd].bufIndex % BLOCK_SIZE), lastChunk);
+            fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + lastChunk;
+            return lastChunk; 
+        }
+    }           //only used if count > BUFSIZE
     if (remain >= count) //we have enough in buffer
     {
         part1 = count; // completely buffered
@@ -472,23 +489,49 @@ int b_read(int fd, char *buffer, int count)
     {
         memcpy(buffer, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part1);
         fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part1;
+        if (fileOpen[fd].bufIndex == 512) {
+            fileOpen[fd].bufIndex = 0; 
+        }
     }
 
      if (part2 > 0) //We need to read to copy more bytes to user
     {
         // Handle special case where user is asking for more than a buffer worth
-        if (part2 > BUFSIZE)
+        while (part2 > BLOCK_SIZE)
         {
-            int blocks = part2 / BUFSIZE; // calculate number of blocks they want
+            //int blocks = part2 / BUFSIZE; // calculate number of blocks they want
             LBA = getExtentLBA(fd, FALSE);
             fileOpen[fd].extentArrayPtrRead++;
-            LBAread(fileOpen[fd].buffer, blocks, LBA);
-        
-            bytesRead = BUFSIZE * blocks;
+            LBAread(fileOpen[fd].buffer, 1, LBA);
+            fileOpen[fd].blockPointer++; 
+            if(fileOpen[fd].blockPointer >= (fileOpen[fd].numBlocks )) //we left off at the end of the second to last block
+            {
+                int lastChunk = fileOpen[fd].sizeOfFile % BLOCK_SIZE;
+                lastChunk = lastChunk - fileOpen[fd].bufIndex;
+                //printf("%d", fileOpen[fd].bufIndex % BLOCK_SIZE);
+                if (part2 < lastChunk) { 
+                    memcpy(buffer + part1 + part3, fileOpen[fd].buffer + (fileOpen[fd].bufIndex % BLOCK_SIZE) , part2);
+                    fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part2;
+                    //printf("HELLLOOO, %s", buffer);
+                    return count; 
+                } else {
+                    //printf("hello?? %d", (fileOpen[fd].bufIndex % BLOCK_SIZE)); 
+                    memcpy(buffer + part1 + part3, fileOpen[fd].buffer + (int) (fileOpen[fd].bufIndex % BLOCK_SIZE), lastChunk);
+                    fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + lastChunk;
+                    //buffer[lastChunk + 1] = '\0';
+                    //printf("HELLLOOO, %s", buffer); 
+                    return part1 + part3 + lastChunk; 
+                }
+            }
+            memcpy(buffer + part1 + part3, fileOpen[fd].buffer + fileOpen[fd].bufIndex, BLOCK_SIZE);
+            bytesRead = BLOCK_SIZE;
+            
             fileOpen[fd].filePointer += bytesRead;                 //add the length of this buffer to fp
-            fileOpen[fd].bufIndex += bytesRead;                    // update the buffer index
-            part3 = bytesRead;
-            part2 = part2 - part3; //part 2 is now < BUFSIZE, or file is exusted
+            fileOpen[fd].bufIndex = 0;                    // update the buffer index
+            part3 += bytesRead;
+            part2 = part2 - bytesRead; //part 2 is now < BUFSIZE, or file is exusted
+            
+            
         }
 
         //try to read BUFSIZE bytes into our buffer
@@ -502,9 +545,24 @@ int b_read(int fd, char *buffer, int count)
             LBAread(fileOpen[fd].buffer, 1, LBA);
             fileOpen[fd].blockPointer++;
             
-            if(fileOpen[fd].blockPointer == (fileOpen[fd].numBlocks - 1)) //we left off at the end of the second to last block
+            if(fileOpen[fd].blockPointer >= (fileOpen[fd].numBlocks)) //we left off at the end of the second to last block
             {
-                bytesRead = fileOpen[fd].sizeOfFile % BLOCK_SIZE;
+                int lastChunk = fileOpen[fd].sizeOfFile % BLOCK_SIZE;
+                lastChunk = lastChunk - fileOpen[fd].bufIndex;
+                //printf("%d", fileOpen[fd].bufIndex % BLOCK_SIZE);
+                if (part2 < lastChunk) { 
+                    memcpy(buffer + part1 + part3, fileOpen[fd].buffer + (fileOpen[fd].bufIndex % BLOCK_SIZE) , part2);
+                    fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part2;
+                    //printf("HELLLOOO, %s", buffer);
+                    return count; 
+                } else {
+                    //printf("hello?? %d", (fileOpen[fd].bufIndex % BLOCK_SIZE)); 
+                    memcpy(buffer + part1 + part3, fileOpen[fd].buffer + (int) (fileOpen[fd].bufIndex % BLOCK_SIZE), lastChunk);
+                    fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + lastChunk;
+                    //buffer[lastChunk + 1] = '\0';
+                    //printf("HELLLOOO, %s", buffer); 
+                    return part1 + part3 + lastChunk; 
+                }
             }
             else bytesRead = BLOCK_SIZE;
         }
@@ -515,8 +573,8 @@ int b_read(int fd, char *buffer, int count)
         fileOpen[fd].bufIndex = 0;
         fileOpen[fd].buflen = bytesRead; //how many bytes are actually in buffer
 
-        if (bytesRead < part2) // not even enough left to satisfy read
-            part2 = bytesRead;
+        // if (bytesRead < part2) // not even enough left to satisfy read
+        //     part2 = bytesRead;
 
         if (part2 > 0) // memcpy bytesRead
         {
