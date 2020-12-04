@@ -218,14 +218,21 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp) {
  
     
     //ignore empty Dirs, incrememnt StreamCount
-    while (ptr[dirp->streamCount].isBeingUsed == 0 && dirp->streamCount < STARTING_NUM_DIR) {
+    if (dirp->streamCount >= STARTING_NUM_DIR) {
+        if(ptr) {
+            free(ptr);
+            ptr = NULL;
+        }
+        return NULL;
+    }
+    while (ptr[dirp->streamCount].isBeingUsed == 0 && dirp->streamCount < STARTING_NUM_DIR - 1) {
         dirp->streamCount++;
     }
     //set info to return if being used, increment StreamCount
     if (!ptr[dirp->streamCount].isBeingUsed == 0) {
         result->fileType = ptr[dirp->streamCount].type;
-        if(ptr[dirp->streamCount].type == 'D') result->d_size = MBR_st->dirBufMallocSize;
-        else result->d_size = ptr[dirp->streamCount].sizeOfFile;
+        if(ptr[dirp->streamCount].type == 'D') result->d_size = (off_t) MBR_st->dirBufMallocSize;
+        else result->d_size = (off_t) ptr[dirp->streamCount].sizeOfFile;
         result->d_createtime = ptr[dirp->streamCount].dateCreated;
         ////printf("NAME IN READ, %s, INDEX %d", ptr[dirp->streamCount].name,  ptr[dirp->streamCount].entryIndex); 
         strcpy(result->d_name, ptr[dirp->streamCount].name);
