@@ -287,7 +287,7 @@ void b_close(int fd)
     fileOpen[fd].flaggedForClose = TRUE;
 
     //file was open for read only
-    if(fileOpen[fd].flag == O_RDONLY) {
+    if(fileOpen[fd].flag == (int) O_RDONLY) {
         //printf("༼ つ ◕_◕ ༽つ\n");
     }
 
@@ -332,6 +332,35 @@ void b_close(int fd)
         free(fileOpen[fd].writeBuffer);
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
+        fileOpen[fd].Fd = -1;
+        fileOpen[fd].isAllocate = FALSE;
+        fileOpen[fd].flag = -1;
+        fileOpen[fd].flaggedForClose = FALSE;
+
+        fileOpen[fd].locationLBA = DEFAULT_LBA;
+        fileOpen[fd].childLBA = DEFAULT_LBA;
+        fileOpen[fd].entryIndex = DEFAULT_INDEX;
+        fileOpen[fd].dataLocation = DEFAULT_LBA;
+        fileOpen[fd].name[0] = '\0';
+        fileOpen[fd].sizeOfFile = DEFAULT_SIZE;
+        fileOpen[fd].numBlocks = DEFAULT_SIZE;
+        fileOpen[fd].locationMetadata = DEFAULT_LBA;
+        fileOpen[fd].extents = DEFAULT_LBA;
+        fileOpen[fd].numExtents = DEFAULT_SIZE;
+        fileOpen[fd].numExtentBlocks = DEFAULT_SIZE;
+        fileOpen[fd].type = DEFAULT_FILETYPE;
+
+        fileOpen[fd].filePointer = DEFAULT_INDEX;
+        fileOpen[fd].blockPointer = DEFAULT_INDEX;
+        fileOpen[fd].buffer = '\0';
+        fileOpen[fd].writeBuffer = '\0';
+        fileOpen[fd].bufIndex = DEFAULT_INDEX;
+        fileOpen[fd].buflen = DEFAULT_SIZE;
+        fileOpen[fd].lenBuffer = DEFAULT_SIZE;
+        fileOpen[fd].LBAInDataLocation = DEFAULT_LBA;
+        fileOpen[fd].offsetInDataLocation = DEFAULT_LBA;
+        fileOpen[fd].extentArrayPtrWrite = DEFAULT_INDEX;
+        fileOpen[fd].extentArrayPtrRead = DEFAULT_INDEX;
     }
 }
 
@@ -428,7 +457,7 @@ int b_write(int fd, char *buffer, int count)
 // Interface to read a buffer
 int b_read(int fd, char *buffer, int count)
 {
-    printf("in read"); 
+    //printf("in read"); 
     if (!(fileOpen[fd].flag == O_RDONLY||O_RDWR))
     {
         //printf("------------------------------\n");
@@ -490,8 +519,15 @@ int b_read(int fd, char *buffer, int count)
         memcpy(buffer, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part1);
         fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part1;
         if (fileOpen[fd].bufIndex == 512) {
-            fileOpen[fd].bufIndex = 0; 
-        }
+            fileOpen[fd].bufIndex = 0;
+            if (part2 == 0){
+                LBA = getExtentLBA(fd, FALSE);
+                fileOpen[fd].extentArrayPtrRead++;
+                LBAread(fileOpen[fd].buffer, 1, LBA);
+                fileOpen[fd].blockPointer++;
+                fileOpen[fd].filePointer += bytesRead;  
+            } 
+        } 
     }
 
      if (part2 > 0) //We need to read to copy more bytes to user
@@ -503,6 +539,7 @@ int b_read(int fd, char *buffer, int count)
             LBA = getExtentLBA(fd, FALSE);
             fileOpen[fd].extentArrayPtrRead++;
             LBAread(fileOpen[fd].buffer, 1, LBA);
+            fileOpen[fd].buflen = 512;
             fileOpen[fd].blockPointer++; 
             if(fileOpen[fd].blockPointer >= (fileOpen[fd].numBlocks )) //we left off at the end of the second to last block
             {
@@ -539,7 +576,7 @@ int b_read(int fd, char *buffer, int count)
         if(fileOpen[fd].blockPointer == fileOpen[fd].numBlocks){
             bytesRead = 0;
         }
-        else{
+        else if (fileOpen[fd].bufIndex == 0 || fileOpen[fd].bufIndex == 512){
             LBA = getExtentLBA(fd, FALSE);
             fileOpen[fd].extentArrayPtrRead++;
             LBAread(fileOpen[fd].buffer, 1, LBA);
@@ -565,21 +602,23 @@ int b_read(int fd, char *buffer, int count)
                 }
             }
             else bytesRead = BLOCK_SIZE;
+            fileOpen[fd].filePointer += bytesRead; // update the file pointer
+            //fileOpen[fd].bufIndex += bytesRead;    // update the buffer index
+
+
+            fileOpen[fd].bufIndex = 0;
+            fileOpen[fd].buflen = bytesRead;
         }
-        fileOpen[fd].filePointer += bytesRead; // update the file pointer
-        fileOpen[fd].bufIndex += bytesRead;    // update the buffer index
+         //how many bytes are actually in buffer
 
-
-        fileOpen[fd].bufIndex = 0;
-        fileOpen[fd].buflen = bytesRead; //how many bytes are actually in buffer
-
-        // if (bytesRead < part2) // not even enough left to satisfy read
-        //     part2 = bytesRead;
+        if (bytesRead < part2) // not even enough left to satisfy read
+            part2 = bytesRead;
 
         if (part2 > 0) // memcpy bytesRead
         {
             memcpy(buffer + part1 + part3, fileOpen[fd].buffer + fileOpen[fd].bufIndex, part2);
             fileOpen[fd].bufIndex = fileOpen[fd].bufIndex + part2;
+            //printf("%d", fileOpen[fd].bufIndex); 
         }
     }
     bytesReturned = part1 + part2 + part3;
