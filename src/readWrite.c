@@ -330,7 +330,7 @@ void b_close(int fd)
     else
     {
         free(fileOpen[fd].buffer);
-        free(fileOpen[fd].buffer);
+        free(fileOpen[fd].writeBuffer);
         fileOpen[fd].Fd = -1;
         fileOpen[fd].isAllocate = FALSE;
     }

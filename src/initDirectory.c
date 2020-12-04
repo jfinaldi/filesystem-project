@@ -39,7 +39,7 @@ long initDirectory(int parentLBA)
 	ptr[i].name[0] = '.';
 	ptr[i].name[1] = '\0';
 	ptr[i].isBeingUsed = 1;
-	ptr[i].type = atoi("d");
+	ptr[i].type = 'D';
 	i++; //increment to next directory
 
 
@@ -67,7 +67,7 @@ long initDirectory(int parentLBA)
 		}
 		ptr[i].entryIndex = i;
 		ptr[i].locationLBA = startingBlock;
-		ptr[i].type = atoi("d");
+		ptr[i].type = 'D';
 	}
 	
 	//call LBA write to put this directory on disk

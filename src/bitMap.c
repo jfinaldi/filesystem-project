@@ -186,12 +186,10 @@ int defrag_helper(dirEntry *startdE, int offset, int fragStart)
     }
     for (int i = 0; i < STARTING_NUM_DIR; i++) {
         if (entryBuff[i].isBeingUsed == 1) {
-            if (i > 1) {
+            if (i > 1 && entryBuff[i].type == 'D') {
                 defrag_helper(&entryBuff[i], offset, fragStart);
-            } else {
-                if (entryBuff[i].locationMetadata > fragStart) {
-                    entryBuff[i].locationMetadata = entryBuff[i].locationMetadata - offset; 
-                } 
+            } else if (i > 1){
+                shiftExtents(&entryBuff[i], offset, fragStart);
                 
             }
             if (entryBuff[i].childLBA > fragStart) {

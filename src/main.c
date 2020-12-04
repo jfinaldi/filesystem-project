@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        printf("\n %ld", fdDirCWD-> directoryStartLocation);
         printf("\n%s~", DEFAULT_USERNAME);
         if(strcmp(fdDirCWD->cwd_path, "/") != 0) 
         {        
