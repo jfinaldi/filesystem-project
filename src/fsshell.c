@@ -459,8 +459,12 @@ int cmd_cp2fs(int argcnt, char *argvec[])
 		return (-1);
 	}
 
-	testfs_fd = b_open(dest, O_WRONLY | O_CREAT | O_TRUNC);
 	linux_fd = open(src, O_RDONLY);
+	if (linux_fd == -1) {
+		printf("hey, that isn't even a file on your linux system...are you trying to crash me?");
+		return -1; 
+	}
+	testfs_fd = b_open(dest, O_WRONLY | O_CREAT | O_TRUNC);
 	do
 	{
 		readcnt = read(linux_fd, buf, BUFFERLEN);
