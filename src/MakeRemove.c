@@ -482,6 +482,10 @@ char *fs_getcwd(char *buf, size_t size)
 int fs_setcwd(char *buf)
 {
    //printf ("insetcwd with %s\n", buf); 
+   if (!fs_isDir(buf)) {
+       printf("That isn't a directory bud, try again.\n"); 
+       return -1; 
+   }
     char temp[256];
     //if absolute temp is buf, otherwise concat with CWD
     int isAbsolute = strncmp(&buf[0], "/", 1) == 0; 
