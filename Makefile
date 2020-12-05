@@ -39,11 +39,13 @@ HW=
 FOPTION=
 RUNOPTIONS=SampleVolume 10000000 512
 CC=gcc
-CFLAGS= -g -I.
+CFLAGS= -g3 -Werror -I./include/
+# TODO BEFORE THE FINAL DELIVERY REMOVE -g3 by -g
+SRCDIR=./src/
 LIBS =pthread
 DEPS = 
-ADDOBJ= fsLow/fsLow.o readWrite.o FSinit.o
-OBJ = $(ROOTNAME)$(HW)$(FOPTION).o $(ADDOBJ)
+ADDOBJ= fsLow/fsLow.o readWrite.o mbr.o misc.o bitMap.o initDirectory.o dirEntry.o MakeRemove.o fs_ORC.o main.o globals.o
+OBJ = $(addprefix $(SRCDIR), $(ROOTNAME)$(HW)$(FOPTION).o $(ADDOBJ))
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) 
@@ -52,7 +54,11 @@ $(ROOTNAME)$(HW)$(FOPTION): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) -lm -l readline -l $(LIBS)
 
 clean:
-	rm *.o $(ROOTNAME)$(HW)$(FOPTION)
+	rm $(OBJ)						\
+	rm SampleVolume					\
+	rm src/fsLow/fsLowDriver.o		\
+	rm src/fsLow/fsLowDriver		\
+	rm src/fsLow/SampleVolume
 
 run: $(ROOTNAME)$(HW)$(FOPTION)
 	./$(ROOTNAME)$(HW)$(FOPTION) $(RUNOPTIONS)
