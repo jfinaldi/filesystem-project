@@ -1,12 +1,13 @@
 /**************************************************************
 * Class:  CSC-415
-* Name: Professor Bierman
+* Name: Robert Bierman
 * Student ID: N/A
 * Project: Basic File System
 *
 * File: misc.c
 *
-* Description: misc.c
+* Description: This file holds miscellanous helper functions 
+*           used for this program. 
 *
 **************************************************************/
 
