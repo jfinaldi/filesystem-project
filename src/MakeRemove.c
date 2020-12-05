@@ -473,7 +473,7 @@ int fs_rmdir(const char *pathname)
             free(entryBuffer);
             entryBuffer = NULL;
     }
-    //printf("BEFORE DEGRAG"); 
+    printf("Defrag initiated...\n"); 
     defrag(MBR_st -> rootDirectoryPos); 
 }
 
@@ -824,7 +824,6 @@ int fs_mvdir(char *srcPath, char *destPath) {
     }
     
 }
-
 
 int shiftExtents(dirEntry* dE, int shift, int fragStart)
 {

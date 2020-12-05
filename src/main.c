@@ -56,8 +56,12 @@ int main(int argc, char *argv[])
     stifle_history(200); //max history entries
 
     while (1)
-    {
-        printf("\n %ld", fdDirCWD-> directoryStartLocation);
+    {   /*****************************************
+        Uncomment the following line to view the 
+        LBA block of the cwd when you are looking
+        at defrag functionality
+        ******************************************/
+        //printf("\n %ld", fdDirCWD-> directoryStartLocation);
         printf("\n%s~", DEFAULT_USERNAME);
         if(strcmp(fdDirCWD->cwd_path, "/") != 0) 
         {        

@@ -109,7 +109,7 @@ int defrag(int start)
     int bitmap_size_in_bytes = 19000;
     int bitmap_size_in_blocks = (bitmap_size_in_bytes / MBR_st->blockSize) + 1;
     _Bool *bitmap = (_Bool *)calloc(bitmap_size_in_blocks * MBR_st->blockSize, sizeof(_Bool));
-    printf("START DEGRAG %d", bitmap_size_in_bytes); 
+   
     if (bitmap == NULL)
     {
         return -1;
@@ -131,7 +131,7 @@ int defrag(int start)
         else if (bitmap[index] == 1)
         {
             if (fragStart > 0 && fragEnd < 0) {
-                printf("WHAT?? %d", bitmap[index]); 
+                //printf("WHAT?? %d", bitmap[index]); 
                 fragEnd = index - 1; 
                 fragSize = fragEnd - fragStart + 1 ;
                 int index2 = fragStart; 
@@ -155,13 +155,13 @@ int defrag(int start)
     //     index++;
     // }
     if (fragEnd < 0) {
-        printf("DONE DEFRAGGING"); 
+        printf("Defragmentation complete...\n"); 
         return 0; 
     }
-    printf("START END, %d, %d", fragStart, fragEnd); 
+    //printf("START END, %d, %d", fragStart, fragEnd); 
     defrag_helper(NULL, fragSize - 1, fragStart);
     int toMove = bitmap_size_in_bytes - fragEnd;
-    printf("TO MOVE %d", toMove);  
+    //printf("TO MOVE %d", toMove);  
     void *moveBuffer = malloc(toMove * MBR_st -> blockSize);
     if (moveBuffer == NULL) {
         printf("PROBLEM WITH MALLOC"); 
